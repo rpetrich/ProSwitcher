@@ -1,0 +1,5 @@
+Palm Pre-style application switcher for iPhone OS
+ by rpetrich and chpwn
+ 
+Requires iPhone SDK 3.0+ to compile and iPhone OS 3.0+ to run
+If DebMaker is installed, it will be used to make deb packages for device builds

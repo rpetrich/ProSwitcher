@@ -1,0 +1,11 @@
+Package: com.collab.preswitcher
+Priority: optional
+Section: System
+Architecture: iphoneos-arm
+Version: 0.5
+Description: Palm Pre-styled application switcher
+Name: PreSwitcher
+Depends: mobilesubstrate, preferenceloader (>= 1.1)
+Provides: preswitcher
+Author: rpetrich and chpwn
+Depiction: http://booleanmagic.com/cydia/preswitcher/
