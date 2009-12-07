@@ -14,11 +14,11 @@ CHDeclareClass(SBApplicationController)
 static PSWViewController *mainController;
 static SBIconListPageControl *pageControl;
 
-#define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.preswitcher"]
+#define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.preswitcher.plist"]
 #define PSWPreferencesChangedNotification "com.collab.preswitcher.preferencechanged"
 
 #define ObjectForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
-#define FloatForKeyWithDefault(dict, key, default)   (float)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
+#define FloatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
 #define IntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
 #define BoolForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
 
@@ -47,6 +47,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)didFinishDeactivate
 {
+	[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
 	[[self view] removeFromSuperview];
 	isAnimating = NO;
 }
@@ -66,8 +67,11 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 	if (active && !isActive) {
 		if (isActive)
 			return;
+		UIApplication *app = [UIApplication sharedApplication];
+		formerStatusBarStyle = [app statusBarStyle];
+		[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
 		isActive = YES;
-		
+
 		snapshotPageView.focusedApplication = focusedApplication;
 		UIView *view = [self view];
 		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
@@ -82,9 +86,6 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 			[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
 			[layer setTransform:CATransform3DIdentity];
 			[view setAlpha:1.0f];
-		}
-		
-		if (animated) {
 			[UIView commitAnimations];
 			isAnimating = YES;
 		}
@@ -109,6 +110,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 			[UIView commitAnimations];
 			isAnimating = YES;
 		} else {
+			[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
 			[pageControl setAlpha:1.0f];
 			[view removeFromSuperview];
 		}
@@ -155,15 +157,22 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 		[pageControl setAlpha:0.0f];
 	}
 	
-	if (IntegerForKeyWithDefault(preferences, @"PSWBackground", 0) == 1)
+	if (IntegerForKeyWithDefault(preferences, @"PSWBackgroundStyle", 0) == 1)
 		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"PreSwitcherBackground") CGImage]];
 	
-	snapshotPageView.allowsSwipeToClose  = BoolForKeyWithDefault(preferences, @"PSWAllowsSwipeToClose", YES);
-	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowsTitles", YES);
-	snapshotPageView.showsCloseButtons   = BoolForKeyWithDefault(preferences, @"PSWShowsCloseButtons", YES);
-	snapshotPageView.showsEmptyText      = BoolForKeyWithDefault(preferences, @"PSWShowsEmptyText", YES);
+	snapshotPageView.allowsSwipeToClose  = BoolForKeyWithDefault(preferences, @"PSWSwipeToClose", YES);
+	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowApplicationTitles", YES);
+	snapshotPageView.showsCloseButtons   = BoolForKeyWithDefault(preferences, @"PSWShowCloseButtons", YES);
+	snapshotPageView.emptyText           = BoolForKeyWithDefault(preferences, @"PSWShowsEmptyText", YES)?@"No Apps Running":nil;
 	snapshotPageView.roundedCornerRadius = FloatForKeyWithDefault(preferences, @"PSWRoundedCornerRadius", 10.0f);
 	snapshotPageView.tapsToActivate      = IntegerForKeyWithDefault(preferences, @"PSWTapsToActivate", 2);
+}
+
+- (void)_reloadPreferences
+{
+	[preferences release];
+	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+	[self _applyPreferences];
 }
 
 - (void)loadView 
@@ -210,7 +219,7 @@ CHMethod0(void, SBApplication, activate)
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
 	CHAutoreleasePoolForScope();
-	[[PSWViewController sharedInstance] _applyPreferences];
+	[[PSWViewController sharedInstance] _reloadPreferences];
 }
 
 CHConstructor

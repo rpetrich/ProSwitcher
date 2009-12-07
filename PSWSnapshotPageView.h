@@ -12,13 +12,13 @@
 	UIScrollView *_scrollView;
 	UIPageControl *_pageControl;
 	UILabel *_emptyLabel;
+	NSString *_emptyText;
 
 	id<PSWSnapshotPageViewDelegate> _delegate;
 	
 	BOOL _showsTitles;
 	BOOL _showsCloseButtons;
 	BOOL _allowsSwipeToClose;
-	BOOL _showsEmptyText;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
 }
@@ -31,10 +31,10 @@
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;
 
+@property (nonatomic, assign) NSString *emptyText;
 @property (nonatomic, assign) BOOL showsTitles;
 @property (nonatomic, assign) BOOL showsCloseButtons;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
-@property (nonatomic, assign) BOOL showsEmptyText;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) NSInteger tapsToActivate;
 

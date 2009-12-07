@@ -43,9 +43,6 @@
 		for (int i = 0; i < numberOfPages; i++) {
 			PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:pageFrame application:[_applications objectAtIndex:i]];
 			snapshot.delegate = self;
-			snapshot.showsTitle = _showsTitles;
-			snapshot.showsCloseButton = _showsCloseButtons;
-			snapshot.allowsSwipeToClose = _allowsSwipeToClose;
 			[_scrollView addSubview:snapshot];
 			[_snapshotViews addObject:snapshot];
 			[snapshot release];
@@ -62,7 +59,8 @@
 {
 	[_applicationController setDelegate:nil];
 	[_applicationController release];
-	[_emptyLabel release]; // this will be nil if it is set to NO
+	[_emptyText release];
+	[_emptyLabel release];
 	[_scrollView release];
 	[_pageControl release];
 	[_snapshotViews release];
@@ -77,22 +75,24 @@
 
 #pragma mark Private Methods
 
-- (void)_toggleEmptyText
+- (void)_applyEmptyText
 {
-	if (_showsEmptyText == YES && [_applications count] == 0) {
-		UIFont *emptyFont = [UIFont boldSystemFontOfSize:16.0];
-		NSString *emptyText = @"No Apps Running";
-		CGSize emptySize = [emptyText sizeWithFont:emptyFont];
-		CGRect emptyPosition;
-		emptyPosition.size = emptySize;
-		emptyPosition.origin.x = (self.frame.size.width - emptySize.width) / 2.0;
-		emptyPosition.origin.y = (self.frame.size.height - emptySize.height) / 2.0;
-		_emptyLabel = [[UILabel alloc] initWithFrame:emptyPosition];
-		_emptyLabel.text = emptyText;
-		_emptyLabel.font = emptyFont;
-		_emptyLabel.backgroundColor = [UIColor clearColor];
-		_emptyLabel.textColor = [UIColor whiteColor];
-		[self addSubview:_emptyLabel];
+	if ([_emptyText length] != 0 && [_applications count] == 0) {
+		if (!_emptyLabel) {
+			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
+			CGFloat height = [_emptyText sizeWithFont:font].height;
+			CGRect bounds = [self bounds];
+			bounds.origin.x = 0.0f;
+			bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
+			bounds.size.height = height;
+			_emptyLabel = [[UILabel alloc] initWithFrame:bounds];
+			_emptyLabel.backgroundColor = [UIColor clearColor];
+			_emptyLabel.textAlignment = UITextAlignmentCenter;
+			_emptyLabel.font = font;
+			_emptyLabel.textColor = [UIColor whiteColor];
+			[self addSubview:_emptyLabel];
+		}
+		_emptyLabel.text = _emptyText;
 	} else {
 		[_emptyLabel removeFromSuperview];
 		[_emptyLabel release];
@@ -115,8 +115,7 @@
 		[view setFrame:pageFrame];
 		pageFrame.origin.x += bounds.size.width;
 	}
-	
-	[self _toggleEmptyText];
+	[self _applyEmptyText];
 }
 
 #pragma mark UIScrollViewDelegate
@@ -166,9 +165,8 @@
 {
 	NSInteger index = [self indexOfApplication:application];
 	if (index != NSNotFound && index != [_pageControl currentPage]) {
-		CGRect bounds = [self bounds];
 		[_pageControl setCurrentPage:index];
-		[_scrollView setContentOffset:CGPointMake(bounds.size.width * index, 0.0f) animated:animated];
+		[_scrollView setContentOffset:CGPointMake([self bounds].size.width * index, 0.0f) animated:animated];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:application];
 	}
@@ -213,15 +211,18 @@
 	}
 }
 
-- (BOOL)showsEmptyText
+- (NSString *)emptyText
 {
-	return _showsCloseButtons;
+	return _emptyText;
 }
-- (void)setShowsEmptyText:(BOOL)showsEmptyText
+- (void)setEmptyText:(NSString *)emptyText
 {
-	if (_showsEmptyText != showsEmptyText) {
-		_showsEmptyText = showsEmptyText;
-		[self _toggleEmptyText];
+	if (_emptyText != emptyText) {
+		if (![_emptyText isEqualToString:_emptyText]) {
+			[_emptyText autorelease];
+			_emptyText = [emptyText copy];
+			[self _applyEmptyText];
+		}
 	}
 }
 
@@ -234,7 +235,7 @@
 	if (_roundedCornerRadius != roundedCornerRadius) {
 		_roundedCornerRadius = roundedCornerRadius;
 		for (PSWSnapshotView *view in _snapshotViews)
-			[view setRoundedCornerRadius:roundedCornerRadius];
+			[view setRoundedCornerRadius:_roundedCornerRadius];
 	}
 }
 
@@ -255,6 +256,7 @@
 		snapshot.showsTitle = _showsTitles;
 		snapshot.showsCloseButton = _showsCloseButtons;
 		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
+		snapshot.roundedCornerRadius = _roundedCornerRadius;
 		[_scrollView addSubview:snapshot];
 		[_snapshotViews addObject:snapshot];
 		[snapshot release];
@@ -277,7 +279,7 @@
 		snapshot.delegate = nil;
 		[_snapshotViews removeObjectAtIndex:index];
 		[UIView beginAnimations:nil context:snapshot];
-		[UIView setAnimationDuration:0.5f];
+		[UIView setAnimationDuration:0.33f];
 		[UIView setAnimationDelegate:self];
 		[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshot:finished:context:)];
 		CGRect frame = snapshot.frame;

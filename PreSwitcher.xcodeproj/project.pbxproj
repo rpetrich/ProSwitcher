@@ -225,7 +225,6 @@
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 				943D53DA10CCEE230007FAFF /* Post-Build Script */,
-				943D54FC10CD0C040007FAFF /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -260,7 +259,7 @@
 			files = (
 			);
 			inputPaths = (
-				"$(PROJECT_DIR)/FileSystem",
+				"$(PROJECT_DIR)/File System",
 			);
 			name = "Post-Build Script";
 			outputPaths = (
@@ -268,19 +267,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PROJECT_DIR}/Build Scripts/post-build.sh\"\nexit $?";
-		};
-		943D54FC10CD0C040007FAFF /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 8;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-			shellPath = /bin/sh;
-			shellScript = "echo \"Installing...\"";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 

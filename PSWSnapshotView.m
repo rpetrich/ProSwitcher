@@ -209,7 +209,7 @@
 
 - (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
 {
-	screen.layer.cornerRadius = roundedCornerRadius;	
+	screen.layer.cornerRadius = roundedCornerRadius;
 }
 
 - (CGFloat)roundedCornerRadius

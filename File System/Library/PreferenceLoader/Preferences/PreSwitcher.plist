@@ -27,7 +27,7 @@
 			<key>defaults</key>
 			<string>com.collab.preswitcher</string>
 			<key>key</key>
-			<string>PSWSwipeToExit</string>
+			<string>PSWSwipeToClose</string>
 			<key>label</key>
 			<string>Swipe to Close</string>
 			<key>PostNotification</key>
@@ -41,7 +41,7 @@
 			<key>defaults</key>
 			<string>com.collab.preswitcher</string>
 			<key>key</key>
-			<string>PSWCloseButton</string>
+			<string>PSWShowCloseButtons</string>
 			<key>label</key>
 			<string>Close Button</string>
 			<key>PostNotification</key>
@@ -69,7 +69,7 @@
 			<key>defaults</key>
 			<string>com.collab.preswitcher</string>
 			<key>key</key>
-			<string>PSWApplicationTitles</string>
+			<string>PSWShowApplicationTitles</string>
 			<key>label</key>
 			<string>Application Titles</string>
 			<key>PostNotification</key>
@@ -99,7 +99,7 @@
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
-			<string>PSWBackground</string>
+			<string>PSWBackgroundStyle</string>
 			<key>label</key>
 			<string>Background</string>
 			<key>validTitles</key>
