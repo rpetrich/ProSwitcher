@@ -13,6 +13,7 @@ CHDeclareClass(SBApplicationController)
 
 static PSWViewController *mainController;
 static SBIconListPageControl *pageControl;
+static NSInteger suppressIconScatter;
 
 #define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.preswitcher.plist"]
 #define PSWPreferencesChangedNotification "com.collab.preswitcher.preferencechanged"
@@ -198,7 +199,9 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
+	suppressIconScatter++;
 	[application activate];
+	suppressIconScatter--;
 }
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
@@ -216,9 +219,13 @@ CHMethod0(void, SBApplication, activate)
 	CHSuper0(SBApplication, activate);
 }
 
+CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
+{
+	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && suppressIconScatter == 0);
+}
+
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
-	CHAutoreleasePoolForScope();
 	[[PSWViewController sharedInstance] _reloadPreferences];
 }
 
@@ -229,5 +236,6 @@ CHConstructor
 	CHHook0(SBApplication, activate);
 	CHLoadLateClass(SBIconListPageControl);
 	CHLoadLateClass(SBUIController);
+	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHLoadLateClass(SBApplicationController);
 }
