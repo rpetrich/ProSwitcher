@@ -191,6 +191,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 - (void)viewDidUnload
 {
 	[[PSWApplicationController sharedInstance] writeSnapshotsToDisk];
+	PSWClearResourceCache();
 	[snapshotPageView removeFromSuperview];
 	[snapshotPageView release];
 	snapshotPageView = nil;
