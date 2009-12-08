@@ -7,9 +7,9 @@
 		<key>cell</key>
 		<string>PSLinkCell</string>
 		<key>icon</key>
-		<string>/Applications/PreSwitcher.app/Icon-small.png</string>
+		<string>/Applications/ProSwitcher.app/Icon-small.png</string>
 		<key>label</key>
-		<string>PreSwitcher</string>
+		<string>ProSwitcher</string>
 	</dict>
 	<key>items</key>
 	<array>
@@ -25,13 +25,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>key</key>
 			<string>PSWSwipeToClose</string>
 			<key>label</key>
 			<string>Swipe to Close</string>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -39,13 +39,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>key</key>
 			<string>PSWShowCloseButtons</string>
 			<key>label</key>
 			<string>Close Button</string>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -53,13 +53,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>key</key>
 			<string>PSWDimBackground</string>
 			<key>label</key>
 			<string>Dim Background</string>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -67,13 +67,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>key</key>
 			<string>PSWShowApplicationTitles</string>
 			<key>label</key>
 			<string>Application Titles</string>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -81,13 +81,13 @@
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>key</key>
 			<string>PSWShowPageControl</string>
 			<key>label</key>
 			<string>Show Page Dots</string>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -95,7 +95,7 @@
 			<key>default</key>
 			<integer>0</integer>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
@@ -113,7 +113,7 @@
 				<integer>1</integer>
 			</array>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -121,7 +121,7 @@
 			<key>default</key>
 			<integer>2</integer>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
@@ -139,10 +139,10 @@
 				<integer>2</integer>
 			</array>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>PreSwitcher</string>
+	<string>ProSwitcher</string>
 </dict>
 </plist>

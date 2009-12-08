@@ -15,8 +15,8 @@ static PSWViewController *mainController;
 static SBIconListPageControl *pageControl;
 static NSInteger suppressIconScatter;
 
-#define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.preswitcher.plist"]
-#define PSWPreferencesChangedNotification "com.collab.preswitcher.preferencechanged"
+#define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.proswitcher.plist"]
+#define PSWPreferencesChangedNotification "com.collab.proswitcher.preferencechanged"
 
 #define ObjectForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
 #define FloatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
@@ -159,7 +159,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 	}
 	
 	if (IntegerForKeyWithDefault(preferences, @"PSWBackgroundStyle", 0) == 1)
-		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"PreSwitcherBackground") CGImage]];
+		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
 	
 	snapshotPageView.allowsSwipeToClose  = BoolForKeyWithDefault(preferences, @"PSWSwipeToClose", YES);
 	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowApplicationTitles", YES);

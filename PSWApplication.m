@@ -34,7 +34,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	NSString *snapshotPath = [self snapshotPath];
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	for (NSString *path in [fileManager contentsOfDirectoryAtPath:snapshotPath error:NULL])
-		if ([snapshotPath hasPrefix:@"PreSwitcher-"] && [snapshotPath hasSuffix:@".cache"])
+		if ([snapshotPath hasPrefix:@"ProSwitcher-"] && [snapshotPath hasSuffix:@".cache"])
 			[fileManager removeItemAtPath:[snapshotPath stringByAppendingPathComponent:snapshotPath] error:NULL];
 }
 
@@ -196,7 +196,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
 		CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuid);
 		CFRelease(uuid);
-		NSString *fileName = [NSString stringWithFormat:@"PreSwitcher-%@.cache", uuidString];
+		NSString *fileName = [NSString stringWithFormat:@"ProSwitcher-%@.cache", uuidString];
 		CFRelease(uuidString);
 		_snapshotFilePath = [[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName];
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();

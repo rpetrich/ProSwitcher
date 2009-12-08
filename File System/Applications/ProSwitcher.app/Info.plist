@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>PreSwitcher</string>
+	<string>ProSwitcher</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.png</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.collab.preswitcher</string>
+	<string>com.collab.proswitcher</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -29,6 +29,6 @@
 	<key>MinimumOSVersion</key>
 	<string>3.0</string>
 	<key>SBIconClass</key>
-	<string>PSWPreSwitcherIcon</string>
+	<string>PSWProSwitcherIcon</string>
 </dict>
 </plist>

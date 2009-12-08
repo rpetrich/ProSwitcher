@@ -7,7 +7,7 @@
 static BOOL isUninstalled = NO;
 
 CHDeclareClass(SBApplicationIcon);
-CHDeclareClass(PSWPreSwitcherIcon);
+CHDeclareClass(PSWProSwitcherIcon);
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBIconController);
 
@@ -19,7 +19,7 @@ CHMethod0(void, SBApplicationIcon, launch)
 	CHSuper0(SBApplicationIcon, launch);
 }
 
-CHMethod0(void, PSWPreSwitcherIcon, launch)
+CHMethod0(void, PSWProSwitcherIcon, launch)
 {
 	if (!isUninstalled) {
 		PSWViewController *vc = [PSWViewController sharedInstance];
@@ -28,13 +28,13 @@ CHMethod0(void, PSWPreSwitcherIcon, launch)
 	}
 }
 
-CHMethod0(void, PSWPreSwitcherIcon, completeUninstall)
+CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
 {
 	if (!isUninstalled) {
 		[[PSWViewController sharedInstance] setActive:NO animated:NO];
 		isUninstalled = YES;
 	}
-	CHSuper0(PSWPreSwitcherIcon, completeUninstall);
+	CHSuper0(PSWProSwitcherIcon, completeUninstall);
 }
 
 static BOOL shouldSuppressIconListScroll;
@@ -56,9 +56,9 @@ CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, ani
 CHConstructor {
 	CHLoadLateClass(SBApplicationIcon);
 	CHHook0(SBApplicationIcon, launch);
-	CHRegisterClass(PSWPreSwitcherIcon, SBApplicationIcon) {
-		CHHook0(PSWPreSwitcherIcon, launch);
-		CHHook0(PSWPreSwitcherIcon, completeUninstall);
+	CHRegisterClass(PSWProSwitcherIcon, SBApplicationIcon) {
+		CHHook0(PSWProSwitcherIcon, launch);
+		CHHook0(PSWProSwitcherIcon, completeUninstall);
 	}
 	CHLoadLateClass(SpringBoard);
 	CHHook0(SpringBoard, _handleMenuButtonEvent);

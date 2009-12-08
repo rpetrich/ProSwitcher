@@ -17,7 +17,7 @@
 		942FC6BC10CB9D1D006F6990 /* PSWApplicationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC6BB10CB9D1D006F6990 /* PSWApplicationController.m */; };
 		942FC6C310CBA11F006F6990 /* PSWDisplayStacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */; };
 		942FC77B10CBB8F7006F6990 /* PSWResources.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC77A10CBB8F7006F6990 /* PSWResources.m */; };
-		945C24FB10C22AFA0089A705 /* PSWPreSwitcherIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 945C24FA10C22AFA0089A705 /* PSWPreSwitcherIcon.m */; };
+		945C24FB10C22AFA0089A705 /* PSWProSwitcherIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */; };
 		949485F110C1FC3800467E51 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 949485F010C1FC3800467E51 /* QuartzCore.framework */; };
 		94B298C410C2266400F64150 /* PSWViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94B298C210C2266400F64150 /* PSWViewController.m */; };
 /* End PBXBuildFile section */
@@ -27,7 +27,7 @@
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		7DB8A5B21086D4C100C1FD1D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		7DB8A6121086DAE500C1FD1D /* PreSwitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PreSwitcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DB8A6121086DAE500C1FD1D /* ProSwitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProSwitcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DD43FE510C097C90063020D /* PSWSnapshotPageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWSnapshotPageView.h; sourceTree = "<group>"; };
 		7DD43FE610C097C90063020D /* PSWSnapshotPageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWSnapshotPageView.m; sourceTree = "<group>"; };
 		7DD5643010CA325A00771158 /* PSWSnapshotView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWSnapshotView.h; sourceTree = "<group>"; };
@@ -45,12 +45,12 @@
 		943D541910CCF9750007FAFF /* control */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = control; sourceTree = "<group>"; };
 		943D541A10CCF9750007FAFF /* preinst */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = preinst; sourceTree = "<group>"; };
 		943D541B10CCF9750007FAFF /* prerm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = prerm; sourceTree = "<group>"; };
-		943D541E10CCF9EC0007FAFF /* PreSwitcher.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = PreSwitcher.app; sourceTree = "<group>"; };
-		943D542210CCF9EC0007FAFF /* PreSwitcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = PreSwitcher.plist; sourceTree = "<group>"; };
-		943D542510CCF9EC0007FAFF /* PreSwitcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = PreSwitcher.plist; sourceTree = "<group>"; };
+		943D541E10CCF9EC0007FAFF /* ProSwitcher.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = ProSwitcher.app; sourceTree = "<group>"; };
+		943D542210CCF9EC0007FAFF /* ProSwitcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = ProSwitcher.plist; sourceTree = "<group>"; };
+		943D542510CCF9EC0007FAFF /* ProSwitcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ProSwitcher.plist; sourceTree = "<group>"; };
 		943D546410CCFA510007FAFF /* SpringBoard+Backgrounder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SpringBoard+Backgrounder.h"; sourceTree = "<group>"; };
 		943D54F910CD06DA0007FAFF /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		945C24FA10C22AFA0089A705 /* PSWPreSwitcherIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWPreSwitcherIcon.m; sourceTree = "<group>"; };
+		945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWProSwitcherIcon.m; sourceTree = "<group>"; };
 		949485F010C1FC3800467E51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		94B298C210C2266400F64150 /* PSWViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWViewController.m; sourceTree = "<group>"; };
 		94B298C310C2266400F64150 /* PSWViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWViewController.h; sourceTree = "<group>"; };
@@ -76,7 +76,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7DB8A6121086DAE500C1FD1D /* PreSwitcher.app */,
+				7DB8A6121086DAE500C1FD1D /* ProSwitcher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,7 +126,7 @@
 				94B298C210C2266400F64150 /* PSWViewController.m */,
 				942FC6C110CBA11F006F6990 /* PSWDisplayStacks.h */,
 				942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */,
-				945C24FA10C22AFA0089A705 /* PSWPreSwitcherIcon.m */,
+				945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */,
 			);
 			name = Code;
 			sourceTree = "<group>";
@@ -161,7 +161,7 @@
 		943D541D10CCF9EC0007FAFF /* Applications */ = {
 			isa = PBXGroup;
 			children = (
-				943D541E10CCF9EC0007FAFF /* PreSwitcher.app */,
+				943D541E10CCF9EC0007FAFF /* ProSwitcher.app */,
 			);
 			path = Applications;
 			sourceTree = "<group>";
@@ -186,7 +186,7 @@
 		943D542110CCF9EC0007FAFF /* DynamicLibraries */ = {
 			isa = PBXGroup;
 			children = (
-				943D542210CCF9EC0007FAFF /* PreSwitcher.plist */,
+				943D542210CCF9EC0007FAFF /* ProSwitcher.plist */,
 			);
 			path = DynamicLibraries;
 			sourceTree = "<group>";
@@ -202,7 +202,7 @@
 		943D542410CCF9EC0007FAFF /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
-				943D542510CCF9EC0007FAFF /* PreSwitcher.plist */,
+				943D542510CCF9EC0007FAFF /* ProSwitcher.plist */,
 			);
 			path = Preferences;
 			sourceTree = "<group>";
@@ -218,9 +218,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1D6058900D05DD3D006BFB54 /* PreSwitcher */ = {
+		1D6058900D05DD3D006BFB54 /* ProSwitcher */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "PreSwitcher" */;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "ProSwitcher" */;
 			buildPhases = (
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
@@ -230,9 +230,9 @@
 			);
 			dependencies = (
 			);
-			name = PreSwitcher;
-			productName = PreSwitcher;
-			productReference = 7DB8A6121086DAE500C1FD1D /* PreSwitcher.app */;
+			name = ProSwitcher;
+			productName = ProSwitcher;
+			productReference = 7DB8A6121086DAE500C1FD1D /* ProSwitcher.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -240,14 +240,14 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "PreSwitcher" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ProSwitcher" */;
 			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1D6058900D05DD3D006BFB54 /* PreSwitcher */,
+				1D6058900D05DD3D006BFB54 /* ProSwitcher */,
 			);
 		};
 /* End PBXProject section */
@@ -278,7 +278,7 @@
 			files = (
 				7DD43FE710C097C90063020D /* PSWSnapshotPageView.m in Sources */,
 				94B298C410C2266400F64150 /* PSWViewController.m in Sources */,
-				945C24FB10C22AFA0089A705 /* PSWPreSwitcherIcon.m in Sources */,
+				945C24FB10C22AFA0089A705 /* PSWProSwitcherIcon.m in Sources */,
 				7DD5643210CA325A00771158 /* PSWSnapshotView.m in Sources */,
 				942FC5E310CB8DCF006F6990 /* PSWApplication.m in Sources */,
 				942FC6BC10CB9D1D006F6990 /* PSWApplicationController.m in Sources */,
@@ -304,7 +304,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = PreSwitcher_Prefix.pch;
+				GCC_PREFIX_HEADER = ProSwitcher_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				"GCC_PREPROCESSOR_DEFINITIONS[sdk=iphoneos*][arch=*]" = USE_IOSURFACE;
 				INFOPLIST_FILE = "";
@@ -320,7 +320,7 @@
 					IOSurface,
 				);
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
-				PRODUCT_NAME = PreSwitcher;
+				PRODUCT_NAME = ProSwitcher;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = NO;
@@ -340,7 +340,7 @@
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = PreSwitcher_Prefix.pch;
+				GCC_PREFIX_HEADER = ProSwitcher_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				"GCC_PREPROCESSOR_DEFINITIONS[sdk=iphoneos*][arch=*]" = USE_IOSURFACE;
 				INFOPLIST_FILE = "";
@@ -362,7 +362,7 @@
 					IOSurface,
 				);
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
-				PRODUCT_NAME = PreSwitcher;
+				PRODUCT_NAME = ProSwitcher;
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos3.0;
 				SKIP_INSTALL = NO;
@@ -402,7 +402,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "PreSwitcher" */ = {
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "ProSwitcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1D6058940D05DD3E006BFB54 /* Debug */,
@@ -411,7 +411,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "PreSwitcher" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ProSwitcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
