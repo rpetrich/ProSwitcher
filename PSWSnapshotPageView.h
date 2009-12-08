@@ -13,7 +13,7 @@
 	UIPageControl *_pageControl;
 	UILabel *_emptyLabel;
 	NSString *_emptyText;
-
+	
 	id<PSWSnapshotPageViewDelegate> _delegate;
 	
 	BOOL _showsTitles;
@@ -21,6 +21,7 @@
 	BOOL _allowsSwipeToClose;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
+	UIEdgeInsets _edgeInsets;
 }
 
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
