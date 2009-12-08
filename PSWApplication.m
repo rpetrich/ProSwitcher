@@ -68,6 +68,11 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	[super dealloc];
 }
 
+- (NSString *)displayName
+{
+	return [_application displayName];
+}
+
 - (CGImageRef)snapshot
 {
 	if (!_snapshotImage) {
@@ -81,22 +86,30 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 {
 	if (_snapshotImage != snapshot) {
 		CGImageRelease(_snapshotImage);
-		_snapshotImage = CGImageRetain(snapshot);
 		[_snapshotData release];
-		_snapshotData = nil;
 		if (_snapshotFilePath) {
 			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
+		if (snapshot) {
+			size_t width = CGImageGetWidth(snapshot);
+			size_t height = CGImageGetHeight(snapshot);
+			void *buffer = calloc(4, width * height);
+			_snapshotData = [[NSMutableData alloc] initWithBytesNoCopy:buffer length:(4 * width * height) freeWhenDone:YES];
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+			CGContextRef context = CGBitmapContextCreate(buffer, width, height, 8, 4 * width, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+			CGColorSpaceRelease(colorSpace);
+			CGContextDrawImage(context, CGRectMake(0.0f, 0.0f, width, height), snapshot);
+			_snapshotImage = CGBitmapContextCreateImage(context);
+			CGContextRelease(context);
+		} else {
+			_snapshotImage = NULL;
+			_snapshotData = nil;
+		}
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
-}
-
-- (NSString *)displayName
-{
-	return [_application displayName];
 }
 
 - (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride
@@ -118,7 +131,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		[_delegate applicationSnapshotDidChange:self];
 }
 
-- (id)loadSBIcon
+- (SBIcon *)springBoardIcon
 {
 	return [CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
 }
@@ -191,7 +204,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 
 - (void)writeSnapshotToDisk
 {
-	if (!_snapshotFilePath) {
+	if (!_snapshotFilePath && _snapshotData) {
 		// Generate filename
 		CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
 		CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuid);
@@ -203,18 +216,8 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		size_t width = CGImageGetWidth(_snapshotImage);
 		size_t height = CGImageGetHeight(_snapshotImage);
 		size_t stride = CGImageGetBytesPerRow(_snapshotImage);
-		if (_snapshotData) {
-			[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
-			[_snapshotData release];
-		} else {
-			NSMutableData *tempData = [[NSMutableData alloc] init];
-			[tempData setLength:(height * stride)];
-			CGContextRef tempContext = CGBitmapContextCreate([tempData mutableBytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
-			CGContextDrawImage(tempContext, CGRectMake(0.0f, 0.0f, width, height), _snapshotImage);
-			CGContextRelease(tempContext);
-			[tempData writeToFile:_snapshotFilePath atomically:NO];
-			[tempData release];
-		}
+		[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
+		[_snapshotData release];
 		_snapshotData = [[NSData alloc] initWithContentsOfMappedFile:_snapshotFilePath];
 		CGContextRef context = CGBitmapContextCreate((void *)[_snapshotData bytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 		CGColorSpaceRelease(colorSpace);

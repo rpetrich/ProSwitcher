@@ -190,7 +190,7 @@
 			[self addSubview:_titleView];
 	
 			// Add small icon
-			UIImage *smallIcon = [[_application loadSBIcon] smallIcon];
+			UIImage *smallIcon = [_application.springBoardIcon smallIcon];
 			_iconView = [[UIImageView alloc] initWithFrame:CGRectMake(baseX - 18, imageViewY + imageViewH + 13, 24, 24)];
 			[_iconView setImage:smallIcon];
 			[self addSubview:_iconView];
