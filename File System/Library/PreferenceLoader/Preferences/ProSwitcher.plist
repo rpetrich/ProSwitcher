@@ -41,7 +41,7 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
-			<string>PSWShowCloseButtons</string>
+			<string>PSWShowCloseButton</string>
 			<key>label</key>
 			<string>Close Button</string>
 			<key>PostNotification</key>
@@ -69,7 +69,7 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
-			<string>PSWShowApplicationTitles</string>
+			<string>PSWShowApplicationTitle</string>
 			<key>label</key>
 			<string>Application Titles</string>
 			<key>PostNotification</key>
@@ -114,6 +114,34 @@
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<real>0</real>
+			<key>defaults</key>
+			<string>com.collab.preswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWRoundedCornerRadius</string>
+			<key>label</key>
+			<string>Corner Radius</string>
+			<key>validTitles</key>
+			<array>
+				<string>None</string>
+				<string>Small</string>
+				<string>Large</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>0</real>
+				<real>10</real>
+				<real>20</real>
+			</array>
+			<key>PostNotification</key>
+			<string>com.collab.preswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>

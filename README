@@ -1,8 +1,9 @@
 Palm Pre-style application switcher for iPhone OS
  by rpetrich and chpwn
  
-Requires iPhone SDK 3.0+ to compile and iPhone OS 3.0+ to run
+Requires iPhone SDK 3.0+ to compile and iPhone OS 3.0+ to run, and if you want screenshots in simulator builds, Snow Leopard is needed
 If DebMaker is installed, it will be used to make deb packages for device builds
 
 Uses MobileSubstrate (saurik) as loader
+Uses CaptainHook (rpetrich) as hooker
 Uses code from kirikae (ashikase) to track apps; also best used with his Backgrounder app :)

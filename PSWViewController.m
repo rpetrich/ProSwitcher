@@ -162,10 +162,10 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
 	
 	snapshotPageView.allowsSwipeToClose  = BoolForKeyWithDefault(preferences, @"PSWSwipeToClose", YES);
-	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowApplicationTitles", YES);
-	snapshotPageView.showsCloseButtons   = BoolForKeyWithDefault(preferences, @"PSWShowCloseButtons", YES);
-	snapshotPageView.emptyText           = BoolForKeyWithDefault(preferences, @"PSWShowsEmptyText", YES)?@"No Apps Running":nil;
-	snapshotPageView.roundedCornerRadius = FloatForKeyWithDefault(preferences, @"PSWRoundedCornerRadius", 10.0f);
+	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowApplicationTitle", YES);
+	snapshotPageView.showsCloseButtons   = BoolForKeyWithDefault(preferences, @"PSWShowCloseButton", YES);
+	snapshotPageView.emptyText           = BoolForKeyWithDefault(preferences, @"PSWShowEmptyText", YES) ? @"No Apps Running":nil;
+	snapshotPageView.roundedCornerRadius = FloatForKeyWithDefault(preferences, @"PSWRoundedCornerRadius", 0.0f);
 	snapshotPageView.tapsToActivate      = IntegerForKeyWithDefault(preferences, @"PSWTapsToActivate", 2);
 }
 

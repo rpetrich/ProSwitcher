@@ -37,8 +37,8 @@
 		if (vert > 0.0f) {
 			wasSwipedAway = (vert > 40.0f);
 			frame.origin.y = imageViewY - vert;
-			CGFloat alpha = 1.0f - ((vert - 30) / 140.0f);
-			theSnapshot.alpha = (alpha > 0) ? alpha:0.0f;
+			CGFloat alpha = 1.0f - (vert / 300.0f);
+			theSnapshot.alpha = (alpha > 0.0f) ? alpha:0.0f;
 		} else {
 			wasSwipedAway = NO;
 			frame.origin.y = imageViewY;
