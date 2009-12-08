@@ -10,6 +10,7 @@
 CHDeclareClass(SBIconListPageControl)
 CHDeclareClass(SBUIController)
 CHDeclareClass(SBApplicationController)
+CHDeclareClass(SBIconModel)
 
 static PSWViewController *mainController;
 static SBIconListPageControl *pageControl;
@@ -18,10 +19,10 @@ static NSInteger suppressIconScatter;
 #define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.proswitcher.plist"]
 #define PSWPreferencesChangedNotification "com.collab.proswitcher.preferencechanged"
 
-#define ObjectForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
-#define FloatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
-#define IntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
-#define BoolForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
+#define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
+#define floatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
+#define NSIntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
+#define BOOLForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
 
 static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 {
@@ -38,6 +39,21 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 }
 
 @implementation PSWViewController
+
+#define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, name)
+
+// Defaults
+#define PSWShowDock             YES
+#define PSWAnimateActive        YES
+#define PSWDimBackground        YES
+#define PSWShowPageControl      YES
+#define PSWBackgroundStyle      0
+#define PSWSwipeToClose         YES
+#define PSWShowApplicationTitle YES
+#define PSWShowCloseButton      YES
+#define PSWShowEmptyText        YES
+#define PSWRoundedCornerRadius  0.0f
+#define PSWTapsToActivate       YES
 
 + (PSWViewController *)sharedInstance
 {
@@ -65,7 +81,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)setActive:(BOOL)active animated:(BOOL)animated
 {
-	if (active && !isActive) {
+	if (active) {
 		if (isActive)
 			return;
 		UIApplication *app = [UIApplication sharedApplication];
@@ -77,6 +93,14 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 		UIView *view = [self view];
 		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
 		[rootWindow addSubview:view];
+		// Find appropriate superview and add as subview
+		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+		UIView *buttonBarParent = [buttonBar superview];
+		UIView *superview = [buttonBarParent superview];
+		if (GetPreference(PSWShowDock, BOOL))
+			[superview insertSubview:view belowSubview:buttonBarParent];
+		else
+			[superview insertSubview:view aboveSubview:buttonBarParent];
 		if (animated) {
 			view.alpha = 0.0f;
 			CALayer *layer = [snapshotPageView.scrollView layer];
@@ -120,7 +144,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)setActive:(BOOL)active
 {
-	[self setActive:active animated:BoolForKeyWithDefault(preferences, @"PSWAnimateActive", YES)];
+	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
 }
 
 - (BOOL)isAnimating
@@ -147,26 +171,35 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 - (void)_applyPreferences
 {
 	self.view.backgroundColor =
-	BoolForKeyWithDefault(preferences, @"PSWDimBackground", YES)
+	GetPreference(PSWDimBackground, BOOL)
 	?[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]
 	:[UIColor clearColor];
 	
-	if (BoolForKeyWithDefault(preferences, @"PSWShowPageControl", YES)) {
+	if (GetPreference(PSWShowPageControl, BOOL)) {
 		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
 		if (!pageControl)
 			pageControl = [(SBIconListPageControl *)FindViewOfClassInViewHeirarchy(rootWindow, CHClass(SBIconListPageControl)) retain];
 		[pageControl setAlpha:0.0f];
 	}
+
+	CGRect frame;
+	frame.origin.x = 0.0f;
+	frame.origin.y = 0.0f;
+	frame.size.width = 320.0f;
+	frame.size.height = GetPreference(PSWShowDock, BOOL) ? 370.0f : 460.0f;
+	[snapshotPageView setFrame:frame];
 	
-	if (IntegerForKeyWithDefault(preferences, @"PSWBackgroundStyle", 0) == 1)
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
 		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
+	else
+		[[snapshotPageView layer] setContents:nil];
 	
-	snapshotPageView.allowsSwipeToClose  = BoolForKeyWithDefault(preferences, @"PSWSwipeToClose", YES);
-	snapshotPageView.showsTitles         = BoolForKeyWithDefault(preferences, @"PSWShowApplicationTitle", YES);
-	snapshotPageView.showsCloseButtons   = BoolForKeyWithDefault(preferences, @"PSWShowCloseButton", YES);
-	snapshotPageView.emptyText           = BoolForKeyWithDefault(preferences, @"PSWShowEmptyText", YES) ? @"No Apps Running":nil;
-	snapshotPageView.roundedCornerRadius = FloatForKeyWithDefault(preferences, @"PSWRoundedCornerRadius", 0.0f);
-	snapshotPageView.tapsToActivate      = IntegerForKeyWithDefault(preferences, @"PSWTapsToActivate", 2);
+	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
+	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
+	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
+	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running":nil;
+	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
+	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 }
 
 - (void)_reloadPreferences
@@ -178,7 +211,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)loadView 
 {
-	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 20.0f, 320.0f, 370.0f)];
+	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 20.0f, 320.0f, 460.0f)];
 	
 	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 370.0f) applicationController:[PSWApplicationController sharedInstance]];
 	[snapshotPageView setDelegate:self];
@@ -244,4 +277,5 @@ CHConstructor
 	CHLoadLateClass(SBUIController);
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHLoadLateClass(SBApplicationController);
+	CHLoadLateClass(SBIconModel);
 }

@@ -91,6 +91,10 @@
 			_emptyLabel.font = font;
 			_emptyLabel.textColor = [UIColor whiteColor];
 			[self addSubview:_emptyLabel];
+		} else {
+			CGRect bounds = [_emptyLabel bounds];
+			bounds.origin.y = (NSInteger)(([self bounds].size.height - bounds.size.height) / 2.0f);
+			[_emptyLabel setBounds:bounds];
 		}
 		_emptyLabel.text = _emptyText;
 	} else {
