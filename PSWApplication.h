@@ -34,7 +34,7 @@
 @property (nonatomic, assign) CGImageRef snapshot;
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
 
-- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride;
+//- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride;
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
 #endif

@@ -124,20 +124,20 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	}
 }
 
-- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride
+/*- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride
 {
 	CGImageRelease(_snapshotImage);
 	if (_snapshotFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
 		[_snapshotFilePath release];
 		_snapshotFilePath = nil;
-#ifdef USE_IOSURFACE
-		if (_surface) {
-			CFRelease(_surface);
-			_surface = NULL;
-		}
-#endif
 	}
+#ifdef USE_IOSURFACE
+	if (_surface) {
+		CFRelease(_surface);
+		_surface = NULL;
+	}
+#endif
 	[_snapshotData release];
 	_snapshotData = [[NSData alloc] initWithBytes:buffer length:(height * stride)];
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -147,23 +147,36 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	CGContextRelease(context);
 	if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 		[_delegate applicationSnapshotDidChange:self];
-}
+}*/
 
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
 {
-	void *buffer = IOSurfaceGetBaseAddress(surface);
-#ifdef USE_IOSURFACE_WITHLOCKING
-	uint32_t aseed;
-	IOSurfaceLock(surface, kIOSurfaceLockReadOnly, &aseed);
-#endif
-	NSUInteger width = IOSurfaceGetWidth(surface);
-	NSUInteger height = IOSurfaceGetHeight(surface);
-	NSUInteger stride = IOSurfaceGetBytesPerRow(surface);
-	[self loadSnapshotFromBuffer:buffer width:width height:height stride:stride];
-#ifdef USE_IOSURFACE_WITHLOCKING
-	IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, &aseed);
-#endif
+	if (surface != _surface) {
+		CGImageRelease(_snapshotImage);
+		[_snapshotData release];
+		if (_snapshotFilePath) {
+			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+			[_snapshotFilePath release];
+			_snapshotFilePath = nil;
+		}
+		if (_surface)
+			CFRelease(_surface);
+		if (surface) {
+			_surface = (IOSurfaceRef)CFRetain(surface);
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+			CGContextRef context = CGBitmapContextCreate(IOSurfaceGetBaseAddress(surface), IOSurfaceGetWidth(surface), IOSurfaceGetHeight(surface), 8, IOSurfaceGetBytesPerRow(surface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+			CGColorSpaceRelease(colorSpace);
+			_snapshotImage = CGBitmapContextCreateImage(context);
+			CGContextRelease(context);
+		} else {
+			_snapshotImage = NULL;
+			_surface = NULL;
+		}
+		_snapshotData = nil;
+		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
+			[_delegate applicationSnapshotDidChange:self];
+	}
 }
 #endif
 
@@ -189,6 +202,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 			[_application setDeactivationSetting:0x2 flag:NO]; // don't animate
 		}
 		// Deactivate the application
+		[_application setActivationSetting:0x2 flag:NO]; // don't animate
 		[SBWSuspendingDisplayStack pushDisplay:_application];
 	}
 }
