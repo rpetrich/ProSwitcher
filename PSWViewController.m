@@ -210,6 +210,11 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 	[application exit];
 }
 
+- (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
+{
+	[self setActive:NO];
+}
+
 @end
 
 CHDeclareClass(SBApplication)

@@ -147,6 +147,13 @@
 	}
 }
 
+- (void)snapshotViewDidSwipeOut:(PSWSnapshotView *)snapshot
+{
+	if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
+		[_delegate snapshotPageViewShouldExit:self];
+}
+
+
 #pragma mark Properties
 
 - (PSWApplication *)focusedApplication

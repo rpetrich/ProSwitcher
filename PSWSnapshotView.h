@@ -43,4 +43,5 @@
 @optional
 - (void)snapshotViewTapped:(PSWSnapshotView *)snapshotView withCount:(NSInteger)tapCount;
 - (void)snapshotViewClosed:(PSWSnapshotView *)snapshotView;
+- (void)snapshotViewDidSwipeOut:(PSWSnapshotView *)snapshotView;
 @end

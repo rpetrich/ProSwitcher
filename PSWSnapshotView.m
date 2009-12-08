@@ -5,6 +5,8 @@
 #import "PSWApplication.h"
 #import "PSWResources.h"
 
+#define kSwipeThreshold 40.0f
+
 @implementation PSWSnapshotView
 
 @synthesize application = _application;
@@ -35,7 +37,7 @@
 		
 		NSInteger vert = touchDownPoint.y - [touch locationInView:[self superview]].y;
 		if (vert > 0.0f) {
-			wasSwipedAway = (vert > 40.0f);
+			wasSwipedAway = (vert > kSwipeThreshold);
 			frame.origin.y = imageViewY - vert;
 			CGFloat alpha = 1.0f - (vert / 300.0f);
 			theSnapshot.alpha = (alpha > 0.0f) ? alpha:0.0f;
@@ -74,7 +76,12 @@
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
-		[UIView commitAnimations];	
+		[UIView commitAnimations];
+		UITouch *touch = [[event allTouches] anyObject];
+		if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
+			if ([_delegate respondsToSelector:@selector(snapshotViewDidSwipeOut:)])
+				[_delegate snapshotViewDidSwipeOut:self];
+		}
 	}
 }
 

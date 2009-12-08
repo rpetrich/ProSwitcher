@@ -47,4 +47,5 @@
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didFocusApplication:(PSWApplication *)application;
+- (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView;
 @end
