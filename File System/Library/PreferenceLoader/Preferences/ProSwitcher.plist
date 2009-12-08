@@ -169,6 +169,18 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>label</key>
+			<string>Activation Methods</string>
+			<key>isController</key>
+			<true/>
+			<key>bundle</key>
+			<string>LibActivator</string>
+			<key>activatorListener</key>
+			<string>com.collab.proswitcher</string>
+		</dict>
 	</array>
 	<key>title</key>
 	<string>ProSwitcher</string>
