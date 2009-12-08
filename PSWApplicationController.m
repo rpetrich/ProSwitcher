@@ -120,18 +120,7 @@ CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurfac
 {
 	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		void *buffer = IOSurfaceGetBaseAddress(surface);
-#ifdef USE_IOSURFACE_WITHLOCKING
-		uint32_t aseed;
-		IOSurfaceLock(surface, kIOSurfaceLockReadOnly, &aseed);
-#endif
-		NSUInteger width = IOSurfaceGetWidth(surface);
-		NSUInteger height = IOSurfaceGetHeight(surface);
-		NSUInteger stride = IOSurfaceGetBytesPerRow(surface);
-		[application loadSnapshotFromBuffer:buffer width:width height:height stride:stride];
-#ifdef USE_IOSURFACE_WITHLOCKING
-		IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, &aseed);
-#endif
+		[application loadSnapshotFromSurface:surface];
 	}
 	return self;
 }

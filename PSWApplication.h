@@ -2,6 +2,10 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
 
+#ifdef USE_IOSURFACE
+#import <IOSurface/IOSurface.h>
+#endif
+
 @protocol PSWApplicationDelegate;
 
 @interface PSWApplication : NSObject {
@@ -11,6 +15,9 @@
 	NSData *_snapshotData;
 	CGImageRef _snapshotImage;
 	NSString *_snapshotFilePath;
+#ifdef USE_IOSURFACE
+	IOSurfaceRef _surface;
+#endif
 	id<PSWApplicationDelegate> _delegate;
 }
 
@@ -28,6 +35,9 @@
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
 
 - (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride;
+#ifdef USE_IOSURFACE
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
+#endif
 - (void)writeSnapshotToDisk;
 - (void)exit;
 - (void)activate;

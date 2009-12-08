@@ -61,6 +61,12 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	[_displayIdentifier release];
 	CGImageRelease(_snapshotImage);
 	[_snapshotData release];
+#ifdef USE_IOSURFACE
+	if (_surface) {
+		CFRelease(_surface);
+		_surface = NULL;
+	}
+#endif
 	if (_snapshotFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
 		[_snapshotFilePath release];
@@ -107,6 +113,12 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 			_snapshotImage = NULL;
 			_snapshotData = nil;
 		}
+#ifdef USE_IOSURFACE
+		if (_surface) {
+			CFRelease(_surface);
+			_surface = NULL;
+		}
+#endif
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
@@ -119,7 +131,13 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
 		[_snapshotFilePath release];
 		_snapshotFilePath = nil;
-	}		
+#ifdef USE_IOSURFACE
+		if (_surface) {
+			CFRelease(_surface);
+			_surface = NULL;
+		}
+#endif
+	}
 	[_snapshotData release];
 	_snapshotData = [[NSData alloc] initWithBytes:buffer length:(height * stride)];
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -130,6 +148,24 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 		[_delegate applicationSnapshotDidChange:self];
 }
+
+#ifdef USE_IOSURFACE
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
+{
+	void *buffer = IOSurfaceGetBaseAddress(surface);
+#ifdef USE_IOSURFACE_WITHLOCKING
+	uint32_t aseed;
+	IOSurfaceLock(surface, kIOSurfaceLockReadOnly, &aseed);
+#endif
+	NSUInteger width = IOSurfaceGetWidth(surface);
+	NSUInteger height = IOSurfaceGetHeight(surface);
+	NSUInteger stride = IOSurfaceGetBytesPerRow(surface);
+	[self loadSnapshotFromBuffer:buffer width:width height:height stride:stride];
+#ifdef USE_IOSURFACE_WITHLOCKING
+	IOSurfaceUnlock(surface, kIOSurfaceLockReadOnly, &aseed);
+#endif
+}
+#endif
 
 - (SBIcon *)springBoardIcon
 {
