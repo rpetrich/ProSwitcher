@@ -281,6 +281,14 @@
 	[self setFocused:focused animated:YES];
 }
 
+- (void)setFrame:(CGRect)frame
+{
+	if (!CGRectEqualToRect([self frame], frame)) {
+		[super setFrame:frame];
+		[self _relayoutViews];
+	}
+}
+
 #pragma mark PSWApplicationDelegate
 
 - (void)applicationSnapshotDidChange:(PSWApplication *)application

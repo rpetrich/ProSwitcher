@@ -13,12 +13,14 @@
 {
 	if ((self = [super initWithFrame:frame]))
 	{
+		_unfocusedAlpha = 1.0f;
+		[self setUserInteractionEnabled:YES];
 		_applicationController = [applicationController retain];
 		[applicationController setDelegate:self];
 		_applications = [[applicationController activeApplications] mutableCopy];
 		NSUInteger numberOfPages = [_applications count];
 		
-		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, frame.size.height - 27.0f, frame.size.width, 27.0f)];
+		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, frame.size.height - 24.0f, frame.size.width, 24.0f)];
 		[_pageControl setNumberOfPages:numberOfPages];
 		[_pageControl setCurrentPage:0];
 		[_pageControl setHidesForSinglePage:YES];
@@ -114,7 +116,10 @@
 {
 	NSInteger newCount = [_applications count];
 	[_pageControl setNumberOfPages:newCount];
-	CGRect bounds = [_scrollView bounds];
+	CGRect bounds = [self bounds];
+	bounds.origin.y += _snapshotInset;
+	bounds.size.width -= _snapshotInset + _snapshotInset;
+	[_scrollView setBounds:bounds];
 	CGFloat availableWidth = bounds.size.width;
 	[_scrollView setContentSize:CGSizeMake(availableWidth * newCount + 1.0f, bounds.size.height)];
 	CGRect pageFrame;
@@ -122,9 +127,12 @@
 	pageFrame.origin.y = 0.0f;
 	pageFrame.size.height = bounds.size.height;
 	pageFrame.size.width = availableWidth;
+	PSWApplication *focusedApplication = [self focusedApplication];
 	for (PSWSnapshotView *view in _snapshotViews) {
 		[view setFrame:pageFrame];
 		pageFrame.origin.x += availableWidth;
+		if (focusedApplication != [view application])
+			[view setAlpha:_unfocusedAlpha];
 	}
 	[self _applyEmptyText];
 }
@@ -137,9 +145,18 @@
 	NSInteger page = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
 	NSInteger oldPage = [_pageControl currentPage];
 	if (oldPage != page) {
-		[[_snapshotViews objectAtIndex:oldPage] setFocused:NO];
+		PSWSnapshotView *oldView = [_snapshotViews objectAtIndex:oldPage];
+		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:page];
+		[oldView setFocused:NO];
+		[newView setFocused:YES];
+		if (_unfocusedAlpha != 1.0f) {
+			[UIView beginAnimations:nil context:NULL];
+			[UIView setAnimationDuration:0.33f];
+			[oldView setAlpha:_unfocusedAlpha];
+			[newView setAlpha:1.0f];
+			[UIView commitAnimations];
+		}
 		[_pageControl setCurrentPage:page];
-		[[_snapshotViews objectAtIndex:page] setFocused:YES];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
@@ -155,7 +172,7 @@
 
 - (void)snapshotViewTapped:(PSWSnapshotView *)snapshot withCount:(NSInteger)tapCount
 {
-	PSWApplication *tappedApp;
+	PSWApplication *tappedApp = [snapshot application];
 	if (tappedApp == [self focusedApplication]) {
 		if (tapCount == _tapsToActivate) {
 			if ([_delegate respondsToSelector:@selector(snapshotPageView:didSelectApplication:)])
@@ -197,6 +214,13 @@
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:application];
 	}
+}
+
+- (PSWSnapshotView *)_focusedSnapshotView
+{
+	if ([_applications count])
+		return [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+	return nil;
 }
 
 - (BOOL)showsTitles
@@ -290,6 +314,18 @@
 	}
 }
 
+- (CGFloat)unfocusedAlpha
+{
+	return _unfocusedAlpha;
+}
+- (void)setUnfocusedAlpha:(CGFloat)unfocusedAlpha
+{
+	if (_unfocusedAlpha != unfocusedAlpha) {
+		_unfocusedAlpha = unfocusedAlpha;
+		[self _relayoutViews];
+	}
+}
+
 - (NSInteger)indexOfApplication:(PSWApplication *)application
 {
 	return [_applications indexOfObject:application];
@@ -311,6 +347,8 @@
 		snapshot.roundedCornerRadius = _roundedCornerRadius;
 		if ([_snapshotViews count] == 0)
 			[snapshot setFocused:YES animated:NO];
+		else
+			[snapshot setAlpha:_unfocusedAlpha];
 		[_scrollView addSubview:snapshot];
 		[_snapshotViews addObject:snapshot];
 		[snapshot release];
@@ -341,7 +379,9 @@
 		snapshot.frame = frame;
 		snapshot.alpha = 0.0f;
 		[self _relayoutViews];
-		[[_snapshotViews objectAtIndex:[_pageControl currentPage]] setFocused:YES];
+		PSWSnapshotView *focusedView = [self _focusedSnapshotView];
+		[focusedView setFocused:YES];
+		[focusedView setAlpha:1.0f];
 		[UIView commitAnimations];
 	}
 }
