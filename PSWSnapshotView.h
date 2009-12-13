@@ -17,6 +17,7 @@
 	BOOL _allowsSwipeToClose;
 	BOOL _showsCloseButton;
 	BOOL _showsTitle;
+	BOOL _focused;
 	UIButton *_closeButton;
 	UILabel *_titleView;
 	UIImageView *_iconView;
@@ -39,6 +40,8 @@
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
+@property (nonatomic, assign) BOOL focused;
+- (void)setFocused:(BOOL)focused animated:(BOOL)animated;
 
 @end
 
