@@ -242,6 +242,15 @@ static NSInteger suppressIconScatter;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
 	[application exit];
+	UIView *view = [self view];
+	[view removeFromSuperview];
+	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+	UIView *buttonBarParent = [buttonBar superview];
+	UIView *superview = [buttonBarParent superview];
+	if (GetPreference(PSWShowDock, BOOL))
+		[superview insertSubview:view belowSubview:buttonBarParent];
+	else
+		[superview insertSubview:view aboveSubview:buttonBarParent];	
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView

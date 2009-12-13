@@ -169,6 +169,11 @@
 		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
 		[_closeButton setFrame:CGRectMake(imageViewX - offsetX, imageViewY - offsetY, closeImageSize.width, closeImageSize.height)];
 	}
+	
+	CGFloat alpha = _focused?1.0f:0.0f;
+	[_closeButton setAlpha:alpha];
+	[_titleView setAlpha:alpha];
+	[_iconView setAlpha:alpha];
 }
 
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application
@@ -250,6 +255,30 @@
 - (CGFloat)roundedCornerRadius
 {
 	return screen.layer.cornerRadius;	
+}
+
+- (BOOL)focused
+{
+	return _focused;
+}
+- (void)setFocused:(BOOL)focused animated:(BOOL)animated
+{
+	_focused = focused;
+	if (animated) {
+		[UIView beginAnimations:nil context:NULL];
+		[UIView setAnimationDuration:0.33f];
+	}
+	CGFloat alpha = _focused?1.0f:0.0f;
+	[_closeButton setAlpha:alpha];
+	[_titleView setAlpha:alpha];
+	[_iconView setAlpha:alpha];
+	if (animated) {
+		[UIView commitAnimations];
+	}
+}
+- (void)setFocused:(BOOL)focused
+{
+	[self setFocused:focused animated:YES];
 }
 
 #pragma mark PSWApplicationDelegate

@@ -50,6 +50,8 @@
 			[snapshot release];
 			pageFrame.origin.x += availableWidth;
 		}
+		if (numberOfPages != 0)
+			[[_snapshotViews objectAtIndex:0] setFocused:YES animated:NO];
 		[self addSubview:_scrollView];
 
 		[self setBackgroundColor:[UIColor clearColor]];
@@ -133,8 +135,11 @@
 {
 	CGFloat pageWidth = [scrollView bounds].size.width;
 	NSInteger page = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
-	if ([_pageControl currentPage] != page) {
+	NSInteger oldPage = [_pageControl currentPage];
+	if (oldPage != page) {
+		[[_snapshotViews objectAtIndex:oldPage] setFocused:NO];
 		[_pageControl setCurrentPage:page];
+		[[_snapshotViews objectAtIndex:page] setFocused:YES];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
@@ -185,7 +190,8 @@
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated
 {
 	NSInteger index = [self indexOfApplication:application];
-	if (index != NSNotFound && index != [_pageControl currentPage]) {
+	NSInteger oldIndex = [_pageControl currentPage];
+	if (index != NSNotFound && index != oldIndex) {
 		[_pageControl setCurrentPage:index];
 		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
@@ -303,6 +309,8 @@
 		snapshot.showsCloseButton = _showsCloseButtons;
 		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
 		snapshot.roundedCornerRadius = _roundedCornerRadius;
+		if ([_snapshotViews count] == 0)
+			[snapshot setFocused:YES animated:NO];
 		[_scrollView addSubview:snapshot];
 		[_snapshotViews addObject:snapshot];
 		[snapshot release];
@@ -333,6 +341,7 @@
 		snapshot.frame = frame;
 		snapshot.alpha = 0.0f;
 		[self _relayoutViews];
+		[[_snapshotViews objectAtIndex:[_pageControl currentPage]] setFocused:YES];
 		[UIView commitAnimations];
 	}
 }
