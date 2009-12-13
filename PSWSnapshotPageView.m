@@ -337,4 +337,24 @@
 	}
 }
 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	NSInteger currentPage = [_pageControl currentPage];
+	UITouch *touch = [touches anyObject];
+	NSInteger tapCount = [touch tapCount];
+	CGPoint point = [touch locationInView:self];
+	if (point.x < [self bounds].size.width / 2.0f) {
+		if (tapCount == 2)
+			[self setFocusedApplication:[_applications objectAtIndex:0]];
+		else if (currentPage > 0)
+			[self setFocusedApplication:[_applications objectAtIndex:currentPage - 1]];
+	} else {
+		if (tapCount == 2)
+			[self setFocusedApplication:[_applications lastObject]];
+		else if (currentPage < [_applications count] - 1)
+			[self setFocusedApplication:[_applications objectAtIndex:currentPage + 1]];
+	}
+	[super touchesEnded:touches	withEvent:event];
+}
+
 @end
