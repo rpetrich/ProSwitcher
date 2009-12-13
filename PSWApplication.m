@@ -179,9 +179,9 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 }
 #endif
 
-- (SBIcon *)springBoardIcon
+- (SBApplicationIcon *)springBoardIcon
 {
-	return [CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
+	return (SBApplicationIcon *)[CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
 }
 
 - (void)exit

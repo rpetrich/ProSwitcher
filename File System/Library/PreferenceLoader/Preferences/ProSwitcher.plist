@@ -71,7 +71,7 @@
 			<key>key</key>
 			<string>PSWShowApplicationTitle</string>
 			<key>label</key>
-			<string>Application Titles</string>
+			<string>Application Title</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -85,7 +85,7 @@
 			<key>key</key>
 			<string>PSWShowPageControl</string>
 			<key>label</key>
-			<string>Show Page Dots</string>
+			<string>Page Dots</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -165,6 +165,32 @@
 			<array>
 				<integer>1</integer>
 				<integer>2</integer>
+			</array>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<real>40</real>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWSnapshotInset</string>
+			<key>label</key>
+			<string>Cards Visible</string>
+			<key>validTitles</key>
+			<array>
+				<string>Three</string>
+				<string>One</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>40</real>
+				<real>0</real>
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>

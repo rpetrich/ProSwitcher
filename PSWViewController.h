@@ -1,7 +1,8 @@
 #import <UIKit/UIKit.h>
+#import "libactivator.h"
 #import "PSWSnapshotPageView.h"
 
-@interface PSWViewController : UIViewController<PSWSnapshotPageViewDelegate> {
+@interface PSWViewController : UIViewController<PSWSnapshotPageViewDelegate, LAListener> {
 @private
 	PSWSnapshotPageView *snapshotPageView;
 	PSWApplication *focusedApplication;

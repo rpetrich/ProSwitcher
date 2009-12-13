@@ -9,6 +9,7 @@ SBDisplayStack *PSWGetDisplayStack(NSInteger index)
 	return [displayStacks objectAtIndex:index];
 }
 
+CHDeclareClass(SBDisplayStack);
 
 CHMethod0(id, SBDisplayStack, init)
 {

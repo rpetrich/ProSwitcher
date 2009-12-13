@@ -4,10 +4,15 @@
 #import <SpringBoard/SpringBoard.h>
 #import <CaptainHook/CaptainHook.h>
 
+#include <dlfcn.h>
+
 #import "PSWDisplayStacks.h"
 #import "PSWResources.h"
 
-CHDeclareClass(SBIconListPageControl)l;
+// Using Zero-link until we get a simulator build for libactivator :(
+CHDeclareClass(LAActivator);
+
+CHDeclareClass(SBIconListPageControl);
 CHDeclareClass(SBUIController);
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBIconModel);
@@ -40,6 +45,7 @@ static NSInteger suppressIconScatter;
 #define PSWShowEmptyText        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       2
+#define PSWSnapshotInset        40.0f
 
 + (PSWViewController *)sharedInstance
 {
@@ -108,7 +114,7 @@ static NSInteger suppressIconScatter;
 		[focusedApplication release];
 		focusedApplication = [snapshotPageView.focusedApplication retain];
 		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
-		if (animated) {		UIView *view = [self view];
+		UIView *view = [self view];
 		if (animated) {
 			CALayer *layer = [snapshotPageView.scrollView layer];
 			[layer setTransform:CATransform3DIdentity];
@@ -132,6 +138,18 @@ static NSInteger suppressIconScatter;
 - (void)setActive:(BOOL)active
 {
 	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
+}
+
+- (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
+{
+	if (![self isAnimating])
+		[self setActive:![self isActive]];
+	[event setHandled:YES];
+}
+
+- (void)activator:(LAActivator *)activator abortEvent:(LAEvent *)event
+{
+	[self setActive:NO];
 }
 
 - (BOOL)isAnimating
@@ -182,6 +200,7 @@ static NSInteger suppressIconScatter;
 	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running":nil;
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
+	snapshotPageView.snapshotPageInset   = GetPreference(PSWSnapshotInset, float);
 }
 
 - (void)_reloadPreferences
@@ -252,6 +271,7 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 
 CHConstructor
 {
+	CHAutoreleasePoolForScope();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 	CHLoadLateClass(SBApplication);
 	CHHook0(SBApplication, activate);
@@ -261,4 +281,8 @@ CHConstructor
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBIconController);
+	// Using Zero-link until we get a simulator build for libactivator :(
+	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
+	CHLoadLateClass(LAActivator);
+	[CHSharedInstance(LAActivator) registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
 }

@@ -55,6 +55,8 @@
 		949485F010C1FC3800467E51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		94B298C210C2266400F64150 /* PSWViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWViewController.m; sourceTree = "<group>"; };
 		94B298C310C2266400F64150 /* PSWViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWViewController.h; sourceTree = "<group>"; };
+		94EEDE2C10D47425007133E9 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		94EEDE3510D474AC007133E9 /* libactivator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libactivator.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +156,7 @@
 		943D541C10CCF9EC0007FAFF /* File System */ = {
 			isa = PBXGroup;
 			children = (
+				94EEDE2910D47425007133E9 /* Activator */,
 				943D541D10CCF9EC0007FAFF /* Applications */,
 				943D541F10CCF9EC0007FAFF /* Library */,
 			);
@@ -212,9 +215,35 @@
 		943D546310CCFA510007FAFF /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				94EEDE3510D474AC007133E9 /* libactivator.h */,
 				943D546410CCFA510007FAFF /* SpringBoard+Backgrounder.h */,
 			);
 			path = Headers;
+			sourceTree = "<group>";
+		};
+		94EEDE2910D47425007133E9 /* Activator */ = {
+			isa = PBXGroup;
+			children = (
+				94EEDE2A10D47425007133E9 /* Listeners */,
+			);
+			name = Activator;
+			path = Library/Activator;
+			sourceTree = "<group>";
+		};
+		94EEDE2A10D47425007133E9 /* Listeners */ = {
+			isa = PBXGroup;
+			children = (
+				94EEDE2B10D47425007133E9 /* com.collab.proswitcher */,
+			);
+			path = Listeners;
+			sourceTree = "<group>";
+		};
+		94EEDE2B10D47425007133E9 /* com.collab.proswitcher */ = {
+			isa = PBXGroup;
+			children = (
+				94EEDE2C10D47425007133E9 /* Info.plist */,
+			);
+			path = com.collab.proswitcher;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

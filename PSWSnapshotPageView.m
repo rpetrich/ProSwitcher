@@ -150,9 +150,14 @@
 
 - (void)snapshotViewTapped:(PSWSnapshotView *)snapshot withCount:(NSInteger)tapCount
 {
-	if (tapCount == _tapsToActivate) {
-		if ([_delegate respondsToSelector:@selector(snapshotPageView:didSelectApplication:)])
-			[_delegate snapshotPageView:self didSelectApplication:[snapshot application]];
+	PSWApplication *tappedApp;
+	if (tappedApp == [self focusedApplication]) {
+		if (tapCount == _tapsToActivate) {
+			if ([_delegate respondsToSelector:@selector(snapshotPageView:didSelectApplication:)])
+				[_delegate snapshotPageView:self didSelectApplication:[snapshot application]];
+		}
+	} else {
+		[self setFocusedApplication:tappedApp];
 	}
 }
 
@@ -224,6 +229,18 @@
 		_allowsSwipeToClose = allowsSwipeToClose;
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsSwipeToClose:allowsSwipeToClose];
+	}
+}
+
+- (CGFloat)snapshotPageInset
+{
+	return _snapshotInset;
+}
+- (void)setSnapshotPageInset:(CGFloat)snapshotInset
+{
+	if (_snapshotInset != snapshotInset) {
+		_snapshotInset = snapshotInset;
+		[self _relayoutViews];
 	}
 }
 
