@@ -82,8 +82,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 - (CGImageRef)snapshot
 {
 	if (!_snapshotImage) {
-		BOOL something = NO;
-		_snapshotImage = CGImageRetain([[_application defaultImage:&something] CGImage]);
+		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);
 	}
 	return _snapshotImage;
 }
