@@ -281,7 +281,9 @@ CHConstructor
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBIconController);
+	
 	// Using Zero-link until we get a simulator build for libactivator :(
+	// note to self: Zero-link means late-binding
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
 	[CHSharedInstance(LAActivator) registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];

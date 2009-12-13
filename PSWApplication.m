@@ -1,6 +1,8 @@
 #import "PSWApplication.h"
 
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBApplicationController.h>
+#import <SpringBoard/SBIconModel.h>
 #import <CaptainHook/CaptainHook.h>
 #import "SpringBoard+Backgrounder.h"
 
