@@ -193,6 +193,7 @@ static NSInteger suppressIconScatter;
 	frame.size.width = 320.0f;
 	frame.size.height = GetPreference(PSWShowDock, BOOL) ? 370.0f : 460.0f;
 	[snapshotPageView setFrame:frame];
+	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
 	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
 		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
@@ -220,7 +221,7 @@ static NSInteger suppressIconScatter;
 {
 	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 20.0f, 320.0f, 460.0f)];
 	
-	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 370.0f) applicationController:[PSWApplicationController sharedInstance]];
+	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 	[snapshotPageView setDelegate:self];
 	[view addSubview:snapshotPageView];
 	
