@@ -116,7 +116,10 @@
 {
 	NSInteger newCount = [_applications count];
 	[_pageControl setNumberOfPages:newCount];
-	CGRect bounds = [_scrollView bounds];
+	CGRect bounds = [self bounds];
+	bounds.origin.y += _snapshotInset;
+	bounds.size.width -= _snapshotInset + _snapshotInset;
+	[_scrollView setBounds:bounds];
 	CGFloat availableWidth = bounds.size.width;
 	[_scrollView setContentSize:CGSizeMake(availableWidth * newCount + 1.0f, bounds.size.height)];
 	CGRect pageFrame;
