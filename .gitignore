@@ -1,0 +1,6 @@
+build
+._*
+.DS_Store
+*.deb
+*.pbxuser
+*.mode1v3

@@ -46,6 +46,7 @@ static NSInteger suppressIconScatter;
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       2
 #define PSWSnapshotInset        40.0f
+#define PSWUnfocusedAlpha       0.9f
 
 + (PSWViewController *)sharedInstance
 {
@@ -93,6 +94,7 @@ static NSInteger suppressIconScatter;
 			[superview insertSubview:view belowSubview:buttonBarParent];
 		else
 			[superview insertSubview:view aboveSubview:buttonBarParent];
+		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 		if (animated) {
 			view.alpha = 0.0f;
 			CALayer *layer = [snapshotPageView.scrollView layer];
@@ -103,8 +105,11 @@ static NSInteger suppressIconScatter;
 			[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
 			[layer setTransform:CATransform3DIdentity];
 			[view setAlpha:1.0f];
+			[pageControl setAlpha:0.0f];
 			[UIView commitAnimations];
 			isAnimating = YES;
+		} else {
+			[pageControl setAlpha:0.0f];
 		}
 	} else {
 		if (!isActive)
@@ -188,6 +193,7 @@ static NSInteger suppressIconScatter;
 	frame.size.width = 320.0f;
 	frame.size.height = GetPreference(PSWShowDock, BOOL) ? 370.0f : 460.0f;
 	[snapshotPageView setFrame:frame];
+	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
 	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
 		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
@@ -201,6 +207,7 @@ static NSInteger suppressIconScatter;
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
+	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 }
 
 - (void)_reloadPreferences
@@ -214,7 +221,7 @@ static NSInteger suppressIconScatter;
 {
 	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 20.0f, 320.0f, 460.0f)];
 	
-	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 370.0f) applicationController:[PSWApplicationController sharedInstance]];
+	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 	[snapshotPageView setDelegate:self];
 	[view addSubview:snapshotPageView];
 	
@@ -242,6 +249,15 @@ static NSInteger suppressIconScatter;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
 	[application exit];
+	UIView *view = [self view];
+	[view removeFromSuperview];
+	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+	UIView *buttonBarParent = [buttonBar superview];
+	UIView *superview = [buttonBarParent superview];
+	if (GetPreference(PSWShowDock, BOOL))
+		[superview insertSubview:view belowSubview:buttonBarParent];
+	else
+		[superview insertSubview:view aboveSubview:buttonBarParent];	
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView

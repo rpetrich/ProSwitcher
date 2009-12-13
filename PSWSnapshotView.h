@@ -17,6 +17,7 @@
 	BOOL _allowsSwipeToClose;
 	BOOL _showsCloseButton;
 	BOOL _showsTitle;
+	BOOL _focused;
 	UIButton *_closeButton;
 	UILabel *_titleView;
 	UIImageView *_iconView;
@@ -25,11 +26,7 @@
 	BOOL isInDrag;
 	CGPoint touchDownPoint;
 	UIButton *screen;
-	
-	CGFloat imageViewX;
-	CGFloat imageViewY;
-	CGFloat imageViewH;
-	CGFloat imageViewW;
+	CGFloat screenY;
 }
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application;
 
@@ -39,6 +36,8 @@
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
+@property (nonatomic, assign) BOOL focused;
+- (void)setFocused:(BOOL)focused animated:(BOOL)animated;
 
 @end
 
