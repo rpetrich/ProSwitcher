@@ -46,6 +46,7 @@ static NSInteger suppressIconScatter;
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       2
 #define PSWSnapshotInset        40.0f
+#define PSWUnfocusedAlpha       0.9f
 
 + (PSWViewController *)sharedInstance
 {
@@ -93,6 +94,7 @@ static NSInteger suppressIconScatter;
 			[superview insertSubview:view belowSubview:buttonBarParent];
 		else
 			[superview insertSubview:view aboveSubview:buttonBarParent];
+		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 		if (animated) {
 			view.alpha = 0.0f;
 			CALayer *layer = [snapshotPageView.scrollView layer];
@@ -103,8 +105,11 @@ static NSInteger suppressIconScatter;
 			[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
 			[layer setTransform:CATransform3DIdentity];
 			[view setAlpha:1.0f];
+			[pageControl setAlpha:0.0f];
 			[UIView commitAnimations];
 			isAnimating = YES;
+		} else {
+			[pageControl setAlpha:0.0f];
 		}
 	} else {
 		if (!isActive)
@@ -201,6 +206,7 @@ static NSInteger suppressIconScatter;
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
+	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 }
 
 - (void)_reloadPreferences

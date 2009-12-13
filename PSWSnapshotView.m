@@ -174,7 +174,6 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
-	[screen setAlpha:_focused?1.0f:0.8f];
 }
 
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application
@@ -273,7 +272,6 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
-	[screen setAlpha:_focused?1.0f:0.8f];
 	if (animated) {
 		[UIView commitAnimations];
 	}
