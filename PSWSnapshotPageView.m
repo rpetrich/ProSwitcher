@@ -272,6 +272,18 @@
 	}
 }
 
+- (CGFloat)snapshotInset
+{
+	return _snapshotInset;
+}
+- (void)setSnapshotInset:(CGFloat)snapshotInset
+{
+	if (_snapshotInset != snapshotInset) {
+		_snapshotInset = snapshotInset;
+		[self _relayoutViews];
+	}
+}
+
 - (NSInteger)indexOfApplication:(PSWApplication *)application
 {
 	return [_applications indexOfObject:application];

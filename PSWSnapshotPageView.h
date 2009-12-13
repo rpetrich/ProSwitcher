@@ -38,7 +38,7 @@
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) NSInteger tapsToActivate;
-@property (nonatomic, assign) CGFloat snapshotPageInset;
+@property (nonatomic, assign) CGFloat snapshotInset;
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
 
