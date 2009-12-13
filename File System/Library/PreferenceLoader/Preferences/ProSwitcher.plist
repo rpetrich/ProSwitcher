@@ -135,7 +135,7 @@
 			<key>default</key>
 			<real>0</real>
 			<key>defaults</key>
-			<string>com.collab.preswitcher</string>
+			<string>com.collab.proswitcher</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
@@ -155,7 +155,7 @@
 				<real>20</real>
 			</array>
 			<key>PostNotification</key>
-			<string>com.collab.preswitcher.preferencechanged</string>
+			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
