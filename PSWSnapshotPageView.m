@@ -331,6 +331,13 @@
 	return [_applications indexOfObject:application];
 }
 
+- (void)setFrame:(CGRect)frame
+{
+	if (!CGRectEqualToRect([self frame], frame)) {
+		[super setFrame:frame];
+		[self _relayoutViews];
+	}
+}
 
 #pragma mark PSWApplicationControllerDelegate
 
