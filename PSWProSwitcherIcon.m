@@ -49,7 +49,7 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 
 CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
 {
-	if (shouldSuppressIconListScroll)
+	if (!shouldSuppressIconListScroll)
 		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
 }
 
