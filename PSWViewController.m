@@ -7,13 +7,13 @@
 #import "PSWDisplayStacks.h"
 #import "PSWResources.h"
 
-CHDeclareClass(SBIconListPageControl)
-CHDeclareClass(SBUIController)
-CHDeclareClass(SBApplicationController)
-CHDeclareClass(SBIconModel)
+CHDeclareClass(SBIconListPageControl)l;
+CHDeclareClass(SBUIController);
+CHDeclareClass(SBApplicationController);
+CHDeclareClass(SBIconModel);
+CHDeclareClass(SBIconController);
 
 static PSWViewController *mainController;
-static SBIconListPageControl *pageControl;
 static NSInteger suppressIconScatter;
 
 #define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.proswitcher.plist"]
@@ -23,20 +23,6 @@ static NSInteger suppressIconScatter;
 #define floatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
 #define NSIntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
 #define BOOLForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
-
-static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
-{
-	for (UIView *view in superview.subviews) {
-		if ([view isKindOfClass:class])
-			return view;
-		else {
-			UIView *result = FindViewOfClassInViewHeirarchy(view, class);
-			if (result)
-				return result;
-		}
-	}
-	return nil;
-}
 
 @implementation PSWViewController
 
@@ -53,7 +39,7 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 #define PSWShowCloseButton      YES
 #define PSWShowEmptyText        YES
 #define PSWRoundedCornerRadius  0.0f
-#define PSWTapsToActivate       YES
+#define PSWTapsToActivate       2
 
 + (PSWViewController *)sharedInstance
 {
@@ -121,7 +107,8 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 		
 		[focusedApplication release];
 		focusedApplication = [snapshotPageView.focusedApplication retain];
-		UIView *view = [self view];
+		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+		if (animated) {		UIView *view = [self view];
 		if (animated) {
 			CALayer *layer = [snapshotPageView.scrollView layer];
 			[layer setTransform:CATransform3DIdentity];
@@ -170,15 +157,10 @@ static UIView *FindViewOfClassInViewHeirarchy(UIView *superview, Class class)
 
 - (void)_applyPreferences
 {
-	self.view.backgroundColor =
-	GetPreference(PSWDimBackground, BOOL)
-	?[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]
-	:[UIColor clearColor];
+	self.view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
 	
 	if (GetPreference(PSWShowPageControl, BOOL)) {
-		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
-		if (!pageControl)
-			pageControl = [(SBIconListPageControl *)FindViewOfClassInViewHeirarchy(rootWindow, CHClass(SBIconListPageControl)) retain];
+		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 		[pageControl setAlpha:0.0f];
 	}
 
@@ -278,4 +260,5 @@ CHConstructor
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
+	CHLoadLateClass(SBIconController);
 }
