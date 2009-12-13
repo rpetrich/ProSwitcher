@@ -55,6 +55,20 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
+			<string>PSWShowDock</string>
+			<key>label</key>
+			<string>Show Dock</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
 			<string>PSWDimBackground</string>
 			<key>label</key>
 			<string>Dim Background</string>
