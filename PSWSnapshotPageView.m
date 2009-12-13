@@ -25,22 +25,18 @@
 		[_pageControl setUserInteractionEnabled:NO];
 		[self addSubview:_pageControl];
 		
-		_scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, frame.size.width, frame.size.height)];
-		[self setClipsToBounds:NO];
-		//[_scrollView setPagingEnabled:YES];
+		_scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(50.0f, 0.0f, frame.size.width - 100.0f, frame.size.height)];
+		[_scrollView setClipsToBounds:NO];
+		[_scrollView setPagingEnabled:YES];
 		[_scrollView setContentSize:CGSizeMake((frame.size.width - 100.0f) * numberOfPages + 1.0f, frame.size.height)];
 		[_scrollView setShowsHorizontalScrollIndicator:NO];
 		[_scrollView setShowsVerticalScrollIndicator:NO];
 		[_scrollView setScrollsToTop:NO];
 		[_scrollView setDelegate:self];
 		[_scrollView setBackgroundColor:[UIColor clearColor]];
-		_edgeInsets.left = 50.0f;
-		_edgeInsets.right = 50.0f;
-		[_scrollView setContentInset:_edgeInsets];
-		[_scrollView setContentOffset:CGPointMake(_edgeInsets.left, _edgeInsets.top)];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
-		CGFloat availableWidth = frame.size.width - _edgeInsets.left - _edgeInsets.right;
+		CGFloat availableWidth = frame.size.width - 100.0f;
 		CGRect pageFrame;
 		pageFrame.origin.x = 0.0f;
 		pageFrame.origin.y = 0.0f;
@@ -117,7 +113,7 @@
 	NSInteger newCount = [_applications count];
 	[_pageControl setNumberOfPages:newCount];
 	CGRect bounds = [_scrollView bounds];
-	CGFloat availableWidth = bounds.size.width - _edgeInsets.left - _edgeInsets.right;
+	CGFloat availableWidth = bounds.size.width;
 	[_scrollView setContentSize:CGSizeMake(availableWidth * newCount + 1.0f, bounds.size.height)];
 	CGRect pageFrame;
 	pageFrame.origin.x = 0.0f;
@@ -133,41 +129,16 @@
 
 #pragma mark UIScrollViewDelegate
 
-- (void)snapToPageWithContentOffset:(CGPoint)contentOffset
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    CGFloat pageWidth = (_scrollView.bounds.size.width - _edgeInsets.left - _edgeInsets.right);
-    NSInteger page = floor((contentOffset.x - _edgeInsets.left) / pageWidth) + 1.0f;
-	if (page < 0)
-		page = 0;
-	else {
-		NSInteger lastPage = _applications.count - 1;
-		if (page > lastPage)
-			page = lastPage;
-	}
-	CGFloat desiredOffset = pageWidth * page - _edgeInsets.left;
-	if (contentOffset.x != desiredOffset) {
-		contentOffset.x = desiredOffset;
-		[_scrollView setContentOffset:contentOffset animated:YES];
-	}
+	CGFloat pageWidth = [scrollView bounds].size.width;
+	NSInteger page = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
 	if ([_pageControl currentPage] != page) {
 		[_pageControl setCurrentPage:page];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
-			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];		
+			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
 }
-
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
-{
-	[self snapToPageWithContentOffset:[_scrollView contentOffset]];
-}
-
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
-{
-	CGPoint contentOffset = [_scrollView contentOffset];
-	contentOffset.x += CHIvar(_scrollView, _horizontalVelocity, double);
-	[self snapToPageWithContentOffset:contentOffset];
-}
-
 
 #pragma mark PSWSnapshotViewDelegate
 
@@ -211,7 +182,7 @@
 	NSInteger index = [self indexOfApplication:application];
 	if (index != NSNotFound && index != [_pageControl currentPage]) {
 		[_pageControl setCurrentPage:index];
-		[_scrollView setContentOffset:CGPointMake((_scrollView.bounds.size.width - _edgeInsets.left - _edgeInsets.right) * index, 0.0f) animated:animated];
+		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:application];
 	}
@@ -297,7 +268,6 @@
 	if (![_applications containsObject:application]) {
 		[_applications addObject:application];
 		CGRect frame = [_scrollView bounds];
-		frame.size.width -= _edgeInsets.left + _edgeInsets.right;
 		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:frame application:application];
 		snapshot.delegate = self;
 		snapshot.showsTitle = _showsTitles;

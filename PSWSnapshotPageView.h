@@ -21,7 +21,6 @@
 	BOOL _allowsSwipeToClose;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
-	UIEdgeInsets _edgeInsets;
 }
 
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
