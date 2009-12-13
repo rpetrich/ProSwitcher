@@ -26,11 +26,7 @@
 	BOOL isInDrag;
 	CGPoint touchDownPoint;
 	UIButton *screen;
-	
-	CGFloat imageViewX;
-	CGFloat imageViewY;
-	CGFloat imageViewH;
-	CGFloat imageViewW;
+	CGFloat screenY;
 }
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application;
 

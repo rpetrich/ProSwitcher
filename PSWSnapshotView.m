@@ -38,12 +38,12 @@
 		NSInteger vert = touchDownPoint.y - [touch locationInView:[self superview]].y;
 		if (vert > 0.0f) {
 			wasSwipedAway = (vert > kSwipeThreshold);
-			frame.origin.y = imageViewY - vert;
+			frame.origin.y = screenY - vert;
 			CGFloat alpha = 1.0f - (vert / 300.0f);
 			theSnapshot.alpha = (alpha > 0.0f) ? alpha:0.0f;
 		} else {
 			wasSwipedAway = NO;
-			frame.origin.y = imageViewY;
+			frame.origin.y = screenY;
 			theSnapshot.alpha = 1.0f;
 		}		
 		[theSnapshot setFrame:frame];
@@ -70,7 +70,7 @@
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.33f];
 		CGRect frame = [theSnapshot frame];
-		frame.origin.y = imageViewY;
+		frame.origin.y = screenY;
 		[theSnapshot setFrame:frame];
 		theSnapshot.alpha = 1.0f;
 		_closeButton.alpha = 1.0f;
@@ -87,87 +87,95 @@
 
 - (void)_relayoutViews
 {
-	BOOL closeButtonNeedsReposition = NO;
 	CGImageRef snapshot = [_application snapshot];
-	CGFloat snapshotWidth = (CGFloat) CGImageGetWidth(snapshot);
-	CGFloat snapshotHeight = (CGFloat) CGImageGetHeight(snapshot);
+	CGSize imageSize;
+	imageSize.width = (CGFloat)CGImageGetWidth(snapshot);
+	imageSize.height = (CGFloat)CGImageGetHeight(snapshot);
 	
 	CGRect frame = [self frame];
-	CGSize box = CGSizeMake(frame.size.width - 30, frame.size.height - 70);
-	CGSize img = CGSizeMake(snapshotWidth, snapshotHeight);
+	CGSize boundingSize;
+	boundingSize.width = frame.size.width - 30.0f;
+	boundingSize.height = frame.size.height - 60.0f;
 	
-	CGFloat ratioW = box.width  / img.width ;
-	CGFloat ratioH = box.height / img.height;
+	CGFloat ratioW = boundingSize.width  / imageSize.width;
+	CGFloat ratioH = boundingSize.height / imageSize.height;
+	CGFloat properRatio = (ratioW < ratioH)?ratioW:ratioH;
 	
-	if (ratioW < ratioH) {
-		imageViewW = ratioW * snapshotWidth;
-		imageViewH = ratioW * snapshotHeight;
-	} else {
-		imageViewW = ratioH * snapshotWidth;
-		imageViewH = ratioH * snapshotHeight;
-	}
-	
-	imageViewY = (frame.size.height - imageViewH) / 2.0f;
-	imageViewX = (frame.size.width - imageViewW) / 2.0f;
+	CGRect screenFrame;	
+	screenFrame.size.width = properRatio * imageSize.width;
+	screenFrame.size.height = properRatio * imageSize.height;
+	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
+	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
 	
 	if (_showsTitle)
-		imageViewY -= 20;
+		screenFrame.origin.y -= 16.0f;
 	
-	[screen setFrame:CGRectMake(imageViewX, imageViewY, imageViewW, imageViewH)];
+	[screen setFrame:screenFrame];
+	screenY = screenFrame.origin.y;
 	
-	if (_showsTitle && !_titleView) {
-		closeButtonNeedsReposition = YES;
-		
-		// Prepare to add label and icon
-		CGRect bounds = [self bounds];
-		CGFloat center = bounds.size.width / 2.0f;
+	if (_showsTitle) {
 		UIFont *titleFont = [UIFont boldSystemFontOfSize:17.0f];
-		NSString *appTitle = [_application displayName];
-		CGSize metrics = [appTitle sizeWithFont:titleFont];
-		CGFloat baseX = (NSInteger)(center - (metrics.width / 2.0f));
-		
-		// Add label
-		_titleView = [[UILabel alloc] initWithFrame:CGRectMake(baseX + 18, imageViewY + imageViewH + 10, 200, 30)];
-		_titleView.font = titleFont;
-		_titleView.backgroundColor = [UIColor clearColor];
-		_titleView.textColor = [UIColor whiteColor]; 
-		_titleView.text = appTitle;
-		[self addSubview:_titleView];
-		
-		// Add small icon
-		UIImage *smallIcon = [_application.springBoardIcon smallIcon];
-		_iconView = [[UIImageView alloc] initWithFrame:CGRectMake(baseX - 18, imageViewY + imageViewH + 13, 24, 24)];
-		[_iconView setImage:smallIcon];
-		[self addSubview:_iconView];
-	} else if (_titleView && !_showsTitle) {
-		[_titleView removeFromSuperview];
-		[_titleView release];
-		_titleView = nil;
-		[_iconView removeFromSuperview];
-		[_iconView release];
-		_iconView = nil;
+		NSString *title = [_application displayName];
+		CGSize textSize = [title sizeWithFont:titleFont];
+		CGRect titleFrame;
+		titleFrame.origin.x = (NSInteger)(([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
+		titleFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 25.0f - (NSInteger)(textSize.height / 2.0f);
+		titleFrame.size.width = textSize.width;
+		titleFrame.size.height = textSize.height;
+		CGRect iconFrame;
+		iconFrame.origin.x = titleFrame.origin.x - 36.0f;
+		iconFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 13.0f;
+		iconFrame.size.width = 24.0f;
+		iconFrame.size.height = 24.0f;
+		if (!_titleView) {
+			_titleView = [[UILabel alloc] initWithFrame:titleFrame];
+			_titleView.font = titleFont;
+			_titleView.backgroundColor = [UIColor clearColor];
+			_titleView.textColor = [UIColor whiteColor]; 
+			_titleView.text = title;
+			[self addSubview:_titleView];
+		} else {
+			[_titleView setFrame:titleFrame];
+		}
+		if (!_iconView) {
+			UIImage *smallIcon = [[_application springBoardIcon] smallIcon];
+			_iconView = [[UIImageView alloc] initWithFrame:iconFrame];
+			[_iconView setImage:smallIcon];
+			[self addSubview:_iconView];
+		} else {
+			[_iconView setFrame:iconFrame];
+		}
+	} else {
+		if (_titleView) {
+			[_titleView removeFromSuperview];
+			[_titleView release];
+			_titleView = nil;
+		}
+		if (_iconView) {
+			[_iconView removeFromSuperview];
+			[_iconView release];
+			_iconView = nil;
+		}
 	}
 	
-	if (!_closeButton && _showsCloseButton) {
-		_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-		closeButtonNeedsReposition = YES;
+	if (_showsCloseButton) {
 		UIImage *closeImage = PSWGetCachedSpringBoardResource(@"closebox");
-		[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
-		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
-		[self addSubview:_closeButton];
-	} else if (_closeButton && !_showsCloseButton) {
-		[_closeButton removeFromSuperview];
-		[_closeButton release];
-		_closeButton = nil;
-	}
-	
-	if (closeButtonNeedsReposition && _closeButton)
-	{
-		UIImage *closeImage = PSWGetCachedSpringBoardResource(@"closebox");
+		if (!_closeButton) {
+			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
+			[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
+			[self addSubview:_closeButton];
+		}
 		CGSize closeImageSize = [closeImage size];
 		CGFloat offsetX = (NSInteger)(closeImageSize.width / 2.0f);
 		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
-		[_closeButton setFrame:CGRectMake(imageViewX - offsetX, imageViewY - offsetY, closeImageSize.width, closeImageSize.height)];
+		[_closeButton setFrame:CGRectMake(screenFrame.origin.x - offsetX, screenFrame.origin.y - offsetY, closeImageSize.width, closeImageSize.height)];		
+	} else {
+		if (_closeButton) {
+			[_closeButton removeFromSuperview];
+			[_closeButton release];
+			_closeButton = nil;
+		}
 	}
 	
 	CGFloat alpha = _focused?1.0f:0.0f;
