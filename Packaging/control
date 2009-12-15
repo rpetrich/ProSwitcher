@@ -7,7 +7,7 @@ Description: Palm Pre-styled application switcher
 Name: ProSwitcher
 Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 0.9)
 Provides: proswitcher
-Conflicts: com.collab.preswitcher
-Replaces: com.collab.preswitcher
+Conflicts: com.collab.preswitcher, com.aaronash.Multifl0w
+Replaces: com.collab.preswitcher, com.aaronash.Multifl0w
 Author: rpetrich and chpwn
 Depiction: http://booleanmagic.com/cydia/proswitcher/
