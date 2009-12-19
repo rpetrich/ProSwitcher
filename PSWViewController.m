@@ -52,7 +52,7 @@ static NSInteger suppressIconScatter;
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       2
 #define PSWSnapshotInset        40.0f
-#define PSWUnfocusedAlpha       0.9f
+#define PSWUnfocusedAlpha       1.0f
 
 + (PSWViewController *)sharedInstance
 {
