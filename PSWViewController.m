@@ -8,6 +8,7 @@
 
 #import "PSWDisplayStacks.h"
 #import "PSWResources.h"
+#import "SpringBoard+Backgrounder.h"
 
 // Using Zero-link until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
