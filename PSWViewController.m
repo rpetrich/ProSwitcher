@@ -271,12 +271,17 @@ static NSInteger suppressIconScatter;
 
 - (void)viewDidUnload
 {
-	[[PSWApplicationController sharedInstance] writeSnapshotsToDisk];
-	PSWClearResourceCache();
 	[snapshotPageView removeFromSuperview];
 	[snapshotPageView release];
 	snapshotPageView = nil;
 	[super viewDidUnload];
+}
+
+- (void)didReceiveMemoryWarning
+{
+	[super didReceiveMemoryWarning];
+	[[PSWApplicationController sharedInstance] writeSnapshotsToDisk];
+	PSWClearResourceCache();
 }
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
