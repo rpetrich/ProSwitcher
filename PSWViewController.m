@@ -12,6 +12,7 @@
 // Using Zero-link until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
 
+CHDeclareClass(SpringBoard);
 CHDeclareClass(SBIconListPageControl);
 CHDeclareClass(SBUIController);
 CHDeclareClass(SBApplicationController);
@@ -20,6 +21,9 @@ CHDeclareClass(SBIconController);
 
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
+
+#define SBActive ([SBWActiveDisplayStack topApplication] == nil)
+#define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
 
 #define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.proswitcher.plist"]
 #define PSWPreferencesChangedNotification "com.collab.proswitcher.preferencechanged"
@@ -85,6 +89,7 @@ static NSInteger suppressIconScatter;
 		snapshotPageView.focusedApplication = focusedApplication;
 		UIView *view = [self view];
 		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
+		[rootWindow endEditing:YES]; // force keyboard hide in spotlight
 		[rootWindow addSubview:view];
 		// Find appropriate superview and add as subview
 		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
@@ -105,11 +110,13 @@ static NSInteger suppressIconScatter;
 			[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
 			[layer setTransform:CATransform3DIdentity];
 			[view setAlpha:1.0f];
-			[pageControl setAlpha:0.0f];
+			if (GetPreference(PSWShowPageControl, BOOL))
+				[pageControl setAlpha:0.0f];
 			[UIView commitAnimations];
 			isAnimating = YES;
 		} else {
-			[pageControl setAlpha:0.0f];
+			if (GetPreference(PSWShowPageControl, BOOL))
+				[pageControl setAlpha:0.0f];
 		}
 	} else {
 		if (!isActive)
@@ -129,12 +136,14 @@ static NSInteger suppressIconScatter;
 			[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
 			[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 			[view setAlpha:0.0f];
-			[pageControl setAlpha:1.0f];
+			if (GetPreference(PSWShowPageControl, BOOL))
+				[pageControl setAlpha:1.0f];
 			[UIView commitAnimations];
 			isAnimating = YES;
 		} else {
 			[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
-			[pageControl setAlpha:1.0f];
+			if (GetPreference(PSWShowPageControl, BOOL))
+				[pageControl setAlpha:1.0f];
 			[view removeFromSuperview];
 		}
 	}
@@ -147,8 +156,31 @@ static NSInteger suppressIconScatter;
 
 - (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
 {
-	if (![self isAnimating])
+	if ([self isAnimating])
+		return;
+	
+	NSLog(@"Here we are in libactivator: %d is springboard, etc", SBActive);
+	
+	if (SBActive)
 		[self setActive:![self isActive]];
+	else
+	{
+		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
+		
+		// background running app
+		if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:[activeApp displayIdentifier]];
+		[activeApp setDeactivationSetting:0x2 flag:YES]; // animate
+		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
+		
+		// Deactivate by moving from active stack to suspending stack
+		[SBWActiveDisplayStack popDisplay:activeApp];
+		[SBWSuspendingDisplayStack pushDisplay:activeApp];
+		
+		// show proswitcher
+		[self setActive:YES];
+	}
+	
 	[event setHandled:YES];
 }
 
@@ -182,10 +214,9 @@ static NSInteger suppressIconScatter;
 {
 	self.view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
 	
-	if (GetPreference(PSWShowPageControl, BOOL)) {
-		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+	SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+	if (GetPreference(PSWShowPageControl, BOOL))
 		[pageControl setAlpha:0.0f];
-	}
 
 	CGRect frame;
 	frame.origin.x = 0.0f;
@@ -208,6 +239,7 @@ static NSInteger suppressIconScatter;
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
+	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 }
 
 - (void)_reloadPreferences
@@ -285,6 +317,18 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	[[PSWViewController sharedInstance] _reloadPreferences];
 }
 
+// debug
+CHMethod0(BOOL, SpringBoard, allowMenuDoubleTap)
+{
+    return YES;
+}
+
+CHMethod0(void, SpringBoard, handleMenuDoubleTap)
+{
+	[[PSWViewController sharedInstance] activator:nil receiveEvent:nil];
+}
+// debug
+
 CHConstructor
 {
 	CHAutoreleasePoolForScope();
@@ -297,9 +341,14 @@ CHConstructor
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBIconController);
+	CHLoadLateClass(SpringBoard);
+	
+	// debug for simulator
+	CHHook0(SpringBoard, allowMenuDoubleTap);
+	CHHook0(SpringBoard, handleMenuDoubleTap);
 	
 	// Using Zero-link until we get a simulator build for libactivator :(
-	// note to self: Zero-link means late-binding
+	// note to self (chpwn): Zero-link means late-binding
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
 	[CHSharedInstance(LAActivator) registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];

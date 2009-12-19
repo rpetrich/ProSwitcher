@@ -41,6 +41,7 @@
 @property (nonatomic, assign) NSInteger tapsToActivate;
 @property (nonatomic, assign) CGFloat snapshotInset;
 @property (nonatomic, assign) CGFloat unfocusedAlpha;
+@property (nonatomic, assign) BOOL showsPageControl;
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
 

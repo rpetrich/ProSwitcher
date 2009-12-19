@@ -289,6 +289,16 @@
 	}
 }
 
+- (BOOL)showsPageControl
+{
+	return _pageControl.hidden;
+}
+
+- (void)setShowsPageControl:(BOOL)showsPageControl
+{
+	_pageControl.hidden = showsPageControl;
+}
+
 #pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -328,7 +338,7 @@
 	if (tappedApp == [self focusedApplication]) {
 		if (tapCount == _tapsToActivate) {
 			if ([_delegate respondsToSelector:@selector(snapshotPageView:didSelectApplication:)])
-				[_delegate snapshotPageView:self didSelectApplication:[snapshot application]];
+				[_delegate snapshotPageView:self didSelectApplication:[self focusedApplication]];	
 		}
 	} else {
 		[self setFocusedApplication:tappedApp];

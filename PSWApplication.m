@@ -208,7 +208,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	}
 }
 
-- (void)activate
+- (void)activateWithAnimation:(BOOL)animation
 {
 	SBApplication *fromApp = [SBWActiveDisplayStack topApplication];
 	NSString *fromIdent = fromApp ? [fromApp displayIdentifier] : @"com.apple.springboard";
@@ -219,7 +219,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		
 		if ([fromIdent isEqualToString:@"com.apple.springboard"]) {
 			// Switching from SpringBoard; simply activate the target app
-			[_application setDisplaySetting:0x4 flag:YES]; // animate
+			[_application setDisplaySetting:0x4 flag:animation]; // animate (or not)
 			// Activate the target application
 			[SBWPreActivateDisplayStack pushDisplay:_application];
 		} else {
@@ -228,7 +228,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 				// Switching to another app; setup app-to-app
 				[_application setActivationSetting:0x40 flag:YES]; // animateOthersSuspension
 				[_application setActivationSetting:0x20000 flag:YES]; // appToApp
-				[_application setDisplaySetting:0x4 flag:YES]; // animate
+				[_application setDisplaySetting:0x4 flag:animation]; // animate
 				
 				// Activate the target application (will wait for
 				// deactivation of current app)
@@ -251,6 +251,11 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 			[SBWSuspendingDisplayStack pushDisplay:fromApp];
 		}
 	}
+}
+
+- (void)activate
+{
+	[self activateWithAnimation:NO];
 }
 
 - (void)writeSnapshotToDisk
