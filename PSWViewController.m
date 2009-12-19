@@ -13,6 +13,7 @@
 // Using Zero-link until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
 
+CHDeclareClass(SBStatusBarController);
 CHDeclareClass(SBApplication)
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBIconListPageControl);
@@ -227,9 +228,9 @@ static NSInteger suppressIconScatter;
 
 	CGRect frame;
 	frame.origin.x = 0.0f;
-	frame.origin.y = 0.0f;
+	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize]?40.0f:20.0f;
 	frame.size.width = 320.0f;
-	frame.size.height = GetPreference(PSWShowDock, BOOL) ? 370.0f : 460.0f;
+	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
 	[snapshotPageView setFrame:frame];
 	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
@@ -259,7 +260,7 @@ static NSInteger suppressIconScatter;
 
 - (void)loadView 
 {
-	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 20.0f, 320.0f, 460.0f)];
+	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 480.0f)];
 	
 	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 	[snapshotPageView setDelegate:self];
@@ -378,6 +379,7 @@ CHConstructor
 {
 	CHAutoreleasePoolForScope();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
+	CHLoadLateClass(SBStatusBarController);
 	CHLoadLateClass(SBApplication);
 	CHHook0(SBApplication, activate);
 	CHLoadLateClass(SBIconListPageControl);
