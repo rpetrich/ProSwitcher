@@ -80,44 +80,45 @@ static NSInteger suppressIconScatter;
 - (void)setActive:(BOOL)active animated:(BOOL)animated
 {
 	if (active) {
-		if (isActive)
-			return;
-		UIApplication *app = [UIApplication sharedApplication];
-		formerStatusBarStyle = [app statusBarStyle];
-		[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-		isActive = YES;
-
-		snapshotPageView.focusedApplication = focusedApplication;
-		UIView *view = [self view];
-		UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
-		[rootWindow endEditing:YES]; // force keyboard hide in spotlight
-		[rootWindow addSubview:view];
 		// Find appropriate superview and add as subview
+		UIView *view = [self view];
 		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
 		UIView *buttonBarParent = [buttonBar superview];
 		UIView *superview = [buttonBarParent superview];
+		[view removeFromSuperview];
+		// Reparent always; even when already active
 		if (GetPreference(PSWShowDock, BOOL))
 			[superview insertSubview:view belowSubview:buttonBarParent];
 		else
 			[superview insertSubview:view aboveSubview:buttonBarParent];
-		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
-		if (animated) {
-			view.alpha = 0.0f;
-			CALayer *layer = [snapshotPageView.scrollView layer];
-			[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-			[UIView beginAnimations:nil context:nil];
-			[UIView setAnimationDuration:0.5f];
-			[UIView setAnimationDelegate:self];
-			[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
-			[layer setTransform:CATransform3DIdentity];
-			[view setAlpha:1.0f];
-			if (GetPreference(PSWShowPageControl, BOOL))
-				[pageControl setAlpha:0.0f];
-			[UIView commitAnimations];
-			isAnimating = YES;
-		} else {
-			if (GetPreference(PSWShowPageControl, BOOL))
-				[pageControl setAlpha:0.0f];
+		if (!isActive) {
+			UIApplication *app = [UIApplication sharedApplication];
+			formerStatusBarStyle = [app statusBarStyle];
+			[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+			isActive = YES;
+
+			snapshotPageView.focusedApplication = focusedApplication;
+			UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
+			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
+			SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+			if (animated) {
+				view.alpha = 0.0f;
+				CALayer *layer = [snapshotPageView.scrollView layer];
+				[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+				[UIView beginAnimations:nil context:nil];
+				[UIView setAnimationDuration:0.5f];
+				[UIView setAnimationDelegate:self];
+				[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
+				[layer setTransform:CATransform3DIdentity];
+				[view setAlpha:1.0f];
+				if (GetPreference(PSWShowPageControl, BOOL))
+					[pageControl setAlpha:0.0f];
+				[UIView commitAnimations];
+				isAnimating = YES;
+			} else {
+				if (GetPreference(PSWShowPageControl, BOOL))
+					[pageControl setAlpha:0.0f];
+			}
 		}
 	} else {
 		if (!isActive)
@@ -160,15 +161,18 @@ static NSInteger suppressIconScatter;
 	if ([self isAnimating])
 		return;
 	
-	if (SBActive)
-		[self setActive:![self isActive]];
-	else
-	{
+	if (SBActive) {
+		BOOL newActive = ![self isActive];
+		[self setActive:newActive];
+		if (newActive)
+			[event setHandled:YES];
+	} else {
 		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
+		NSString *activeDisplayIdentifier = [activeApp displayIdentifier];
 		
 		// background running app
 		if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:[activeApp displayIdentifier]];
+			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
 		[activeApp setDeactivationSetting:0x2 flag:YES]; // animate
 		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
 		
@@ -176,11 +180,12 @@ static NSInteger suppressIconScatter;
 		[SBWActiveDisplayStack popDisplay:activeApp];
 		[SBWSuspendingDisplayStack pushDisplay:activeApp];
 		
-		// show proswitcher
-		[self setActive:YES];
-	}
-	
-	[event setHandled:YES];
+		// Show ProSwitcher
+		[self setActive:YES animated:NO];
+		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
+		
+		[event setHandled:YES];
+	}	
 }
 
 - (void)activator:(LAActivator *)activator abortEvent:(LAEvent *)event

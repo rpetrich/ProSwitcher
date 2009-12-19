@@ -155,10 +155,9 @@
 	NSInteger index = [self indexOfApplication:application];
 	NSInteger oldIndex = [_pageControl currentPage];
 	if (index != NSNotFound && index != oldIndex) {
-		[_pageControl setCurrentPage:index];
 		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
-		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
-			[_delegate snapshotPageView:self didFocusApplication:application];
+		if (!animated)
+			[self scrollViewDidScroll:_scrollView];
 	}
 }
 
