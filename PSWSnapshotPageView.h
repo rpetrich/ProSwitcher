@@ -13,6 +13,7 @@
 	UIPageControl *_pageControl;
 	UILabel *_emptyLabel;
 	NSString *_emptyText;
+	NSArray *_ignoredDisplayIdentifiers;
 	
 	id<PSWSnapshotPageViewDelegate> _delegate;
 	
@@ -32,6 +33,7 @@
 @property (nonatomic, readonly) NSArray *snapshotViews;
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;
+@property (nonatomic, copy) NSArray *ignoredDisplayIdentifiers;
 
 @property (nonatomic, assign) NSString *emptyText;
 @property (nonatomic, assign) BOOL showsTitles;

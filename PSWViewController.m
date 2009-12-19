@@ -37,7 +37,7 @@ static NSInteger suppressIconScatter;
 
 @implementation PSWViewController
 
-#define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, name)
+#define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
 // Defaults
 #define PSWShowDock             YES
@@ -53,6 +53,8 @@ static NSInteger suppressIconScatter;
 #define PSWTapsToActivate       2
 #define PSWSnapshotInset        40.0f
 #define PSWUnfocusedAlpha       1.0f
+#define PSWShowDefaultApps      YES
+#define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 
 + (PSWViewController *)sharedInstance
 {
@@ -245,6 +247,7 @@ static NSInteger suppressIconScatter;
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
+	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL)?nil:GetPreference(PSWDefaultApps, id);
 }
 
 - (void)_reloadPreferences
