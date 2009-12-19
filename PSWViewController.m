@@ -121,6 +121,8 @@ static NSInteger suppressIconScatter;
 				[UIView commitAnimations];
 				isAnimating = YES;
 			} else {
+				[layer setTransform:CATransform3DIdentity];
+				view.alpha = 1.0f;
 				if (GetPreference(PSWShowPageControl, BOOL))
 					[pageControl setAlpha:0.0f];
 			}
