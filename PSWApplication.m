@@ -7,13 +7,15 @@
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWDisplayStacks.h"
+#import "PSWApplicationController.h"
 
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(SBIconModel);
-CHDeclareClass(SBApplication)
+CHDeclareClass(SBApplication);
 
 static NSString *ignoredRelaunchDisplayIdentifier;
+static NSUInteger defaultImagePassThrough;
 
 @implementation PSWApplication
 
@@ -79,7 +81,9 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 - (CGImageRef)snapshot
 {
 	if (!_snapshotImage) {
+		defaultImagePassThrough++;
 		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);
+		defaultImagePassThrough--;
 	}
 	return _snapshotImage;
 }
@@ -281,11 +285,25 @@ CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 	}
 }
 
+CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+{
+	UIImage *result = CHSuper1(SBApplication, defaultImage, something);
+	if (defaultImagePassThrough == 0) {
+		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+		CGImageRef cgResult = [app snapshot];
+		if (cgResult) {
+			result = [[[UIImage alloc] initWithCGImage:cgResult] autorelease];
+		}
+	}
+	return result;
+}
+
 CHConstructor {
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+	CHHook1(SBApplication, defaultImage);
 }
 
