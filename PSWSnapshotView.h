@@ -27,6 +27,7 @@
 	CGPoint touchDownPoint;
 	UIButton *screen;
 	CGFloat screenY;
+	CGFloat _roundedCornerRadius;
 }
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application;
 

@@ -1,5 +1,7 @@
 #import "PSWResources.h"
 
+#import <CoreGraphics/CoreGraphics.h>
+
 static NSMutableDictionary *imageCache;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
@@ -15,6 +17,39 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 				[imageCache setObject:result forKey:key];
 			else
 				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+	}
+	return result;
+}
+
+static void ClipContextRounded(CGContext c, CGSize size, CGFloat cornerRadius)
+{
+	CGSize half;
+	half.width = size.width / 2.0f;
+	half.height = size.height / 2.0f;
+	CGContextMoveToPoint(c, size.width, half.height);
+	CGContextAddArcToPoint(c, size.width, size.height, half.width, size.height, cornerRadius);
+	CGContextAddArcToPoint(c, 0.0f, size.height, 0.0f, half.height, cornerRadius);
+	CGContextAddArcToPoint(c, 0.0f, 0.0f, half.width, 0.0f, cornerRadius);
+	CGContextAddArcToPoint(c, size.width, 0.0f, size.width, half.height, cornerRadius);
+	CGContextClosePath(c);
+	CGContextClip(c);
+}
+
+UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
+{
+	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
+	UIImage *result = [imageCache objectForKey:key];
+	if (!result) {
+		UIGraphicsBeginImageContext(size);
+		ClipContextRounded(UIGraphicsGetCurrentContext(), size, cornerRadius);
+		[[UIColor whiteColor] set];
+		UIRectFill(CGRectMake(0.0f, 0.0f, size.width, size.height));
+		result = UIGraphicsGetImageFromCurrentImageContext();
+		if (imageCache)
+			[imageCache setObject:result forKey:key];
+		else
+			imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+		UIGraphicsEndImageContext();
 	}
 	return result;
 }
