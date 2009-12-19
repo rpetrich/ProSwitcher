@@ -13,6 +13,7 @@
 // Using Zero-link until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
 
+CHDeclareClass(SBAwayController);
 CHDeclareClass(SBStatusBarController);
 CHDeclareClass(SBApplication)
 CHDeclareClass(SpringBoard);
@@ -162,6 +163,8 @@ static NSInteger suppressIconScatter;
 
 - (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
 {
+	if ([[CHClass(SBAwayController) sharedAwayController] isLocked])
+		return;
 	if ([self isAnimating])
 		return;
 	
@@ -379,6 +382,7 @@ CHConstructor
 {
 	CHAutoreleasePoolForScope();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
+	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBStatusBarController);
 	CHLoadLateClass(SBApplication);
 	CHHook0(SBApplication, activate);
