@@ -2,6 +2,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBAwayController.h>
 #import <CaptainHook/CaptainHook.h>
 
 #include <dlfcn.h>
@@ -10,7 +11,7 @@
 #import "PSWResources.h"
 #import "SpringBoard+Backgrounder.h"
 
-// Using Zero-link until we get a simulator build for libactivator :(
+// Using zero-link (late binding) until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
 
 CHDeclareClass(SBAwayController);
@@ -105,7 +106,6 @@ static NSInteger suppressIconScatter;
 			snapshotPageView.focusedApplication = focusedApplication;
 			UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
 			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
-			SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 			CALayer *layer = [snapshotPageView.scrollView layer];
 			if (animated) {
 				view.alpha = 0.0f;
@@ -117,14 +117,14 @@ static NSInteger suppressIconScatter;
 				[layer setTransform:CATransform3DIdentity];
 				[view setAlpha:1.0f];
 				if (GetPreference(PSWShowPageControl, BOOL))
-					[pageControl setAlpha:0.0f];
+					[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 				[UIView commitAnimations];
 				isAnimating = YES;
 			} else {
 				[layer setTransform:CATransform3DIdentity];
 				view.alpha = 1.0f;
 				if (GetPreference(PSWShowPageControl, BOOL))
-					[pageControl setAlpha:0.0f];
+					[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 			}
 		}
 	} else {
@@ -134,7 +134,6 @@ static NSInteger suppressIconScatter;
 		
 		[focusedApplication release];
 		focusedApplication = [snapshotPageView.focusedApplication retain];
-		SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 		UIView *view = [self view];
 		if (animated) {
 			CALayer *layer = [snapshotPageView.scrollView layer];
@@ -146,13 +145,13 @@ static NSInteger suppressIconScatter;
 			[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 			[view setAlpha:0.0f];
 			if (GetPreference(PSWShowPageControl, BOOL))
-				[pageControl setAlpha:1.0f];
+				[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 			[UIView commitAnimations];
 			isAnimating = YES;
 		} else {
 			[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
 			if (GetPreference(PSWShowPageControl, BOOL))
-				[pageControl setAlpha:1.0f];
+				[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 			[view removeFromSuperview];
 		}
 	}
@@ -231,10 +230,8 @@ static NSInteger suppressIconScatter;
 	else
 		[[view layer] setContents:nil];
 	
-	
-	SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 	if (GetPreference(PSWShowPageControl, BOOL))
-		[pageControl setAlpha:0.0f];
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 
 	CGRect frame;
 	frame.origin.x = 0.0f;
