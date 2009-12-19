@@ -8,9 +8,8 @@ static BOOL isUninstalled = NO;
 
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(PSWProSwitcherIcon);
-CHDeclareClass(SpringBoard);
-CHDeclareClass(SBIconController);
 
+#pragma mark SBApplicationIcon
 
 CHMethod0(void, SBApplicationIcon, launch)
 {
@@ -18,6 +17,8 @@ CHMethod0(void, SBApplicationIcon, launch)
 		[[PSWViewController sharedInstance] setActive:NO animated:NO];
 	CHSuper0(SBApplicationIcon, launch);
 }
+
+#pragma mark PSWProSwitcherIcon
 
 CHMethod0(void, PSWProSwitcherIcon, launch)
 {
@@ -37,22 +38,6 @@ CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
 	CHSuper0(PSWProSwitcherIcon, completeUninstall);
 }
 
-static BOOL shouldSuppressIconListScroll;
-
-CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
-{
-	[[PSWViewController sharedInstance] setActive:NO];
-	shouldSuppressIconListScroll = YES;
-	CHSuper0(SpringBoard, _handleMenuButtonEvent);
-	shouldSuppressIconListScroll = NO;
-}
-
-CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
-{
-	if (!shouldSuppressIconListScroll)
-		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
-}
-
 CHConstructor {
 	CHLoadLateClass(SBApplicationIcon);
 	CHHook0(SBApplicationIcon, launch);
@@ -60,8 +45,4 @@ CHConstructor {
 		CHHook0(PSWProSwitcherIcon, launch);
 		CHHook0(PSWProSwitcherIcon, completeUninstall);
 	}
-	CHLoadLateClass(SpringBoard);
-	CHHook0(SpringBoard, _handleMenuButtonEvent);
-	CHLoadLateClass(SBIconController);
-	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 }

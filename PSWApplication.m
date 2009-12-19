@@ -1,22 +1,21 @@
 #import "PSWApplication.h"
 
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBApplicationController.h>
+#import <SpringBoard/SBIconModel.h>
 #import <CaptainHook/CaptainHook.h>
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWDisplayStacks.h"
+#import "PSWApplicationController.h"
 
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(SBIconModel);
-
-CHConstructor {
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBApplicationIcon);
-	CHLoadLateClass(SBIconModel);
-}
+CHDeclareClass(SBApplication);
 
 static NSString *ignoredRelaunchDisplayIdentifier;
+static NSUInteger defaultImagePassThrough;
 
 @implementation PSWApplication
 
@@ -82,7 +81,9 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 - (CGImageRef)snapshot
 {
 	if (!_snapshotImage) {
+		defaultImagePassThrough++;
 		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);
+		defaultImagePassThrough--;
 	}
 	return _snapshotImage;
 }
@@ -122,31 +123,6 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 			[_delegate applicationSnapshotDidChange:self];
 	}
 }
-
-/*- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride
-{
-	CGImageRelease(_snapshotImage);
-	if (_snapshotFilePath) {
-		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
-		[_snapshotFilePath release];
-		_snapshotFilePath = nil;
-	}
-#ifdef USE_IOSURFACE
-	if (_surface) {
-		CFRelease(_surface);
-		_surface = NULL;
-	}
-#endif
-	[_snapshotData release];
-	_snapshotData = [[NSData alloc] initWithBytes:buffer length:(height * stride)];
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef context = CGBitmapContextCreate((void *)[_snapshotData bytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
-	CGColorSpaceRelease(colorSpace);
-	_snapshotImage = CGBitmapContextCreateImage(context);
-	CGContextRelease(context);
-	if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
-		[_delegate applicationSnapshotDidChange:self];
-}*/
 
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
@@ -206,7 +182,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	}
 }
 
-- (void)activate
+- (void)activateWithAnimation:(BOOL)animation
 {
 	SBApplication *fromApp = [SBWActiveDisplayStack topApplication];
 	NSString *fromIdent = fromApp ? [fromApp displayIdentifier] : @"com.apple.springboard";
@@ -217,7 +193,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		
 		if ([fromIdent isEqualToString:@"com.apple.springboard"]) {
 			// Switching from SpringBoard; simply activate the target app
-			[_application setDisplaySetting:0x4 flag:YES]; // animate
+			[_application setDisplaySetting:0x4 flag:animation]; // animate (or not)
 			// Activate the target application
 			[SBWPreActivateDisplayStack pushDisplay:_application];
 		} else {
@@ -226,7 +202,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 				// Switching to another app; setup app-to-app
 				[_application setActivationSetting:0x40 flag:YES]; // animateOthersSuspension
 				[_application setActivationSetting:0x20000 flag:YES]; // appToApp
-				[_application setDisplaySetting:0x4 flag:YES]; // animate
+				[_application setDisplaySetting:0x4 flag:animation]; // animate
 				
 				// Activate the target application (will wait for
 				// deactivation of current app)
@@ -251,9 +227,14 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	}
 }
 
+- (void)activate
+{
+	[self activateWithAnimation:NO];
+}
+
 - (void)writeSnapshotToDisk
 {
-	if (!_snapshotFilePath && _snapshotData) {
+	if (!_snapshotFilePath) {
 		// Generate filename
 		CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
 		CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuid);
@@ -265,8 +246,20 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		size_t width = CGImageGetWidth(_snapshotImage);
 		size_t height = CGImageGetHeight(_snapshotImage);
 		size_t stride = CGImageGetBytesPerRow(_snapshotImage);
-		[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
-		[_snapshotData release];
+#ifdef USE_IOSURFACE
+		if (!_snapshotData) {
+			NSData *tempData = [[NSData alloc] initWithBytesNoCopy:IOSurfaceGetBaseAddress(_surface) length:stride * height freeWhenDone:NO];
+			[tempData writeToFile:_snapshotFilePath atomically:NO];
+			[tempData release];
+			CFRelease(_surface);
+			_surface = NULL;
+		} else {
+#endif
+			[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
+			[_snapshotData release];
+#ifdef USE_IOSURFACE
+		}
+#endif
 		_snapshotData = [[NSData alloc] initWithContentsOfMappedFile:_snapshotFilePath];
 		CGContextRef context = CGBitmapContextCreate((void *)[_snapshotData bytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 		CGColorSpaceRelease(colorSpace);
@@ -280,7 +273,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 
 @end
 
-CHDeclareClass(SBApplication)
+#pragma mark SBApplication
 
 CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 {
@@ -292,8 +285,25 @@ CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 	}
 }
 
+CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+{
+	UIImage *result = CHSuper1(SBApplication, defaultImage, something);
+	if (defaultImagePassThrough == 0) {
+		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+		CGImageRef cgResult = [app snapshot];
+		if (cgResult) {
+			result = [[[UIImage alloc] initWithCGImage:cgResult] autorelease];
+		}
+	}
+	return result;
+}
+
 CHConstructor {
+	CHLoadLateClass(SBApplicationController);
+	CHLoadLateClass(SBApplicationIcon);
+	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+	CHHook1(SBApplication, defaultImage);
 }
 

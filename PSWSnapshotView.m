@@ -12,6 +12,7 @@
 @synthesize application = _application;
 @synthesize delegate = _delegate;
 @synthesize allowsSwipeToClose = _allowsSwipeToClose;
+@synthesize screenView = screen;
 
 - (void)snapshot:(UIButton *)snapshot touchUpInside:(UIEvent *)event
 {
@@ -112,6 +113,14 @@
 	
 	[screen setFrame:screenFrame];
 	screenY = screenFrame.origin.y;
+	if (_roundedCornerRadius == 0)
+		[[screen layer] setMask:nil];
+	else {
+		CALayer *layer = [CALayer layer];
+		[layer setFrame:CGRectMake(0.0f, 0.0f, screenFrame.size.width, screenFrame.size.height)];
+		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
+		[[screen layer] setMask:layer];
+	}
 	
 	if (_showsTitle) {
 		UIFont *titleFont = [UIFont boldSystemFontOfSize:17.0f];
@@ -257,12 +266,17 @@
 
 - (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
 {
-	screen.layer.cornerRadius = roundedCornerRadius;
+	if (_roundedCornerRadius != roundedCornerRadius) {
+		_roundedCornerRadius = roundedCornerRadius;
+		[self _relayoutViews];
+	}
+	//screen.layer.cornerRadius = roundedCornerRadius;
 }
 
 - (CGFloat)roundedCornerRadius
 {
-	return screen.layer.cornerRadius;	
+	return _roundedCornerRadius;
+	//return screen.layer.cornerRadius;	
 }
 
 - (BOOL)focused

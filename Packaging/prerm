@@ -6,4 +6,6 @@ if [[ ${CYDIA+@} ]]; then
 	eval "echo 'finish:restart' >&${cydia[0]}"
 fi
 
+rm -rf /User/Library/Caches/ProSwitcher-*.cache
+
 exit 0

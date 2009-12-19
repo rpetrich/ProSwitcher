@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBApplication.h>
+#import <SpringBoard/SBApplicationIcon.h>
 
 #ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
@@ -41,6 +43,7 @@
 - (void)writeSnapshotToDisk;
 - (void)exit;
 - (void)activate;
+- (void)activateWithAnimation:(BOOL)animated;
 
 @end
 

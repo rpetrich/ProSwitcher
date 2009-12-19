@@ -16,5 +16,6 @@
 @property (nonatomic, assign, getter=isActive) BOOL active;
 - (void)setActive:(BOOL)active animated:(BOOL)animated;
 @property (nonatomic, readonly) BOOL isAnimating;
+@property (nonatomic, readonly) PSWSnapshotPageView *snapshotPageView;
 
 @end
