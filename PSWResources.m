@@ -21,7 +21,7 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 	return result;
 }
 
-static void ClipContextRounded(CGContext c, CGSize size, CGFloat cornerRadius)
+static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius)
 {
 	CGSize half;
 	half.width = size.width / 2.0f;
