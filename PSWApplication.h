@@ -43,6 +43,7 @@
 - (void)writeSnapshotToDisk;
 - (void)exit;
 - (void)activate;
+- (void)activateWithAnimation:(BOOL)animated;
 
 @end
 
