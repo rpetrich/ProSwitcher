@@ -161,6 +161,12 @@ static NSInteger suppressIconScatter;
 	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
 }
 
+- (void)_activateFromApp:(NSString *)displayIdentifier
+{
+	[self setActive:YES animated:NO];
+	[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier] animated:NO];
+}
+
 - (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
 {
 	if ([[CHClass(SBAwayController) sharedAwayController] isLocked])
@@ -188,9 +194,7 @@ static NSInteger suppressIconScatter;
 		[SBWSuspendingDisplayStack pushDisplay:activeApp];
 		
 		// Show ProSwitcher
-		[self setActive:YES animated:NO];
-		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
-		
+		[self performSelector:@selector(_activateFromApp:) withObject:activeDisplayIdentifier afterDelay:0.0f];		
 		[event setHandled:YES];
 	}	
 }
@@ -223,7 +227,13 @@ static NSInteger suppressIconScatter;
 
 - (void)_applyPreferences
 {
-	self.view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	UIView *view = [self view];
+	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
+		[[view layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
+	else
+		[[view layer] setContents:nil];
+	
 	
 	SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
 	if (GetPreference(PSWShowPageControl, BOOL))
@@ -236,11 +246,6 @@ static NSInteger suppressIconScatter;
 	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
 	[snapshotPageView setFrame:frame];
 	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
-	
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
-		[[snapshotPageView layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
-	else
-		[[snapshotPageView layer] setContents:nil];
 	
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
