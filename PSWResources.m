@@ -43,8 +43,12 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
 		UIGraphicsBeginImageContext(size);
+		CGContextRef c = UIGraphicsGetCurrentContext();
+		// TODO: figure out why sometimes this fails so hard
+		if (!c)
+			return nil;
 		if (cornerRadius != 0.0f)
-			ClipContextRounded(UIGraphicsGetCurrentContext(), size, cornerRadius);
+			ClipContextRounded(c, size, cornerRadius);
 		[[UIColor whiteColor] set];
 		UIRectFill(CGRectMake(0.0f, 0.0f, size.width, size.height));
 		result = UIGraphicsGetImageFromCurrentImageContext();
