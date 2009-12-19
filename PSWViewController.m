@@ -106,9 +106,9 @@ static NSInteger suppressIconScatter;
 			UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
 			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
 			SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+			CALayer *layer = [snapshotPageView.scrollView layer];
 			if (animated) {
 				view.alpha = 0.0f;
-				CALayer *layer = [snapshotPageView.scrollView layer];
 				[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 				[UIView beginAnimations:nil context:nil];
 				[UIView setAnimationDuration:0.5f];
