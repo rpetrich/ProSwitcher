@@ -190,7 +190,7 @@ static NSInteger suppressIconScatter;
 		[SBWSuspendingDisplayStack pushDisplay:activeApp];
 		
 		// Show ProSwitcher
-		[self setActive:YES animated:YES];
+		[self setActive:YES animated:NO];
 		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
 		[event setHandled:YES];
 	}	
