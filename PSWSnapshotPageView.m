@@ -137,7 +137,7 @@
 	[self _applyEmptyText];
 }
 
-- (PSWSnapshotView *)_focusedSnapshotView
+- (PSWSnapshotView *)focusedSnapshotView
 {
 	if ([_applications count])
 		return [_snapshotViews objectAtIndex:[_pageControl currentPage]];
@@ -191,7 +191,7 @@
 		snapshot.frame = frame;
 		snapshot.alpha = 0.0f;
 		[self _relayoutViews];
-		PSWSnapshotView *focusedView = [self _focusedSnapshotView];
+		PSWSnapshotView *focusedView = [self focusedSnapshotView];
 		[focusedView setFocused:YES];
 		[focusedView setAlpha:1.0f];
 		[UIView commitAnimations];

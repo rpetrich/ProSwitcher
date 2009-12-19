@@ -33,6 +33,7 @@
 @property (nonatomic, readonly) NSArray *snapshotViews;
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;
+@property (nonatomic, readonly) PSWSnapshotView *focusedSnapshotView;
 @property (nonatomic, copy) NSArray *ignoredDisplayIdentifiers;
 
 @property (nonatomic, assign) NSString *emptyText;

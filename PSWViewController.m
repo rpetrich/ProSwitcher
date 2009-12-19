@@ -23,9 +23,11 @@ CHDeclareClass(SBUIController);
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
+CHDeclareClass(SBZoomView);
 
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
+static NSUInteger modifyZoomTransformCountDown;
 
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
@@ -39,6 +41,8 @@ static NSInteger suppressIconScatter;
 #define BOOLForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
 
 @implementation PSWViewController
+
+@synthesize snapshotPageView;
 
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
@@ -178,6 +182,9 @@ static NSInteger suppressIconScatter;
 		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
 		NSString *activeDisplayIdentifier = [activeApp displayIdentifier];
 		
+		// Chicken or the egg situration here and I'm too sleepy to figure it out :P
+		//modifyZoomTransformCountDown = 2;
+		
 		// background running app
 		if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
 			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
@@ -290,6 +297,7 @@ static NSInteger suppressIconScatter;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
 	suppressIconScatter++;
+	modifyZoomTransformCountDown = 1;
 	[application activateWithAnimation:YES];
 	suppressIconScatter--;
 }
@@ -313,13 +321,18 @@ static NSInteger suppressIconScatter;
 	[self setActive:NO];
 }
 
+- (void)_deactivateFromAppActivate
+{
+	[self setActive:NO animated:NO];
+}
+
 @end
 
 #pragma mark SBApplication
 
 CHMethod0(void, SBApplication, activate)
 {
-	[[PSWViewController sharedInstance] setActive:NO];
+	[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 	CHSuper0(SBApplication, activate);
 }
 
@@ -359,10 +372,46 @@ CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, ani
 
 CHMethod1(void, SBIconController, setIsEditing, BOOL, isEditing)
 {
-	// Disable OverBoard when editing
+	// Disable ProSwitcher when editing
 	if (isEditing)
 		[[PSWViewController sharedInstance] setActive:NO];
 	CHSuper1(SBIconController, setIsEditing, isEditing);
+}
+
+#pragma mark SBZoomView
+
+__attribute__((always_inline))
+static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRect)
+{
+	return CGAffineTransformScale(
+		CGAffineTransformMakeTranslation(
+			targetRect.origin.x - sourceRect.origin.x + (targetRect.size.width - sourceRect.size.width) / 2,
+			targetRect.origin.y - sourceRect.origin.y + (targetRect.size.height - sourceRect.size.height) / 2),
+		targetRect.size.width / sourceRect.size.width,
+		targetRect.size.height / sourceRect.size.height);
+}
+
+CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
+{
+	switch (modifyZoomTransformCountDown) {
+		case 1: {
+			modifyZoomTransformCountDown = 0;
+			[self setAlpha:1.0f];
+			PSWSnapshotView *ssv = [[[PSWViewController sharedInstance] snapshotPageView] focusedSnapshotView];
+			UIWindow *window = [ssv window];
+			UIView *screenView = [ssv screenView];
+			CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:window];
+			CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
+			break;
+		}
+		case 0:
+			CHSuper1(SBZoomView, setTransform, transform);
+			break;
+		default:
+			modifyZoomTransformCountDown--;
+			CHSuper1(SBZoomView, setTransform, transform);
+			break;
+	}
 }
 
 #pragma mark Preference Changed Notification
@@ -395,7 +444,9 @@ CHConstructor
 	CHLoadLateClass(SBIconController);
 	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	CHHook1(SBIconController, setIsEditing);
-	
+	CHLoadLateClass(SBZoomView);
+	CHHook1(SBZoomView, setTransform);
+
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);
 	CHHook0(SpringBoard, handleMenuDoubleTap);
