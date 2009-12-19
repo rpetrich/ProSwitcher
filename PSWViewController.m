@@ -293,7 +293,7 @@ static NSInteger suppressIconScatter;
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
 	suppressIconScatter++;
-	[application activate];
+	[application activateWithAnimation:YES];
 	suppressIconScatter--;
 }
 
