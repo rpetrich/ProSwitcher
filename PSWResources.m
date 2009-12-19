@@ -37,7 +37,7 @@ static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius
 
 UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 {
-	if (size.width == 0.0f || size.height == 0.0f)
+	if (size.width < 1.0f || size.height < 1.0f)
 		return nil;
 	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
 	UIImage *result = [imageCache objectForKey:key];
