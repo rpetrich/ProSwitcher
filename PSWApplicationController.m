@@ -3,11 +3,15 @@
 #import <CaptainHook/CaptainHook.h>
 #import <SpringBoard/SpringBoard.h>
 
+#import "PSWApplication.h"
+
+CHDeclareClass(SBApplication);
+
 #ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
+CHDeclareClass(SBUIController)
+CHDeclareClass(SBZoomView)
 #endif
-
-#import "PSWApplication.h"
 
 static PSWApplicationController *sharedApplicationController;
 
@@ -85,9 +89,7 @@ static PSWApplicationController *sharedApplicationController;
 
 @end
 
-#pragma mark Hooks
-
-CHDeclareClass(SBApplication);
+#pragma mark SBApplication
 
 CHMethod1(void, SBApplication, launchSucceeded, BOOL, flag)
 {
@@ -103,9 +105,9 @@ CHMethod0(void, SBApplication, exitedCommon)
 
 #ifdef USE_IOSURFACE
 
-static SBApplication *currentZoomApp;
+#pragma mark SBUIController
 
-CHDeclareClass(SBUIController)
+static SBApplication *currentZoomApp;
 
 CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, id, statusWindow)
 {
@@ -114,7 +116,7 @@ CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBAppli
 	currentZoomApp = nil;
 }
 
-CHDeclareClass(SBZoomView)
+#pragma mark SBZoomView
 
 CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
 {
