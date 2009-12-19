@@ -125,31 +125,6 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 	}
 }
 
-/*- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride
-{
-	CGImageRelease(_snapshotImage);
-	if (_snapshotFilePath) {
-		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
-		[_snapshotFilePath release];
-		_snapshotFilePath = nil;
-	}
-#ifdef USE_IOSURFACE
-	if (_surface) {
-		CFRelease(_surface);
-		_surface = NULL;
-	}
-#endif
-	[_snapshotData release];
-	_snapshotData = [[NSData alloc] initWithBytes:buffer length:(height * stride)];
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef context = CGBitmapContextCreate((void *)[_snapshotData bytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
-	CGColorSpaceRelease(colorSpace);
-	_snapshotImage = CGBitmapContextCreateImage(context);
-	CGContextRelease(context);
-	if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
-		[_delegate applicationSnapshotDidChange:self];
-}*/
-
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
 {
@@ -260,7 +235,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 
 - (void)writeSnapshotToDisk
 {
-	if (!_snapshotFilePath && _snapshotData) {
+	if (!_snapshotFilePath) {
 		// Generate filename
 		CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
 		CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuid);
@@ -272,8 +247,20 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 		size_t width = CGImageGetWidth(_snapshotImage);
 		size_t height = CGImageGetHeight(_snapshotImage);
 		size_t stride = CGImageGetBytesPerRow(_snapshotImage);
-		[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
-		[_snapshotData release];
+#ifdef USE_IOSURFACE
+		if (!_snapshotData) {
+			NSData *tempData = [[NSData alloc] initWithBytesNoCopy:IOSurfaceGetBaseAddress(_surface) length:stride * height freeWhenDone:NO];
+			[tempData writeToFile:_snapshotFilePath atomically:NO];
+			[tempData release];
+			CFRelease(_surface);
+			_surface = NULL;
+		} else {
+#endif
+			[_snapshotData writeToFile:_snapshotFilePath atomically:NO];
+			[_snapshotData release];
+#ifdef USE_IOSURFACE
+		}
+#endif
 		_snapshotData = [[NSData alloc] initWithContentsOfMappedFile:_snapshotFilePath];
 		CGContextRef context = CGBitmapContextCreate((void *)[_snapshotData bytes], width, height, 8, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 		CGColorSpaceRelease(colorSpace);
