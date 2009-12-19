@@ -37,11 +37,14 @@ static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius
 
 UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 {
+	if (size.width == 0.0f || size.height == 0.0f)
+		return nil;
 	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
 		UIGraphicsBeginImageContext(size);
-		ClipContextRounded(UIGraphicsGetCurrentContext(), size, cornerRadius);
+		if (cornerRadius != 0.0f)
+			ClipContextRounded(UIGraphicsGetCurrentContext(), size, cornerRadius);
 		[[UIColor whiteColor] set];
 		UIRectFill(CGRectMake(0.0f, 0.0f, size.width, size.height));
 		result = UIGraphicsGetImageFromCurrentImageContext();
