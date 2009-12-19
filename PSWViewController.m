@@ -161,12 +161,6 @@ static NSInteger suppressIconScatter;
 	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
 }
 
-- (void)_activateFromApp:(NSString *)displayIdentifier
-{
-	[self setActive:YES animated:NO];
-	[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier] animated:NO];
-}
-
 - (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
 {
 	if ([[CHClass(SBAwayController) sharedAwayController] isLocked])
@@ -194,7 +188,8 @@ static NSInteger suppressIconScatter;
 		[SBWSuspendingDisplayStack pushDisplay:activeApp];
 		
 		// Show ProSwitcher
-		[self performSelector:@selector(_activateFromApp:) withObject:activeDisplayIdentifier afterDelay:0.0f];		
+		[self setActive:YES animated:YES];
+		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
 		[event setHandled:YES];
 	}	
 }
