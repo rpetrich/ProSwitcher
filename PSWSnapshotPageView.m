@@ -404,24 +404,53 @@
 	}
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)tapPreviousAndContinue
 {
 	NSInteger currentPage = [_pageControl currentPage];
+	if (currentPage != 0)
+		[self setFocusedApplication:[_applications objectAtIndex:currentPage - 1]];
+	[self performSelector:@selector(tapPreviousAndContinue) withObject:nil afterDelay:0.5f];
+}
+
+- (void)tapNextAndContinue
+{
+	NSInteger currentPage = [_pageControl currentPage];
+	if (currentPage < [_applications count] - 1)
+		[self setFocusedApplication:[_applications objectAtIndex:currentPage + 1]];
+	[self performSelector:@selector(tapNextAndContinue) withObject:nil afterDelay:0.5f];
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
 	UITouch *touch = [touches anyObject];
 	NSInteger tapCount = [touch tapCount];
-	CGPoint point = [touch locationInView:self];
-	if (point.x < [self bounds].size.width / 2.0f) {
-		if (tapCount == 2)
-			[self setFocusedApplication:[_applications objectAtIndex:0]];
-		else if (currentPage > 0)
-			[self setFocusedApplication:[_applications objectAtIndex:currentPage - 1]];
-	} else {
-		if (tapCount == 2)
-			[self setFocusedApplication:[_applications lastObject]];
-		else if (currentPage < [_applications count] - 1)
-			[self setFocusedApplication:[_applications objectAtIndex:currentPage + 1]];
+	if ([_applications count]) {
+		CGPoint point = [touch locationInView:self];
+		CGSize size = [self bounds].size;
+		if (point.y < size.height * (4.0f / 5.0f)) {
+			if (point.x < size.width / 2.0f) {
+				if (tapCount == 2)
+					[self setFocusedApplication:[_applications objectAtIndex:0]];
+				else
+					[self tapPreviousAndContinue];
+			} else {
+				if (tapCount == 2)
+					[self setFocusedApplication:[_applications lastObject]];
+				else
+					[self tapNextAndContinue];
+			}
+			return;
+		}
 	}
-	[super touchesEnded:touches	withEvent:event];
+	if (tapCount == _tapsToActivate)
+		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
+			[_delegate snapshotPageViewShouldExit:self];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapPreviousAndContinue) object:nil];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
 }
 
 @end
