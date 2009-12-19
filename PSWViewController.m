@@ -349,6 +349,14 @@ CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, ani
 		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
 }
 
+CHMethod1(void, SBIconController, setIsEditing, BOOL, isEditing)
+{
+	// Disable OverBoard when editing
+	if (isEditing)
+		[[PSWViewController sharedInstance] setActive:NO];
+	CHSuper1(SBIconController, setIsEditing, isEditing);
+}
+
 #pragma mark Preference Changed Notification
 
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
@@ -376,6 +384,7 @@ CHConstructor
 	CHHook0(SpringBoard, _handleMenuButtonEvent);
 	CHLoadLateClass(SBIconController);
 	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
+	CHHook1(SBIconController, setIsEditing);
 	
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);
