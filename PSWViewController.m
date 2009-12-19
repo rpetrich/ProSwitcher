@@ -13,6 +13,7 @@
 // Using Zero-link until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
 
+CHDeclareClass(SBApplication)
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBIconListPageControl);
 CHDeclareClass(SBUIController);
@@ -303,7 +304,7 @@ static NSInteger suppressIconScatter;
 
 @end
 
-CHDeclareClass(SBApplication)
+#pragma mark SBApplication
 
 CHMethod0(void, SBApplication, activate)
 {
@@ -311,10 +312,41 @@ CHMethod0(void, SBApplication, activate)
 	CHSuper0(SBApplication, activate);
 }
 
+#pragma mark SBUIController
+
 CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
 	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && suppressIconScatter == 0);
 }
+
+#pragma mark SpringBoard
+
+static BOOL shouldSuppressIconListScroll;
+
+CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
+{
+	PSWViewController *vc = [PSWViewController sharedInstance];
+	if ([vc isActive]) {
+		// Deactivate and suppress SpringBoard list scrolling
+		[vc setActive:NO];
+		shouldSuppressIconListScroll = YES;
+		CHSuper0(SpringBoard, _handleMenuButtonEvent);
+		shouldSuppressIconListScroll = NO;
+	} else {
+		// Do nothing
+		CHSuper0(SpringBoard, _handleMenuButtonEvent);
+	}
+}
+
+#pragma mark SBIconController
+
+CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
+{
+	if (!shouldSuppressIconListScroll)
+		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
+}
+
+#pragma mark Preference Changed Notification
 
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
@@ -337,16 +369,17 @@ CHConstructor
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBIconController);
 	CHLoadLateClass(SpringBoard);
+	CHHook0(SpringBoard, _handleMenuButtonEvent);
+	CHLoadLateClass(SBIconController);
+	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);
 	CHHook0(SpringBoard, handleMenuDoubleTap);
 	*/
 	
-	// Using Zero-link until we get a simulator build for libactivator :(
-	// note to self (chpwn): Zero-link means late-binding
+	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
 	[CHSharedInstance(LAActivator) registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
