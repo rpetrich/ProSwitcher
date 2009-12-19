@@ -4,3 +4,4 @@ build
 *.deb
 *.pbxuser
 *.mode1v3
+*.dylib
