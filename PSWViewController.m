@@ -159,8 +159,6 @@ static NSInteger suppressIconScatter;
 	if ([self isAnimating])
 		return;
 	
-	NSLog(@"Here we are in libactivator: %d is springboard, etc", SBActive);
-	
 	if (SBActive)
 		[self setActive:![self isActive]];
 	else
@@ -317,17 +315,10 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	[[PSWViewController sharedInstance] _reloadPreferences];
 }
 
-// debug
-CHMethod0(BOOL, SpringBoard, allowMenuDoubleTap)
-{
-    return YES;
-}
-
-CHMethod0(void, SpringBoard, handleMenuDoubleTap)
-{
-	[[PSWViewController sharedInstance] activator:nil receiveEvent:nil];
-}
-// debug
+/* debug for simulator since libactivator isn't there yet
+CHMethod0(BOOL, SpringBoard, allowMenuDoubleTap) { return YES; }
+CHMethod0(void, SpringBoard, handleMenuDoubleTap) { [[PSWViewController sharedInstance] activator:nil receiveEvent:nil]; }
+*/
 
 CHConstructor
 {
@@ -343,9 +334,10 @@ CHConstructor
 	CHLoadLateClass(SBIconController);
 	CHLoadLateClass(SpringBoard);
 	
-	// debug for simulator
+	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);
 	CHHook0(SpringBoard, handleMenuDoubleTap);
+	*/
 	
 	// Using Zero-link until we get a simulator build for libactivator :(
 	// note to self (chpwn): Zero-link means late-binding
