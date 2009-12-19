@@ -9,12 +9,16 @@ static BOOL isUninstalled = NO;
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(PSWProSwitcherIcon);
 
+#pragma mark SBApplicationIcon
+
 CHMethod0(void, SBApplicationIcon, launch)
 {
 	if (!isUninstalled)
 		[[PSWViewController sharedInstance] setActive:NO animated:NO];
 	CHSuper0(SBApplicationIcon, launch);
 }
+
+#pragma mark PSWProSwitcherIcon
 
 CHMethod0(void, PSWProSwitcherIcon, launch)
 {

@@ -11,12 +11,7 @@
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(SBIconModel);
-
-CHConstructor {
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBApplicationIcon);
-	CHLoadLateClass(SBIconModel);
-}
+CHDeclareClass(SBApplication)
 
 static NSString *ignoredRelaunchDisplayIdentifier;
 
@@ -274,7 +269,7 @@ static NSString *ignoredRelaunchDisplayIdentifier;
 
 @end
 
-CHDeclareClass(SBApplication)
+#pragma mark SBApplication
 
 CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 {
@@ -287,6 +282,9 @@ CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 }
 
 CHConstructor {
+	CHLoadLateClass(SBApplicationController);
+	CHLoadLateClass(SBApplicationIcon);
+	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
 }

@@ -404,6 +404,8 @@
 	}
 }
 
+#pragma mark Touch Gestures
+
 - (void)tapPreviousAndContinue
 {
 	NSInteger currentPage = [_pageControl currentPage];
