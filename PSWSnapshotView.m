@@ -147,7 +147,7 @@
 			[_titleView setFrame:titleFrame];
 		}
 		if (!_iconView) {
-			UIImage *smallIcon = [[_application springBoardIcon] smallIcon];
+			UIImage *smallIcon = [[_application springBoardIcon] icon];
 			_iconView = [[UIImageView alloc] initWithFrame:iconFrame];
 			[_iconView setImage:smallIcon];
 			[self addSubview:_iconView];
