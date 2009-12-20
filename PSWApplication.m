@@ -255,7 +255,7 @@ static NSUInteger defaultImagePassThrough;
 		CFRelease(uuid);
 		NSString *fileName = [NSString stringWithFormat:@"ProSwitcher-%@.cache", uuidString];
 		CFRelease(uuidString);
-		_snapshotFilePath = [[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName];
+		_snapshotFilePath = [[[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName] retain];
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 		size_t width = CGImageGetWidth(_snapshotImage);
 		size_t height = CGImageGetHeight(_snapshotImage);
