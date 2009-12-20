@@ -25,6 +25,7 @@ CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
 CHDeclareClass(SBZoomView);
+CHDeclareClass(SBSearchView);
 
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
@@ -432,6 +433,14 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 	}
 }
 
+#pragma mark SBSearchView
+
+CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
+{
+	// Disable search view's keyboard when ProSwitcher is active
+	CHSuper2(SBSearchView, setShowsKeyboard, visible && ![[PSWViewController sharedInstance] isActive], animated, animated);
+}
+
 #pragma mark Preference Changed Notification
 
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
@@ -465,7 +474,8 @@ CHConstructor
 	CHHook1(SBIconController, setIsEditing);
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
-
+	CHLoadLateClass(SBSearchView);
+	CHHook2(SBSearchView, setShowsKeyboard, animated);
 
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);
