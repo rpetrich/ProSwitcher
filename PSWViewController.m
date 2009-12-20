@@ -28,6 +28,7 @@ CHDeclareClass(SBZoomView);
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
 static NSUInteger modifyZoomTransformCountDown;
+BOOL restoreIconListFlag = NO;
 
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
@@ -304,6 +305,7 @@ static NSUInteger modifyZoomTransformCountDown;
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
+	restoreIconListFlag	= YES;
 	[application exit];
 	UIView *view = [self view];
 	[view removeFromSuperview];
@@ -314,6 +316,7 @@ static NSUInteger modifyZoomTransformCountDown;
 		[superview insertSubview:view belowSubview:buttonBarParent];
 	else
 		[superview insertSubview:view aboveSubview:buttonBarParent];	
+	restoreIconListFlag = NO;
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
@@ -341,6 +344,16 @@ CHMethod0(void, SBApplication, activate)
 CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
 	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && suppressIconScatter == 0);
+}
+
+CHMethod1(void, SBUIController, restoreIconList, BOOL, blah)
+{
+	if(restoreIconListFlag) {
+		restoreIconListFlag = NO;
+		return;
+	}
+	
+	return CHSuper1(SBUIController, restoreIconList, blah);
 }
 
 #pragma mark SpringBoard
@@ -436,6 +449,7 @@ CHConstructor
 	CHHook0(SBApplication, activate);
 	CHLoadLateClass(SBIconListPageControl);
 	CHLoadLateClass(SBUIController);
+	CHHook1(SBUIController, restoreIconList);
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
@@ -446,6 +460,7 @@ CHConstructor
 	CHHook1(SBIconController, setIsEditing);
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
+
 
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);

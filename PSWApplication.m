@@ -1,5 +1,7 @@
 #import "PSWApplication.h"
 
+#include <unistd.h>
+
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBIconModel.h>
@@ -34,7 +36,7 @@ static NSUInteger defaultImagePassThrough;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	for (NSString *path in [fileManager contentsOfDirectoryAtPath:snapshotPath error:NULL])
 		if ([snapshotPath hasPrefix:@"ProSwitcher-"] && [snapshotPath hasSuffix:@".cache"])
-			[fileManager removeItemAtPath:[snapshotPath stringByAppendingPathComponent:snapshotPath] error:NULL];
+			unlink([[snapshotPath stringByAppendingPathComponent:snapshotPath] UTF8String]);
 }
 
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier
@@ -67,7 +69,7 @@ static NSUInteger defaultImagePassThrough;
 	}
 #endif
 	if (_snapshotFilePath) {
-		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+		unlink([_snapshotFilePath UTF8String]);
 		[_snapshotFilePath release];
 	}		
 	[super dealloc];
@@ -94,7 +96,7 @@ static NSUInteger defaultImagePassThrough;
 		CGImageRelease(_snapshotImage);
 		[_snapshotData release];
 		if (_snapshotFilePath) {
-			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+			unlink([_snapshotFilePath UTF8String]);
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
@@ -131,14 +133,15 @@ static NSUInteger defaultImagePassThrough;
 		CGImageRelease(_snapshotImage);
 		[_snapshotData release];
 		if (_snapshotFilePath) {
-			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+			unlink([_snapshotFilePath UTF8String]);
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
 		if (_surface)
 			CFRelease(_surface);
 		if (surface) {
-			_surface = (IOSurfaceRef)CFRetain(surface);
+			CFRetain(surface);
+			_surface = surface;
 			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 			CGContextRef context = CGBitmapContextCreate(IOSurfaceGetBaseAddress(surface), IOSurfaceGetWidth(surface), IOSurfaceGetHeight(surface), 8, IOSurfaceGetBytesPerRow(surface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 			CGColorSpaceRelease(colorSpace);
@@ -232,9 +235,20 @@ static NSUInteger defaultImagePassThrough;
 	[self activateWithAnimation:NO];
 }
 
-- (void)writeSnapshotToDisk
+- (BOOL)writeSnapshotToDisk
 {
-	if (!_snapshotFilePath) {
+	if (_snapshotFilePath)
+		return NO;
+#ifdef USE_IOSURFACE
+	if (!(_snapshotData || _surface)) {
+#else
+		if (!_snapshotData) {
+#endif
+			// We have a default image; just release it as it can be reloaded easily
+			CGImageRelease(_snapshotImage);
+			_snapshotImage = NULL;
+			return NO;
+		}
 		// Generate filename
 		CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
 		CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuid);
@@ -268,42 +282,47 @@ static NSUInteger defaultImagePassThrough;
 		CGContextRelease(context);
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
+		return YES;
 	}
-}
-
-@end
-
+	
+	- (NSString *)description
+	{
+		return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];
+	}
+	
+	@end
+	
 #pragma mark SBApplication
-
-CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
-{
-	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
-		[ignoredRelaunchDisplayIdentifier release];
-		ignoredRelaunchDisplayIdentifier = nil;
-	} else {
-		CHSuper1(SBApplication, _relaunchAfterAbnormalExit, something);
-	}
-}
-
-CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
-{
-	UIImage *result = CHSuper1(SBApplication, defaultImage, something);
-	if (defaultImagePassThrough == 0) {
-		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
-		CGImageRef cgResult = [app snapshot];
-		if (cgResult) {
-			result = [[[UIImage alloc] initWithCGImage:cgResult] autorelease];
+	
+	CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
+	{
+		if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
+			[ignoredRelaunchDisplayIdentifier release];
+			ignoredRelaunchDisplayIdentifier = nil;
+		} else {
+			CHSuper1(SBApplication, _relaunchAfterAbnormalExit, something);
 		}
 	}
-	return result;
-}
-
-CHConstructor {
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBApplicationIcon);
-	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-	CHHook1(SBApplication, defaultImage);
-}
-
+	
+	CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+	{
+		UIImage *result = CHSuper1(SBApplication, defaultImage, something);
+		if (defaultImagePassThrough == 0) {
+			PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+			CGImageRef cgResult = [app snapshot];
+			if (cgResult) {
+				result = [[[UIImage alloc] initWithCGImage:cgResult] autorelease];
+			}
+		}
+		return result;
+	}
+	
+	CHConstructor {
+		CHLoadLateClass(SBApplicationController);
+		CHLoadLateClass(SBApplicationIcon);
+		CHLoadLateClass(SBIconModel);
+		CHLoadLateClass(SBApplication);
+		CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+		CHHook1(SBApplication, defaultImage);
+	}
+	
