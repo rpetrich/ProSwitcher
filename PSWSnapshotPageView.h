@@ -45,6 +45,7 @@
 @property (nonatomic, assign) CGFloat snapshotInset;
 @property (nonatomic, assign) CGFloat unfocusedAlpha;
 @property (nonatomic, assign) BOOL showsPageControl;
+@property (nonatomic, assign, getter=isPagingEnabled) BOOL pagingEnabled;
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
 

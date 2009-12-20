@@ -10,6 +10,7 @@
 #import "PSWDisplayStacks.h"
 #import "PSWResources.h"
 #import "SpringBoard+Backgrounder.h"
+#import "SBUIController+CategoriesSB.h"
 
 // Using zero-link (late binding) until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
@@ -24,6 +25,7 @@ CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
 CHDeclareClass(SBZoomView);
+CHDeclareClass(SBSearchView);
 
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
@@ -62,6 +64,7 @@ BOOL restoreIconListFlag = NO;
 #define PSWSnapshotInset        40.0f
 #define PSWUnfocusedAlpha       1.0f
 #define PSWShowDefaultApps      YES
+#define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 
 + (PSWViewController *)sharedInstance
@@ -109,7 +112,11 @@ BOOL restoreIconListFlag = NO;
 			isActive = YES;
 
 			snapshotPageView.focusedApplication = focusedApplication;
-			UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
+			SBUIController *uiController = CHSharedInstance(SBUIController);
+			// Deactivate CategoriesSB
+			if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
+				[uiController categoriesSBCloseAll];
+			UIWindow *rootWindow = [uiController window];
 			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
 			CALayer *layer = [snapshotPageView.scrollView layer];
 			if (animated) {
@@ -182,13 +189,15 @@ BOOL restoreIconListFlag = NO;
 	} else {
 		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
 		NSString *activeDisplayIdentifier = [activeApp displayIdentifier];
+		PSWApplication *pswApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier];
 		
 		// Chicken or the egg situration here and I'm too sleepy to figure it out :P
 		//modifyZoomTransformCountDown = 2;
 		
 		// background running app
-		if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
+		if (![pswApp hasNativeBackgrounding])
+			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
 		[activeApp setDeactivationSetting:0x2 flag:YES]; // animate
 		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
 		
@@ -198,7 +207,7 @@ BOOL restoreIconListFlag = NO;
 		
 		// Show ProSwitcher
 		[self setActive:YES animated:NO];
-		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
+		[snapshotPageView setFocusedApplication:pswApp animated:NO];
 		[event setHandled:YES];
 	}	
 }
@@ -259,6 +268,7 @@ BOOL restoreIconListFlag = NO;
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL)?nil:GetPreference(PSWDefaultApps, id);
+	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 }
 
 - (void)_reloadPreferences
@@ -427,6 +437,14 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 	}
 }
 
+#pragma mark SBSearchView
+
+CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
+{
+	// Disable search view's keyboard when ProSwitcher is active
+	CHSuper2(SBSearchView, setShowsKeyboard, visible && ![[PSWViewController sharedInstance] isActive], animated, animated);
+}
+
 #pragma mark Preference Changed Notification
 
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
@@ -460,7 +478,8 @@ CHConstructor
 	CHHook1(SBIconController, setIsEditing);
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
-
+	CHLoadLateClass(SBSearchView);
+	CHHook2(SBSearchView, setShowsKeyboard, animated);
 
 	/* debug for simulator since libactivator isn't there yet
 	CHHook0(SpringBoard, allowMenuDoubleTap);

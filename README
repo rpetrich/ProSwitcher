@@ -7,5 +7,3 @@ If DebMaker is installed, it will be used to make deb packages for device builds
 Uses MobileSubstrate (saurik) as loader
 Uses CaptainHook (rpetrich) as hooker
 Uses code from kirikae (ashikase) to track apps; also best used with his Backgrounder app :)
-
-Note: Until we get out of beta, distribution of binaries is NOT permitted. We are overwhelmed by the response to ProSwitcher and will be swamped by support requests if this happens; that means less time making ProSwitcher better.
