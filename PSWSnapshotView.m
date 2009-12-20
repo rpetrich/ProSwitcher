@@ -55,6 +55,7 @@
 			_closeButton.alpha = 0.0f;
 			_titleView.alpha = 0.0f;
 			_iconView.alpha = 0.0f;
+			_iconBadge.alpha = 0.0f;
 			[UIView commitAnimations];
 			isInDrag = YES;
 		}
@@ -77,6 +78,7 @@
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
+		_iconBadge.alpha = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
 		if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
@@ -187,8 +189,33 @@
 		}
 	}
 	
+	if (_iconBadge) {
+		[_iconBadge removeFromSuperview];
+		[_iconBadge release];
+		_iconBadge = nil;
+	}
+	
+	if (_showsBadge) {
+		SBIconBadge *badge = CHIvar([_application springBoardIcon], _badge, SBIconBadge *);
+		if (badge) {	
+			_iconBadge = [[UIImageView alloc] init];
+			
+			UIGraphicsBeginImageContext(badge.frame.size);
+			[badge.layer renderInContext:UIGraphicsGetCurrentContext()];
+			[_iconBadge setImage:UIGraphicsGetImageFromCurrentImageContext()];
+			UIGraphicsEndImageContext();
+			
+			[self addSubview:_iconBadge];
+			CGSize badgeSize = [[_iconBadge image] size];
+			CGFloat offsetX = (NSInteger) (badgeSize.width / 2.0f);
+			CGFloat offsetY = (NSInteger) (badgeSize.height / 2.0f);
+			[_iconBadge setFrame:CGRectMake(screenFrame.origin.x + screenFrame.size.width - offsetX, screenFrame.origin.y - offsetY + 2, badgeSize.width, badgeSize.height)];					
+		}
+	}
+	
 	CGFloat alpha = _focused?1.0f:0.0f;
 	[_closeButton setAlpha:alpha];
+	[_iconBadge setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 }
@@ -226,6 +253,7 @@
 	[_titleView release];
 	[_iconView release];
 	[_closeButton release];
+	[_iconBadge release];
 	[_application release];
     [super dealloc];
 }
@@ -260,6 +288,19 @@
 {
 	if (_showsTitle != showsTitle) {
 		_showsTitle = showsTitle;
+		[self _relayoutViews];
+	}
+}
+
+- (BOOL)showsBadge
+{
+	return _iconBadge != nil;
+}
+
+- (void)setShowsBadge:(BOOL)showsBadge
+{
+	if (_showsBadge != showsBadge) {
+		_showsBadge = showsBadge;
 		[self _relayoutViews];
 	}
 }

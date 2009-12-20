@@ -4,6 +4,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBIconBadge.h>
 #import <CaptainHook/CaptainHook.h>
 
 #import "PSWApplication.h"
@@ -17,8 +18,10 @@
 	BOOL _allowsSwipeToClose;
 	BOOL _showsCloseButton;
 	BOOL _showsTitle;
+	BOOL _showsBadge;
 	BOOL _focused;
 	UIButton *_closeButton;
+	UIImageView *_iconBadge;
 	UILabel *_titleView;
 	UIImageView *_iconView;
 	
@@ -29,11 +32,13 @@
 	CGFloat screenY;
 	CGFloat _roundedCornerRadius;
 }
+
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application;
 
 @property (nonatomic, readonly) PSWApplication *application;
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
+@property (nonatomic, assign) BOOL showsBadge;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;

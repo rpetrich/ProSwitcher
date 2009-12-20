@@ -248,6 +248,19 @@
 	}
 }
 
+- (BOOL)showsBadges
+{
+	return _showsBadges;
+}
+- (void)setShowsBadges:(BOOL)showsBadges
+{
+	if (_showsBadges != showsBadges) {
+		_showsBadges = showsBadges;
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setShowsBadge:showsBadges];
+	}
+}
+
 - (BOOL)allowsSwipeToClose
 {
 	return _showsCloseButtons;

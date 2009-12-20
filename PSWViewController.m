@@ -51,6 +51,7 @@ BOOL restoreIconListFlag = NO;
 
 // Defaults
 #define PSWShowDock             YES
+#define PSWShowBadges			YES
 #define PSWAnimateActive        YES
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
@@ -267,7 +268,8 @@ BOOL restoreIconListFlag = NO;
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
-	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL)?nil:GetPreference(PSWDefaultApps, id);
+	snapshotPageView.showsBadges		 = GetPreference(PSWShowBadges, BOOL);
+	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 }
 
