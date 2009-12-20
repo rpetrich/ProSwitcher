@@ -64,6 +64,7 @@ BOOL restoreIconListFlag = NO;
 #define PSWSnapshotInset        40.0f
 #define PSWUnfocusedAlpha       1.0f
 #define PSWShowDefaultApps      YES
+#define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 
 + (PSWViewController *)sharedInstance
@@ -265,6 +266,7 @@ BOOL restoreIconListFlag = NO;
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL)?nil:GetPreference(PSWDefaultApps, id);
+	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 }
 
 - (void)_reloadPreferences

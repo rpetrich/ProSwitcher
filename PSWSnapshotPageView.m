@@ -32,7 +32,6 @@
 		
 		_scrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
 		[_scrollView setClipsToBounds:NO];
-		[_scrollView setPagingEnabled:YES];
 		[_scrollView setShowsHorizontalScrollIndicator:NO];
 		[_scrollView setShowsVerticalScrollIndicator:NO];
 		[_scrollView setScrollsToTop:NO];
@@ -368,6 +367,15 @@
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
 			[self _removeViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
 	}
+}
+
+- (BOOL)isPagingEnabled
+{
+	return [_scrollView isPagingEnabled];
+}
+- (void)setPagingEnabled:(BOOL)pagingEnabled
+{
+	[_scrollView setPagingEnabled:pagingEnabled];
 }
 
 #pragma mark UIScrollViewDelegate
