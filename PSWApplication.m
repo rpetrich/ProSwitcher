@@ -1,5 +1,7 @@
 #import "PSWApplication.h"
 
+#include <unistd.h>
+
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBIconModel.h>
@@ -34,7 +36,7 @@ static NSUInteger defaultImagePassThrough;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	for (NSString *path in [fileManager contentsOfDirectoryAtPath:snapshotPath error:NULL])
 		if ([snapshotPath hasPrefix:@"ProSwitcher-"] && [snapshotPath hasSuffix:@".cache"])
-			[fileManager removeItemAtPath:[snapshotPath stringByAppendingPathComponent:snapshotPath] error:NULL];
+			unlink([[snapshotPath stringByAppendingPathComponent:snapshotPath] UTF8String]);
 }
 
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier
@@ -67,7 +69,7 @@ static NSUInteger defaultImagePassThrough;
 	}
 #endif
 	if (_snapshotFilePath) {
-		[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+		unlink([_snapshotFilePath UTF8String]);
 		[_snapshotFilePath release];
 	}		
 	[super dealloc];
@@ -94,7 +96,7 @@ static NSUInteger defaultImagePassThrough;
 		CGImageRelease(_snapshotImage);
 		[_snapshotData release];
 		if (_snapshotFilePath) {
-			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+			unlink([_snapshotFilePath UTF8String]);
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
@@ -131,7 +133,7 @@ static NSUInteger defaultImagePassThrough;
 		CGImageRelease(_snapshotImage);
 		[_snapshotData release];
 		if (_snapshotFilePath) {
-			[[NSFileManager defaultManager] removeItemAtPath:_snapshotFilePath error:NULL];
+			unlink([_snapshotFilePath UTF8String]);
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
