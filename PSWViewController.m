@@ -150,7 +150,7 @@ BOOL restoreIconListFlag = NO;
 			[superview insertSubview:view aboveSubview:buttonBarParent];
 		if (!isActive) {
 			[self _applyPreferences];
-			[snapshotPageView reloadBadges];
+			[snapshotPageView redraw];
 			UIApplication *app = [UIApplication sharedApplication];
 			formerStatusBarStyle = [app statusBarStyle];
 			[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
@@ -212,6 +212,7 @@ BOOL restoreIconListFlag = NO;
 			[view removeFromSuperview];
 		}
 		[self _applyPreferences];
+		[snapshotPageView redraw];
 	}
 }
 

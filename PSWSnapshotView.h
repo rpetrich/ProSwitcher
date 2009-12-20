@@ -39,13 +39,13 @@
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
-- (void)reloadBadge;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) BOOL focused;
 @property (nonatomic, readonly) UIView *screenView;
 - (void)setFocused:(BOOL)focused animated:(BOOL)animated;
+- (void)redraw;
 
 @end
 

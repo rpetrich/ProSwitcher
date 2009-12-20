@@ -40,7 +40,6 @@
 @property (nonatomic, assign) NSString *emptyText;
 @property (nonatomic, assign) BOOL showsTitles;
 @property (nonatomic, assign) BOOL showsBadges;
-- (void)reloadBadges;
 @property (nonatomic, assign) BOOL showsCloseButtons;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
@@ -51,6 +50,7 @@
 @property (nonatomic, assign, getter=isPagingEnabled) BOOL pagingEnabled;
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
+- (void)redraw;
 
 @end
 

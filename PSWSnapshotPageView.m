@@ -199,6 +199,13 @@
 
 #pragma mark Properties
 
+- (void)redraw
+{
+	[self _relayoutViews];
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view redraw];
+}
+
 - (PSWApplication *)focusedApplication
 {
 	if ([_applications count])
@@ -259,11 +266,6 @@
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setShowsBadge:showsBadges];
 	}
-}
-- (void)reloadBadges
-{
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view reloadBadge];
 }
 
 - (BOOL)allowsSwipeToClose

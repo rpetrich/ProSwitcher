@@ -260,6 +260,11 @@
 
 #pragma mark Properties
 
+- (void)redraw
+{
+	[self _relayoutViews];
+}
+
 - (void)_closeButtonWasPushed
 {
 	if ([_delegate respondsToSelector:@selector(snapshotViewClosed:)])
@@ -303,11 +308,6 @@
 		[self _relayoutViews];
 	}
 }
-- (void)reloadBadge
-{
-	[self _relayoutViews];
-}
-
 		  
 - (CGFloat)roundedCornerRadius
 {
@@ -320,7 +320,6 @@
 		[self _relayoutViews];
 	}
 }
-
 
 - (BOOL)focused
 {
