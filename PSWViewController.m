@@ -268,7 +268,7 @@ BOOL restoreIconListFlag = NO;
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
-	snapshotPageView.showsBadges		 = GetPreference(PSWShowBadges, BOOL);
+	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 }
