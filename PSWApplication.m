@@ -163,9 +163,18 @@ static NSUInteger defaultImagePassThrough;
 	return (SBApplicationIcon *)[CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
 }
 
+- (BOOL)hasNativeBackgrounding
+{
+	return [_displayIdentifier isEqualToString:@"com.apple.mobilephone"]
+		|| [_displayIdentifier isEqualToString:@"com.apple.mobilemail"]
+		|| [_displayIdentifier isEqualToString:@"com.apple.mobilesafari"]
+		|| [_displayIdentifier hasPrefix:@"com.apple.mobileipod"]
+		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"];
+}
+
 - (void)exit
 {
-	if ([_displayIdentifier isEqualToString:@"com.apple.mobilephone"] || [_displayIdentifier isEqualToString:@"com.apple.mobilemail"] || [_displayIdentifier isEqualToString:@"com.apple.mobilesafari"] || [_displayIdentifier hasPrefix:@"com.apple.mobileipod"] || [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"]) {
+	if ([self hasNativeBackgrounding]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = [_displayIdentifier retain];
 		[_application kill];

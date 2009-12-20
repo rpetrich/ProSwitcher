@@ -189,13 +189,15 @@ BOOL restoreIconListFlag = NO;
 	} else {
 		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
 		NSString *activeDisplayIdentifier = [activeApp displayIdentifier];
+		PSWApplication *pswApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier];
 		
 		// Chicken or the egg situration here and I'm too sleepy to figure it out :P
 		//modifyZoomTransformCountDown = 2;
 		
 		// background running app
-		if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-			[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
+		if (![pswApp hasNativeBackgrounding])
+			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
 		[activeApp setDeactivationSetting:0x2 flag:YES]; // animate
 		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
 		
@@ -205,7 +207,7 @@ BOOL restoreIconListFlag = NO;
 		
 		// Show ProSwitcher
 		[self setActive:YES animated:NO];
-		[snapshotPageView setFocusedApplication:[[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier] animated:NO];
+		[snapshotPageView setFocusedApplication:pswApp animated:NO];
 		[event setHandled:YES];
 	}	
 }

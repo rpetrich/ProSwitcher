@@ -35,6 +35,7 @@
 @property (nonatomic, readonly) SBApplication *application;
 @property (nonatomic, assign) CGImageRef snapshot;
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
+@property (nonatomic, readonly) BOOL hasNativeBackgrounding;
 
 //- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride;
 #ifdef USE_IOSURFACE
