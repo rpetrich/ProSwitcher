@@ -306,7 +306,6 @@
 - (void)reloadBadge
 {
 	[self _relayoutViews];
-	NSLog(@"relayed out badge");
 }
 
 		  
