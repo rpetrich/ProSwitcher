@@ -10,6 +10,7 @@
 #import "PSWDisplayStacks.h"
 #import "PSWResources.h"
 #import "SpringBoard+Backgrounder.h"
+#import "SBUIController+CategoriesSB.h"
 
 // Using zero-link (late binding) until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
@@ -109,7 +110,11 @@ BOOL restoreIconListFlag = NO;
 			isActive = YES;
 
 			snapshotPageView.focusedApplication = focusedApplication;
-			UIWindow *rootWindow = [CHSharedInstance(SBUIController) window];
+			SBUIController *uiController = CHSharedInstance(SBUIController);
+			// Deactivate CategoriesSB
+			if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
+				[uiController categoriesSBCloseAll];
+			UIWindow *rootWindow = [uiController window];
 			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
 			CALayer *layer = [snapshotPageView.scrollView layer];
 			if (animated) {
