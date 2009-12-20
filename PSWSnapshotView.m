@@ -296,7 +296,6 @@
 {
 	return _iconBadge != nil;
 }
-
 - (void)setShowsBadge:(BOOL)showsBadge
 {
 	if (_showsBadge != showsBadge) {
@@ -304,21 +303,25 @@
 		[self _relayoutViews];
 	}
 }
+- (void)reloadBadge
+{
+	[self _relayoutViews];
+	NSLog(@"relayed out badge");
+}
 
+		  
+- (CGFloat)roundedCornerRadius
+{
+	return _roundedCornerRadius;
+}
 - (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
 {
 	if (_roundedCornerRadius != roundedCornerRadius) {
 		_roundedCornerRadius = roundedCornerRadius;
 		[self _relayoutViews];
 	}
-	//screen.layer.cornerRadius = roundedCornerRadius;
 }
 
-- (CGFloat)roundedCornerRadius
-{
-	return _roundedCornerRadius;
-	//return screen.layer.cornerRadius;	
-}
 
 - (BOOL)focused
 {

@@ -39,6 +39,7 @@
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
+- (void)reloadBadge;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;

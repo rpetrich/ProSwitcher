@@ -92,6 +92,48 @@ BOOL restoreIconListFlag = NO;
 	return isActive;
 }
 
+
+- (void)_applyPreferences
+{
+	UIView *view = [self view];
+	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
+		[[view layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
+	else
+		[[view layer] setContents:nil];
+	
+	if (GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+	
+	CGRect frame;
+	frame.origin.x = 0.0f;
+	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize]?40.0f:20.0f;
+	frame.size.width = 320.0f;
+	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
+	[snapshotPageView setFrame:frame];
+	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
+	
+	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
+	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
+	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
+	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running":nil;
+	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
+	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
+	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
+	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
+	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
+	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
+	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
+	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
+}
+
+- (void)_reloadPreferences
+{
+	[preferences release];
+	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+	[self _applyPreferences];
+}
+
 - (void)setActive:(BOOL)active animated:(BOOL)animated
 {
 	if (active) {
@@ -107,6 +149,8 @@ BOOL restoreIconListFlag = NO;
 		else
 			[superview insertSubview:view aboveSubview:buttonBarParent];
 		if (!isActive) {
+			[self _applyPreferences];
+			[snapshotPageView reloadBadges];
 			UIApplication *app = [UIApplication sharedApplication];
 			formerStatusBarStyle = [app statusBarStyle];
 			[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
@@ -167,6 +211,7 @@ BOOL restoreIconListFlag = NO;
 				[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 			[view removeFromSuperview];
 		}
+		[self _applyPreferences];
 	}
 }
 
@@ -238,48 +283,6 @@ BOOL restoreIconListFlag = NO;
 	[snapshotPageView release];
     [super dealloc];
 }
-
-- (void)_applyPreferences
-{
-	UIView *view = [self view];
-	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
-		[[view layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
-	else
-		[[view layer] setContents:nil];
-	
-	if (GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
-
-	CGRect frame;
-	frame.origin.x = 0.0f;
-	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize]?40.0f:20.0f;
-	frame.size.width = 320.0f;
-	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
-	[snapshotPageView setFrame:frame];
-	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
-	
-	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
-	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
-	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running":nil;
-	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
-	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
-	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
-	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
-	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
-	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
-	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
-	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
-}
-
-- (void)_reloadPreferences
-{
-	[preferences release];
-	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
-	[self _applyPreferences];
-}
-
 - (void)loadView 
 {
 	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 480.0f)];
