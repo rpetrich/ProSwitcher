@@ -59,6 +59,10 @@ static PSWApplicationController *sharedApplicationController;
 		[application writeSnapshotToDisk];
 }
 
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%s %p activeApplications=%@ delegate=%@>", class_getName([self class]), self, [self activeApplications], _delegate];
+}
 
 #pragma mark Private Methods
 
