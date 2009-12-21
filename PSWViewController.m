@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 
 #import "PSWDisplayStacks.h"
+#import "PSWPreferences.h"
 #import "PSWResources.h"
 #import "SpringBoard+Backgrounder.h"
 #import "SBUIController+CategoriesSB.h"
@@ -26,47 +27,21 @@ CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
 CHDeclareClass(SBZoomView);
 CHDeclareClass(SBSearchView);
+#define SBActive ([SBWActiveDisplayStack topApplication] == nil)
+#define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
+
 
 static PSWViewController *mainController;
 static NSInteger suppressIconScatter;
 static NSUInteger modifyZoomTransformCountDown;
-BOOL restoreIconListFlag = NO;
 
-#define SBActive ([SBWActiveDisplayStack topApplication] == nil)
-#define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
+static int restoreIconListFlag = 0;
+static int suppressIconListScatter = 0;
+static int suppressIconListScroll = 0;
 
-#define PSWPreferencesFilePath [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/com.collab.proswitcher.plist"]
-#define PSWPreferencesChangedNotification "com.collab.proswitcher.preferencechanged"
-
-#define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
-#define floatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
-#define NSIntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
-#define BOOLForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
 
 @implementation PSWViewController
-
 @synthesize snapshotPageView;
-
-#define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
-
-// Defaults
-#define PSWShowDock             YES
-#define PSWShowBadges			YES
-#define PSWAnimateActive        YES
-#define PSWDimBackground        YES
-#define PSWShowPageControl      YES
-#define PSWBackgroundStyle      0
-#define PSWSwipeToClose         YES
-#define PSWShowApplicationTitle YES
-#define PSWShowCloseButton      YES
-#define PSWShowEmptyText        YES
-#define PSWRoundedCornerRadius  0.0f
-#define PSWTapsToActivate       2
-#define PSWSnapshotInset        40.0f
-#define PSWUnfocusedAlpha       1.0f
-#define PSWShowDefaultApps      YES
-#define PSWPagingEnabled        YES
-#define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 
 + (PSWViewController *)sharedInstance
 {
@@ -75,35 +50,33 @@ BOOL restoreIconListFlag = NO;
 	return mainController;
 }
 
-- (void)didFinishDeactivate
-{
-	[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
-	[[self view] removeFromSuperview];
-	isAnimating = NO;
-}
-
-- (void)didFinishActivate
-{
-	isAnimating = NO;
-}
-
 - (BOOL)isActive
 {
 	return isActive;
 }
 
+- (BOOL)isAnimating
+{
+	return isAnimating;
+}
+
+#pragma mark Preferences
 
 - (void)_applyPreferences
 {
 	UIView *view = [self view];
 	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	
 	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
-		[[view layer] setContents:(id)[PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
+		[[view layer] setContents:(id) [PSWGetCachedSpringBoardResource(@"ProSwitcherBackground") CGImage]];
 	else
 		[[view layer] setContents:nil];
 	
-	if (GetPreference(PSWShowPageControl, BOOL))
+	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+		
+	if (![self isActive] && GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 	
 	CGRect frame;
 	frame.origin.x = 0.0f;
@@ -134,140 +107,7 @@ BOOL restoreIconListFlag = NO;
 	[self _applyPreferences];
 }
 
-- (void)setActive:(BOOL)active animated:(BOOL)animated
-{
-	if (active) {
-		// Find appropriate superview and add as subview
-		UIView *view = [self view];
-		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
-		UIView *buttonBarParent = [buttonBar superview];
-		UIView *superview = [buttonBarParent superview];
-		[view removeFromSuperview];
-		// Reparent always; even when already active
-		if (GetPreference(PSWShowDock, BOOL))
-			[superview insertSubview:view belowSubview:buttonBarParent];
-		else
-			[superview insertSubview:view aboveSubview:buttonBarParent];
-		if (!isActive) {
-			[self _applyPreferences];
-			[snapshotPageView redraw];
-			UIApplication *app = [UIApplication sharedApplication];
-			formerStatusBarStyle = [app statusBarStyle];
-			[app setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-			isActive = YES;
-
-			snapshotPageView.focusedApplication = focusedApplication;
-			SBUIController *uiController = CHSharedInstance(SBUIController);
-			// Deactivate CategoriesSB
-			if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
-				[uiController categoriesSBCloseAll];
-			UIWindow *rootWindow = [uiController window];
-			[rootWindow endEditing:YES]; // force keyboard hide in spotlight
-			CALayer *layer = [snapshotPageView.scrollView layer];
-			if (animated) {
-				view.alpha = 0.0f;
-				[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-				[UIView beginAnimations:nil context:nil];
-				[UIView setAnimationDuration:0.5f];
-				[UIView setAnimationDelegate:self];
-				[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
-				[layer setTransform:CATransform3DIdentity];
-				[view setAlpha:1.0f];
-				if (GetPreference(PSWShowPageControl, BOOL))
-					[CHSharedInstance(SBIconController) setPageControlVisible:NO];
-				[UIView commitAnimations];
-				isAnimating = YES;
-			} else {
-				[layer setTransform:CATransform3DIdentity];
-				view.alpha = 1.0f;
-				if (GetPreference(PSWShowPageControl, BOOL))
-					[CHSharedInstance(SBIconController) setPageControlVisible:NO];
-			}
-		}
-	} else {
-		if (!isActive)
-			return;
-		isActive = NO;
-		
-		[focusedApplication release];
-		focusedApplication = [snapshotPageView.focusedApplication retain];
-		UIView *view = [self view];
-		if (animated) {
-			CALayer *layer = [snapshotPageView.scrollView layer];
-			[layer setTransform:CATransform3DIdentity];
-			[UIView beginAnimations:nil context:nil];
-			[UIView setAnimationDuration:0.5f];
-			[UIView setAnimationDelegate:self];
-			[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
-			[layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-			[view setAlpha:0.0f];
-			if (GetPreference(PSWShowPageControl, BOOL))
-				[CHSharedInstance(SBIconController) setPageControlVisible:YES];
-			[UIView commitAnimations];
-			isAnimating = YES;
-		} else {
-			[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
-			if (GetPreference(PSWShowPageControl, BOOL))
-				[CHSharedInstance(SBIconController) setPageControlVisible:YES];
-			[view removeFromSuperview];
-		}
-		[self _applyPreferences];
-		[snapshotPageView redraw];
-	}
-}
-
-- (void)setActive:(BOOL)active
-{
-	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
-}
-
-- (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
-{
-	if ([[CHClass(SBAwayController) sharedAwayController] isLocked])
-		return;
-	if ([self isAnimating])
-		return;
-	
-	if (SBActive) {
-		BOOL newActive = ![self isActive];
-		[self setActive:newActive];
-		if (newActive)
-			[event setHandled:YES];
-	} else {
-		SBApplication *activeApp = [SBWActiveDisplayStack topApplication];
-		NSString *activeDisplayIdentifier = [activeApp displayIdentifier];
-		PSWApplication *pswApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:activeDisplayIdentifier];
-		
-		// Chicken or the egg situration here and I'm too sleepy to figure it out :P
-		//modifyZoomTransformCountDown = 2;
-		
-		// background running app
-		if (![pswApp hasNativeBackgrounding])
-			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:activeDisplayIdentifier];
-		[activeApp setDeactivationSetting:0x2 flag:YES]; // animate
-		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
-		
-		// Deactivate by moving from active stack to suspending stack
-		[SBWActiveDisplayStack popDisplay:activeApp];
-		[SBWSuspendingDisplayStack pushDisplay:activeApp];
-		
-		// Show ProSwitcher
-		[self setActive:YES animated:NO];
-		[snapshotPageView setFocusedApplication:pswApp animated:NO];
-		[event setHandled:YES];
-	}	
-}
-
-- (void)activator:(LAActivator *)activator abortEvent:(LAEvent *)event
-{
-	[self setActive:NO];
-}
-
-- (BOOL)isAnimating
-{
-	return isAnimating;
-}
+#pragma mark View Controller
 
 - (id)init
 {
@@ -284,6 +124,21 @@ BOOL restoreIconListFlag = NO;
 	[snapshotPageView release];
     [super dealloc];
 }
+
+- (void)reparentView
+{
+	// Find appropriate superview and add as subview
+	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+	UIView *buttonBarParent = [buttonBar superview];
+	UIView *targetSuperview = [buttonBarParent superview];
+	
+	// Reparent always; even when already active
+	if (GetPreference(PSWShowDock, BOOL))
+		[targetSuperview insertSubview:self.view belowSubview:buttonBarParent];
+	else
+		[targetSuperview insertSubview:self.view aboveSubview:buttonBarParent];	
+}
+
 - (void)loadView 
 {
 	UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 320.0f, 480.0f)];
@@ -311,28 +166,177 @@ BOOL restoreIconListFlag = NO;
 	PSWClearResourceCache();
 }
 
+#pragma mark Activation
+
+- (void)saveStatusBarStyle
+{
+	formerStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
+}
+
+- (void)restoreStatusBarStyle
+{
+	[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
+}
+
+- (void)didFinishDeactivate
+{
+	[[self view] removeFromSuperview];
+	isAnimating = NO;
+}
+
+- (void)didFinishActivate
+{
+	isAnimating = NO;
+}
+
+- (void)setupSpringBoard
+{
+	// Deactivate CategoriesSB
+	if ([CHSharedInstance(SBUIController) respondsToSelector:@selector(categoriesSBCloseAll)])
+		[CHSharedInstance(SBUIController) categoriesSBCloseAll];
+	
+	// Deactivate Keyboard
+	[[CHSharedInstance(SBUIController) window] endEditing:YES];
+	
+	// Setup status bar
+	[self saveStatusBarStyle];
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+	
+}
+
+- (void)setActive:(BOOL)active animated:(BOOL)animated
+{
+	if (!active && !isActive)
+		return;
+	
+	if (active) {
+		[self reparentView];
+		if (!isActive) {
+			isActive = active;
+			
+			[self setupSpringBoard];
+			[snapshotPageView setFocusedApplication:focusedApplication];
+			
+			CALayer *scrollLayer = [snapshotPageView.scrollView layer];
+			if (animated) {
+				self.view.alpha = 0.0f;
+				[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+				
+				[UIView beginAnimations:nil context:nil];
+				[UIView setAnimationDuration:0.5f];
+				[UIView setAnimationDelegate:self];
+				[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
+				
+				[scrollLayer setTransform:CATransform3DIdentity];
+				self.view.alpha = 1.0f;
+				[self _applyPreferences];
+				
+				isAnimating = YES;
+				[UIView commitAnimations];
+			} else {
+				self.view.alpha = 1.0f;
+				[self _applyPreferences];
+				
+				[self didFinishActivate];
+			}
+		}
+	} else {
+		isActive = active;
+		
+		[focusedApplication release];
+		focusedApplication = [snapshotPageView.focusedApplication retain];
+		
+		CALayer *scrollLayer = [snapshotPageView.scrollView layer];
+		if (animated) {
+			[scrollLayer setTransform:CATransform3DIdentity];
+			
+			[UIView beginAnimations:nil context:nil];
+			[UIView setAnimationDuration:0.5f];
+			[UIView setAnimationDelegate:self];
+			[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
+			
+			[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+			self.view.alpha = 0.0f;
+			[self _applyPreferences];
+			
+			isAnimating = YES;
+			[UIView commitAnimations];
+		} else {
+			self.view.alpha = 0.0f;
+			[self _applyPreferences];
+			
+			[self didFinishDeactivate];
+		}
+	}
+}
+
+- (void)setActive:(BOOL)active
+{
+	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
+}
+
+#pragma mark libactivator
+
+- (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
+{
+	if ([[CHClass(SBAwayController) sharedAwayController] isLocked] || [self isAnimating])
+		return;
+	
+	if (SBActive) {
+		BOOL newActive = ![self isActive];
+		[self setActive:newActive];
+		if (newActive)
+			[event setHandled:YES];
+	} else {
+		PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[[SBWActiveDisplayStack topApplication] displayIdentifier]];
+		
+		// Chicken or the egg situation here and I'm too sleepy to figure it out :P
+		//    ^-- care to explain *what* situation :P?
+		//modifyZoomTransformCountDown = 2;
+		
+		// background running app
+		if (![activeApp hasNativeBackgrounding])
+			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:[activeApp displayIdentifier]];
+		[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
+		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
+		
+		// Deactivate by moving from active stack to suspending stack
+		[SBWActiveDisplayStack popDisplay:[activeApp application]];
+		[SBWSuspendingDisplayStack pushDisplay:[activeApp application]];
+		
+		// Show ProSwitcher
+		[self setActive:YES animated:NO];
+		[snapshotPageView setFocusedApplication:activeApp animated:NO];
+		[event setHandled:YES];
+	}	
+}
+
+- (void)activator:(LAActivator *)activator abortEvent:(LAEvent *)event
+{
+	[self setActive:NO animated:NO];
+}
+
+#pragma mark PSWSnapshotPageView delegate
+
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
 	suppressIconScatter++;
+	
 	modifyZoomTransformCountDown = 1;
 	[application activateWithAnimation:YES];
+	
 	suppressIconScatter--;
 }
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
-	restoreIconListFlag	= YES;
+	restoreIconListFlag++;
+	
 	[application exit];
-	UIView *view = [self view];
-	[view removeFromSuperview];
-	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
-	UIView *buttonBarParent = [buttonBar superview];
-	UIView *superview = [buttonBarParent superview];
-	if (GetPreference(PSWShowDock, BOOL))
-		[superview insertSubview:view belowSubview:buttonBarParent];
-	else
-		[superview insertSubview:view aboveSubview:buttonBarParent];	
-	restoreIconListFlag = NO;
+	[self reparentView];
+	
+	restoreIconListFlag--;
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
@@ -347,8 +351,13 @@ BOOL restoreIconListFlag = NO;
 
 @end
 
-#pragma mark SBApplication
+#pragma mark Preference Changed Notification
+static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+{
+	[[PSWViewController sharedInstance] _reloadPreferences];
+}
 
+#pragma mark SBApplication
 CHMethod0(void, SBApplication, activate)
 {
 	[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
@@ -356,59 +365,53 @@ CHMethod0(void, SBApplication, activate)
 }
 
 #pragma mark SBUIController
-
 CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
 	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && suppressIconScatter == 0);
 }
-
 CHMethod1(void, SBUIController, restoreIconList, BOOL, blah)
 {
-	if(restoreIconListFlag) {
-		restoreIconListFlag = NO;
+	if(restoreIconListFlag > 0)
 		return;
-	}
 	
 	return CHSuper1(SBUIController, restoreIconList, blah);
 }
 
 #pragma mark SpringBoard
-
-static BOOL shouldSuppressIconListScroll;
-
 CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 {
-	PSWViewController *vc = [PSWViewController sharedInstance];
-	if ([vc isActive]) {
+	if ([[PSWViewController sharedInstance] isActive]) {
 		// Deactivate and suppress SpringBoard list scrolling
-		[vc setActive:NO];
-		shouldSuppressIconListScroll = YES;
+		[[PSWViewController sharedInstance] setActive:NO];
+		
+		suppressIconListScroll++;
 		CHSuper0(SpringBoard, _handleMenuButtonEvent);
-		shouldSuppressIconListScroll = NO;
-	} else {
-		// Do nothing
-		CHSuper0(SpringBoard, _handleMenuButtonEvent);
+		suppressIconListScroll--;
+		
+		return;
 	}
+	
+	CHSuper0(SpringBoard, _handleMenuButtonEvent);
 }
 
 #pragma mark SBIconController
-
 CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
 {
-	if (!shouldSuppressIconListScroll)
-		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
+	if (suppressIconListScroll > 0)
+		return;
+		
+	CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
 }
-
 CHMethod1(void, SBIconController, setIsEditing, BOOL, isEditing)
 {
 	// Disable ProSwitcher when editing
 	if (isEditing)
 		[[PSWViewController sharedInstance] setActive:NO];
+	
 	CHSuper1(SBIconController, setIsEditing, isEditing);
 }
 
 #pragma mark SBZoomView
-
 __attribute__((always_inline))
 static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRect)
 {
@@ -451,17 +454,6 @@ CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, a
 	CHSuper2(SBSearchView, setShowsKeyboard, visible && ![[PSWViewController sharedInstance] isActive], animated, animated);
 }
 
-#pragma mark Preference Changed Notification
-
-static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
-{
-	[[PSWViewController sharedInstance] _reloadPreferences];
-}
-
-/* debug for simulator since libactivator isn't there yet
-CHMethod0(BOOL, SpringBoard, allowMenuDoubleTap) { return YES; }
-CHMethod0(void, SpringBoard, handleMenuDoubleTap) { [[PSWViewController sharedInstance] activator:nil receiveEvent:nil]; }
-*/
 
 CHConstructor
 {
@@ -487,11 +479,6 @@ CHConstructor
 	CHLoadLateClass(SBSearchView);
 	CHHook2(SBSearchView, setShowsKeyboard, animated);
 
-	/* debug for simulator since libactivator isn't there yet
-	CHHook0(SpringBoard, allowMenuDoubleTap);
-	CHHook0(SpringBoard, handleMenuDoubleTap);
-	*/
-	
 	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
