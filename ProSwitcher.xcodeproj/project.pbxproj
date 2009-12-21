@@ -26,6 +26,7 @@
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWPreferences.h; sourceTree = "<group>"; };
 		7DB8A5B21086D4C100C1FD1D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		7DB8A6121086DAE500C1FD1D /* ProSwitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProSwitcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DD43FE510C097C90063020D /* PSWSnapshotPageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWSnapshotPageView.h; sourceTree = "<group>"; };
@@ -132,6 +133,7 @@
 				942FC6C110CBA11F006F6990 /* PSWDisplayStacks.h */,
 				942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */,
 				945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */,
+				7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */,
 			);
 			name = Code;
 			sourceTree = "<group>";
