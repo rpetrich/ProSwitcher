@@ -30,16 +30,13 @@ CHDeclareClass(SBSearchView);
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
 
-
-static PSWViewController *mainController;
-static NSInteger suppressIconScatter;
+#define ICON_LIST_SCATTER_FLAG 1
+#define ICON_LIST_RESTORE_FLAG 2
+#define ICON_LIST_SCROLL_FLAG 4
+static NSUInteger suppressFlags = 0;
 static NSUInteger modifyZoomTransformCountDown;
 
-static int restoreIconListFlag = 0;
-static int suppressIconListScatter = 0;
-static int suppressIconListScroll = 0;
-
-
+static PSWViewController *mainController;
 @implementation PSWViewController
 @synthesize snapshotPageView;
 
@@ -74,13 +71,10 @@ static int suppressIconListScroll = 0;
 	
 	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
-		
-	if (![self isActive] && GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 	
 	CGRect frame;
 	frame.origin.x = 0.0f;
-	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize]?40.0f:20.0f;
+	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 	frame.size.width = 320.0f;
 	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
 	[snapshotPageView setFrame:frame];
@@ -89,7 +83,7 @@ static int suppressIconListScroll = 0;
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
 	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running":nil;
+	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running" : nil;
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
@@ -98,7 +92,6 @@ static int suppressIconListScroll = 0;
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
-	[snapshotPageView redraw];
 }
 
 - (void)_reloadPreferences
@@ -179,19 +172,20 @@ static int suppressIconListScroll = 0;
 	[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
 }
 
-- (void)didFinishDeactivate
-{
-	[[self view] removeFromSuperview];
-	isAnimating = NO;
-}
-
+#pragma mark activate
 - (void)didFinishActivate
 {
 	isAnimating = NO;
 }
-
-- (void)setupSpringBoard
+- (void)activateWithAnimation:(BOOL)animated
 {
+	// Always reparent view
+	[self reparentView];
+	
+	// Don't double-activate
+	if (isActive)
+		return;
+		
 	// Deactivate CategoriesSB
 	if ([CHSharedInstance(SBUIController) respondsToSelector:@selector(categoriesSBCloseAll)])
 		[CHSharedInstance(SBUIController) categoriesSBCloseAll];
@@ -203,72 +197,92 @@ static int suppressIconListScroll = 0;
 	[self saveStatusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
 	
+	// Restore focused application
+	[snapshotPageView setFocusedApplication:focusedApplication];
+		
+	CALayer *scrollLayer = [snapshotPageView.scrollView layer];
+	if (animated) {
+		self.view.alpha = 0.0f;
+		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+			
+		[UIView beginAnimations:nil context:nil];
+		[UIView setAnimationDuration:0.5f];
+	}
+	
+	// Apply preferences
+	if (GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+	[self _applyPreferences];
+	
+	// Show ProSwitcher
+	[scrollLayer setTransform:CATransform3DIdentity];
+	self.view.alpha = 1.0f;
+	isActive = YES;
+			
+	if (animated) {
+		isAnimating = YES;
+		[UIView setAnimationDelegate:self];
+		[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
+		[UIView commitAnimations];
+	} else {
+		[self didFinishActivate];
+	}
+}
+
+
+#pragma mark Deactivate
+- (void)didFinishDeactivate
+{
+	[[self view] removeFromSuperview];
+	isAnimating = NO;
+}
+- (void)deactivateWithAnimation:(BOOL)animated
+{
+	// Don't deactivate if we are already deactivated
+	if (!isActive)
+		return;
+	
+	// Save focused applciation
+	[focusedApplication release];
+	focusedApplication = [snapshotPageView.focusedApplication retain];
+		
+	CALayer *scrollLayer = [snapshotPageView.scrollView layer];
+	[scrollLayer setTransform:CATransform3DIdentity];
+		
+	if (animated) {
+		// Animate deactivation
+		[UIView beginAnimations:nil context:nil];
+		[UIView setAnimationDuration:0.5f];
+		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+	}
+			
+	// Show SpringBoard's page control
+	if (GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
+			
+	// Hide ProSwitcher
+	self.view.alpha = 0.0f;
+	isActive = NO;
+			
+	if (animated) {
+		isAnimating = YES;
+		[UIView setAnimationDelegate:self];
+		[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
+		[UIView commitAnimations];
+	} else {
+		[self didFinishDeactivate];
+	}
+
+	
 }
 
 - (void)setActive:(BOOL)active animated:(BOOL)animated
 {
-	if (!active && !isActive)
-		return;
-	
-	if (active) {
-		[self reparentView];
-		if (!isActive) {
-			isActive = active;
-			
-			[self setupSpringBoard];
-			[snapshotPageView setFocusedApplication:focusedApplication];
-			
-			CALayer *scrollLayer = [snapshotPageView.scrollView layer];
-			if (animated) {
-				self.view.alpha = 0.0f;
-				[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-				
-				[UIView beginAnimations:nil context:nil];
-				[UIView setAnimationDuration:0.5f];
-				[UIView setAnimationDelegate:self];
-				[UIView setAnimationDidStopSelector:@selector(didFinishActivate)];
-				
-				[scrollLayer setTransform:CATransform3DIdentity];
-				self.view.alpha = 1.0f;
-				[self _applyPreferences];
-				
-				isAnimating = YES;
-				[UIView commitAnimations];
-			} else {
-				self.view.alpha = 1.0f;
-				[self _applyPreferences];
-				
-				[self didFinishActivate];
-			}
-		}
-	} else {
-		isActive = active;
-		
-		[focusedApplication release];
-		focusedApplication = [snapshotPageView.focusedApplication retain];
-		
-		CALayer *scrollLayer = [snapshotPageView.scrollView layer];
-		if (animated) {
-			[scrollLayer setTransform:CATransform3DIdentity];
-			
-			[UIView beginAnimations:nil context:nil];
-			[UIView setAnimationDuration:0.5f];
-			[UIView setAnimationDelegate:self];
-			[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
-			
-			[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-			self.view.alpha = 0.0f;
-			
-			isAnimating = YES;
-			[UIView commitAnimations];
-		} else {
-			self.view.alpha = 0.0f;
-			
-			[self didFinishDeactivate];
-		}
-	}
+	if (active)
+		[self activateWithAnimation:animated];
+	else
+		[self deactivateWithAnimation:animated];
 }
-
 - (void)setActive:(BOOL)active
 {
 	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
@@ -282,6 +296,7 @@ static int suppressIconListScroll = 0;
 		return;
 	
 	if (SBActive) {
+		// SpringBoard is active, just activate
 		BOOL newActive = ![self isActive];
 		[self setActive:newActive];
 		if (newActive)
@@ -290,17 +305,16 @@ static int suppressIconListScroll = 0;
 		PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[[SBWActiveDisplayStack topApplication] displayIdentifier]];
 		
 		// Chicken or the egg situation here and I'm too sleepy to figure it out :P
-		//    ^-- care to explain *what* situation :P?
 		//modifyZoomTransformCountDown = 2;
 		
-		// background running app
+		// Background
 		if (![activeApp hasNativeBackgrounding])
 			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
 				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:[activeApp displayIdentifier]];
+		
+		// Deactivate
 		[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
 		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
-		
-		// Deactivate by moving from active stack to suspending stack
 		[SBWActiveDisplayStack popDisplay:[activeApp application]];
 		[SBWSuspendingDisplayStack pushDisplay:[activeApp application]];
 		
@@ -320,22 +334,18 @@ static int suppressIconListScroll = 0;
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
-	suppressIconScatter++;
-	
+	suppressFlags |= ICON_LIST_SCATTER_FLAG;
 	modifyZoomTransformCountDown = 1;
 	[application activateWithAnimation:YES];
-	
-	suppressIconScatter--;
+	suppressFlags &= ~ICON_LIST_SCATTER_FLAG;
 }
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
-	restoreIconListFlag++;
-	
+	suppressFlags |= ICON_LIST_RESTORE_FLAG;
 	[application exit];
-	[self reparentView];
-	
-	restoreIconListFlag--;
+	[self reparentView]; // Fix layout
+	suppressFlags &= ~ICON_LIST_RESTORE_FLAG;
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
@@ -366,14 +376,14 @@ CHMethod0(void, SBApplication, activate)
 #pragma mark SBUIController
 CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
-	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && suppressIconScatter == 0);
+	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && (suppressFlags & ICON_LIST_SCATTER_FLAG));
 }
-CHMethod1(void, SBUIController, restoreIconList, BOOL, blah)
+CHMethod1(void, SBUIController, restoreIconList, BOOL, unknown)
 {
-	if(restoreIconListFlag > 0)
+	if(suppressFlags & ICON_LIST_RESTORE_FLAG)
 		return;
 	
-	return CHSuper1(SBUIController, restoreIconList, blah);
+	return CHSuper1(SBUIController, restoreIconList, unknown);
 }
 
 #pragma mark SpringBoard
@@ -383,9 +393,9 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 		// Deactivate and suppress SpringBoard list scrolling
 		[[PSWViewController sharedInstance] setActive:NO];
 		
-		suppressIconListScroll++;
+		suppressFlags |= ICON_LIST_SCROLL_FLAG;
 		CHSuper0(SpringBoard, _handleMenuButtonEvent);
-		suppressIconListScroll--;
+		suppressFlags &= ~ICON_LIST_SCROLL_FLAG;
 		
 		return;
 	}
@@ -396,7 +406,7 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 #pragma mark SBIconController
 CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
 {
-	if (suppressIconListScroll > 0)
+	if (suppressFlags & ICON_LIST_SCROLL_FLAG)
 		return;
 		
 	CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);

@@ -82,11 +82,12 @@ static NSUInteger defaultImagePassThrough;
 	return [_application displayName];
 }
 
+//#define SEMILIVE_ENABLED
 - (CGImageRef)_currentSnapshot
 {
-	SBAppContextHostView *chv = (SBAppContextHostView *) [_application contextHostView];
-	chv.frame = CGRectMake(0, 0, 320, 480);
+	SBAppContextHostView *chv = [_application contextHostView];
 	[chv setHostingEnabled:YES];
+	chv.frame = CGRectMake(0, 0, 320, 480);
 	chv.hidden = NO;
 	chv.alpha = 1.0;
 	

@@ -190,15 +190,17 @@
 		}
 	}
 	
-	if (_iconBadge) {
+	if (_iconBadge != nil) {
 		[_iconBadge removeFromSuperlayer];
 		[_iconBadge release];
 		_iconBadge = nil;
+		NSLog(@"Removed badge (might be temporary)");
 	}
 	
 	if (_showsBadge) {
 		SBIconBadge *badge = [_application badgeView];
 		if (badge) {	
+			NSLog(@"Making a badge!");
 			_iconBadge = [[CALayer layer] retain];
 			id badgeContents = [[badge layer] contents];
 			[_iconBadge setContents:badgeContents];
@@ -300,10 +302,8 @@
 }
 - (void)setShowsBadge:(BOOL)showsBadge
 {
-	if (_showsBadge != showsBadge) {
-		_showsBadge = showsBadge;
-		[self _relayoutViews];
-	}
+	_showsBadge = showsBadge;
+	[self _relayoutViews];
 }
 		  
 - (CGFloat)roundedCornerRadius
