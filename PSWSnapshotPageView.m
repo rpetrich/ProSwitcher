@@ -368,7 +368,7 @@
 }
 - (void)setShowsPageControl:(BOOL)showsPageControl
 {
-	_pageControl.hidden = showsPageControl;
+	_pageControl.hidden = !showsPageControl;
 }
 
 - (NSArray *)ignoredDisplayIdentifiers
