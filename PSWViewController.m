@@ -98,6 +98,7 @@ static int suppressIconListScroll = 0;
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
+	[snapshotPageView redraw];
 }
 
 - (void)_reloadPreferences
@@ -447,7 +448,6 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 }
 
 #pragma mark SBSearchView
-
 CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
 {
 	// Disable search view's keyboard when ProSwitcher is active
