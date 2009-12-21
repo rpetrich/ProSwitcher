@@ -196,18 +196,16 @@
 	}
 	
 	if (_showsBadge) {
-		SBIcon *sbIcon = [_application springBoardIcon];
-		if (sbIcon) {
-			SBIconBadge *badge = CHIvar(sbIcon, _badge, SBIconBadge *);
-			if (badge) {	
-				_iconBadge = [[CALayer layer] retain];
-				[_iconBadge setContents:[[badge layer] contents]];
-				CGRect badgeFrame = badge.bounds;
-				badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - (badgeFrame.size.width / 2.0f));
-				badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
-				[_iconBadge setFrame:badgeFrame];
-				[[self layer] addSublayer:_iconBadge];
-			}
+		SBIconBadge *badge = [_application badgeView];
+		if (badge) {	
+			_iconBadge = [[CALayer layer] retain];
+			id badgeContents = [[badge layer] contents];
+			[_iconBadge setContents:badgeContents];
+			CGRect badgeFrame = badge.frame;
+			badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - (badgeFrame.size.width / 2.0f));
+			badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+			[_iconBadge setFrame:badgeFrame];
+			[[self layer] addSublayer:_iconBadge];
 		}
 	}
 	
@@ -334,6 +332,7 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
+	[_iconBadge setOpacity:alpha];
 	if (animated) {
 		[UIView commitAnimations];
 	}
@@ -356,6 +355,11 @@
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
 {
 	[[screen layer] setContents:(id)[application snapshot]];
+}
+
+- (void)applicationBadgeDidChange:(PSWApplication *)application
+{
+	[self _relayoutViews];
 }
 
 @end

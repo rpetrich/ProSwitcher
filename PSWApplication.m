@@ -300,6 +300,18 @@ static NSUInteger defaultImagePassThrough;
 	return YES;
 }
 
+- (void)_badgeDidChange
+{
+	if ([_delegate respondsToSelector:@selector(applicationBadgeDidChange:)])
+		[_delegate applicationBadgeDidChange:self];
+}
+
+- (SBIconBadge *)badgeView
+{
+	SBIcon *icon = [self springBoardIcon];
+	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
+}
+
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];
@@ -342,6 +354,15 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 		}
 	}
 	return result;
+}
+
+#pragma mark SBApplicationIcon
+
+CHMethod1(void, SBApplicationIcon, setBadge, id, value)
+{
+	CHSuper1(SBApplicationIcon, setBadge, value);
+	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+	[app _badgeDidChange];
 }
 
 CHConstructor {
