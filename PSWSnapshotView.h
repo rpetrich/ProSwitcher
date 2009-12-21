@@ -21,7 +21,7 @@
 	BOOL _showsBadge;
 	BOOL _focused;
 	UIButton *_closeButton;
-	UIImageView *_iconBadge;
+	CALayer *_iconBadge;
 	UILabel *_titleView;
 	UIImageView *_iconView;
 	

@@ -55,7 +55,7 @@
 			_closeButton.alpha = 0.0f;
 			_titleView.alpha = 0.0f;
 			_iconView.alpha = 0.0f;
-			_iconBadge.alpha = 0.0f;
+			_iconBadge.opacity = 0.0f;
 			[UIView commitAnimations];
 			isInDrag = YES;
 		}
@@ -78,7 +78,7 @@
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
-		_iconBadge.alpha = 1.0f;
+		_iconBadge.opacity = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
 		if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
@@ -190,32 +190,30 @@
 	}
 	
 	if (_iconBadge) {
-		[_iconBadge removeFromSuperview];
+		[_iconBadge removeFromSuperlayer];
 		[_iconBadge release];
 		_iconBadge = nil;
 	}
 	
 	if (_showsBadge) {
-		SBIconBadge *badge = CHIvar([_application springBoardIcon], _badge, SBIconBadge *);
-		if (badge) {	
-			_iconBadge = [[UIImageView alloc] init];
-			
-			UIGraphicsBeginImageContext(badge.frame.size);
-			[badge.layer renderInContext:UIGraphicsGetCurrentContext()];
-			[_iconBadge setImage:UIGraphicsGetImageFromCurrentImageContext()];
-			UIGraphicsEndImageContext();
-			
-			[self addSubview:_iconBadge];
-			CGSize badgeSize = [[_iconBadge image] size];
-			CGFloat offsetX = (NSInteger) (badgeSize.width / 2.0f);
-			CGFloat offsetY = (NSInteger) (badgeSize.height / 2.0f);
-			[_iconBadge setFrame:CGRectMake(screenFrame.origin.x + screenFrame.size.width - offsetX, screenFrame.origin.y - offsetY + 2, badgeSize.width, badgeSize.height)];					
+		SBIcon *sbIcon = [_application springBoardIcon];
+		if (sbIcon) {
+			SBIconBadge *badge = CHIvar(sbIcon, _badge, SBIconBadge *);
+			if (badge) {	
+				_iconBadge = [[CALayer layer] retain];
+				[_iconBadge setContents:[[badge layer] contents]];
+				CGRect badgeFrame = badge.bounds;
+				badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - (badgeFrame.size.width / 2.0f));
+				badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+				[_iconBadge setFrame:badgeFrame];
+				[[self layer] addSublayer:_iconBadge];
+			}
 		}
 	}
 	
 	CGFloat alpha = _focused?1.0f:0.0f;
 	[_closeButton setAlpha:alpha];
-	[_iconBadge setAlpha:alpha];
+	[_iconBadge setOpacity:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 }
