@@ -4,8 +4,10 @@
 
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBApplicationController.h>
+#import <SpringBoard/SBAppContextHostView.h>
 #import <SpringBoard/SBIconModel.h>
 #import <CaptainHook/CaptainHook.h>
+#import <QuartzCore/QuartzCore.h>
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWDisplayStacks.h"
@@ -80,8 +82,35 @@ static NSUInteger defaultImagePassThrough;
 	return [_application displayName];
 }
 
+- (CGImageRef)_currentSnapshot
+{
+	SBAppContextHostView *chv = (SBAppContextHostView *) [_application contextHostView];
+	chv.frame = CGRectMake(0, 0, 320, 480);
+	[chv setHostingEnabled:YES];
+	chv.hidden = NO;
+	chv.alpha = 1.0;
+	
+	UIGraphicsBeginImageContext(chv.frame.size);
+	[chv.layer renderInContext:UIGraphicsGetCurrentContext()];
+	UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	CGImageRef snap = [viewImage CGImage];
+	CGImageRetain(snap);
+	
+	[chv setHostingEnabled:NO];
+	chv.hidden = YES;
+	chv.alpha = 0.0;
+	
+	return snap;
+}
+
 - (CGImageRef)snapshot
 {
+#ifdef SEMILIVE_ENABLED
+	return [self _currentSnapshot];
+#endif
+	
 	if (!_snapshotImage) {
 		defaultImagePassThrough++;
 		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);

@@ -1,6 +1,7 @@
 #import "PSWSnapshotView.h"
 
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBAppContextHostView.h>
 
 #import "PSWApplication.h"
 #import "PSWResources.h"
@@ -115,9 +116,9 @@
 	
 	[screen setFrame:screenFrame];
 	screenY = screenFrame.origin.y;
-	if (_roundedCornerRadius == 0)
+	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
-	else {
+	} else {
 		CALayer *layer = [CALayer layer];
 		[layer setFrame:CGRectMake(0.0f, 0.0f, screenFrame.size.width, screenFrame.size.height)];
 		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
@@ -229,7 +230,7 @@
 		CGImageRef snapshot = [application snapshot];
 		[screen setClipsToBounds:YES];
 		CALayer *layer = [screen layer];
-		[layer setContents:(id)snapshot];
+		[layer setContents:(id) snapshot];
 		screen.hidden = NO;
 		
 		[screen addTarget:self action:@selector(snapshot:touchUpInside:) forControlEvents:UIControlEventTouchUpInside];

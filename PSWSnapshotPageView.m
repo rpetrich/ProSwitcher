@@ -122,7 +122,8 @@
 	[_scrollView setFrame:scrollViewFrame];
 	
 	NSInteger appCount = [_applications count];
-	[_pageControl setNumberOfPages:appCount];
+	if (!_pageControl.hidden)
+		[_pageControl setNumberOfPages:appCount];
 	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * appCount + 1.0f, scrollViewFrame.size.height)];
 	scrollViewFrame.origin.x = 0.0f;
 	PSWApplication *focusedApplication = [self focusedApplication];
