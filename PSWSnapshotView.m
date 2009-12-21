@@ -194,13 +194,11 @@
 		[_iconBadge removeFromSuperlayer];
 		[_iconBadge release];
 		_iconBadge = nil;
-		NSLog(@"Removed badge (might be temporary)");
 	}
 	
 	if (_showsBadge) {
 		SBIconBadge *badge = [_application badgeView];
 		if (badge) {	
-			NSLog(@"Making a badge!");
 			_iconBadge = [[CALayer layer] retain];
 			id badgeContents = [[badge layer] contents];
 			[_iconBadge setContents:badgeContents];
