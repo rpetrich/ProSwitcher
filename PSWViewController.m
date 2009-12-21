@@ -258,13 +258,11 @@ static int suppressIconListScroll = 0;
 			
 			[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 			self.view.alpha = 0.0f;
-			[self _applyPreferences];
 			
 			isAnimating = YES;
 			[UIView commitAnimations];
 		} else {
 			self.view.alpha = 0.0f;
-			[self _applyPreferences];
 			
 			[self didFinishDeactivate];
 		}
