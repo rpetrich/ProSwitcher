@@ -32,11 +32,10 @@ CHDeclareClass(SBVoiceControlAlert);
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
 
-#define ICON_LIST_SCATTER_FLAG 1
-#define ICON_LIST_RESTORE_FLAG 2
-#define ICON_LIST_SCROLL_FLAG 4
-static NSUInteger suppressFlags = 0;
-static NSUInteger modifyZoomTransformCountDown;
+static NSUInteger iconListScatterFlag = 0;
+static NSUInteger iconListRestoreFlag = 0;
+static NSUInteger iconListScrollFlag = 0;
+static NSUInteger modifyZoomTransformCountDown = 0;
 
 static PSWViewController *mainController;
 @implementation PSWViewController
@@ -341,18 +340,18 @@ static PSWViewController *mainController;
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
 {
-	suppressFlags |= ICON_LIST_SCATTER_FLAG;
+	iconListScatterFlag += 1;
 	modifyZoomTransformCountDown = 1;
 	[application activateWithAnimation:YES];
-	suppressFlags &= ~ICON_LIST_SCATTER_FLAG;
+	iconListScatterFlag -= 1;
 }
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
 {
-	suppressFlags |= ICON_LIST_RESTORE_FLAG;
+	iconListRestoreFlag += 1;
 	[application exit];
 	[self reparentView]; // Fix layout
-	suppressFlags &= ~ICON_LIST_RESTORE_FLAG;
+	iconListRestoreFlag -= 1;
 }
 
 - (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
@@ -383,11 +382,11 @@ CHMethod0(void, SBApplication, activate)
 #pragma mark SBUIController
 CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
-	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && (suppressFlags & ICON_LIST_SCATTER_FLAG));
+	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && iconListScatterFlag);
 }
 CHMethod1(void, SBUIController, restoreIconList, BOOL, unknown)
 {
-	if(suppressFlags & ICON_LIST_RESTORE_FLAG)
+	if(iconListRestoreFlag > 0)
 		return;
 	
 	return CHSuper1(SBUIController, restoreIconList, unknown);
@@ -400,9 +399,9 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 		// Deactivate and suppress SpringBoard list scrolling
 		[[PSWViewController sharedInstance] setActive:NO];
 		
-		suppressFlags |= ICON_LIST_SCROLL_FLAG;
+		iconListScrollFlag += 1;
 		CHSuper0(SpringBoard, _handleMenuButtonEvent);
-		suppressFlags &= ~ICON_LIST_SCROLL_FLAG;
+		iconListScrollFlag -= 1;
 		
 		return;
 	}
@@ -413,7 +412,7 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 #pragma mark SBIconController
 CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
 {
-	if (suppressFlags & ICON_LIST_SCROLL_FLAG)
+	if (iconListScrollFlag > 0)
 		return;
 		
 	CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
