@@ -1,6 +1,7 @@
 #import "PSWSnapshotView.h"
 
 #import <SpringBoard/SpringBoard.h>
+#import <SpringBoard/SBAppContextHostView.h>
 
 #import "PSWApplication.h"
 #import "PSWResources.h"
@@ -27,6 +28,7 @@
 	UITouch *touch = [[event allTouches] anyObject];
 	touchDownPoint = [touch locationInView:[self superview]];
 	wasSwipedAway = NO;
+	wasSwipedUp = NO;
 	isInDrag = NO;
 }
 
@@ -39,6 +41,7 @@
 		NSInteger vert = touchDownPoint.y - [touch locationInView:[self superview]].y;
 		if (vert > 0.0f) {
 			wasSwipedAway = (vert > kSwipeThreshold);
+			wasSwipedUp = YES;
 			frame.origin.y = screenY - vert;
 			CGFloat alpha = 1.0f - (vert / 300.0f);
 			theSnapshot.alpha = (alpha > 0.0f) ? alpha:0.0f;
@@ -55,6 +58,7 @@
 			_closeButton.alpha = 0.0f;
 			_titleView.alpha = 0.0f;
 			_iconView.alpha = 0.0f;
+			_iconBadge.opacity = 0.0f;
 			[UIView commitAnimations];
 			isInDrag = YES;
 		}
@@ -70,16 +74,17 @@
 	} else {
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.33f];
-		CGRect frame = [theSnapshot frame];
+		CGRect frame = [theSnapshot frame]; 
 		frame.origin.y = screenY;
 		[theSnapshot setFrame:frame];
 		theSnapshot.alpha = 1.0f;
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
+		_iconBadge.opacity = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
-		if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
+		if (!wasSwipedUp && [touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
 			if ([_delegate respondsToSelector:@selector(snapshotViewDidSwipeOut:)])
 				[_delegate snapshotViewDidSwipeOut:self];
 		}
@@ -113,9 +118,9 @@
 	
 	[screen setFrame:screenFrame];
 	screenY = screenFrame.origin.y;
-	if (_roundedCornerRadius == 0)
+	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
-	else {
+	} else {
 		CALayer *layer = [CALayer layer];
 		[layer setFrame:CGRectMake(0.0f, 0.0f, screenFrame.size.width, screenFrame.size.height)];
 		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
@@ -147,7 +152,7 @@
 			[_titleView setFrame:titleFrame];
 		}
 		if (!_iconView) {
-			UIImage *smallIcon = [[_application springBoardIcon] smallIcon];
+			UIImage *smallIcon = [[_application springBoardIcon] icon];
 			_iconView = [[UIImageView alloc] initWithFrame:iconFrame];
 			[_iconView setImage:smallIcon];
 			[self addSubview:_iconView];
@@ -187,8 +192,29 @@
 		}
 	}
 	
+	if (_iconBadge != nil) {
+		[_iconBadge removeFromSuperlayer];
+		[_iconBadge release];
+		_iconBadge = nil;
+	}
+	
+	if (_showsBadge) {
+		SBIconBadge *badge = [_application badgeView];
+		if (badge) {	
+			_iconBadge = [[CALayer layer] retain];
+			id badgeContents = [[badge layer] contents];
+			[_iconBadge setContents:badgeContents];
+			CGRect badgeFrame = badge.frame;
+			badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - (badgeFrame.size.width / 2.0f));
+			badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+			[_iconBadge setFrame:badgeFrame];
+			[[self layer] addSublayer:_iconBadge];
+		}
+	}
+	
 	CGFloat alpha = _focused?1.0f:0.0f;
 	[_closeButton setAlpha:alpha];
+	[_iconBadge setOpacity:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 }
@@ -206,7 +232,7 @@
 		CGImageRef snapshot = [application snapshot];
 		[screen setClipsToBounds:YES];
 		CALayer *layer = [screen layer];
-		[layer setContents:(id)snapshot];
+		[layer setContents:(id) snapshot];
 		screen.hidden = NO;
 		
 		[screen addTarget:self action:@selector(snapshot:touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
@@ -226,11 +252,17 @@
 	[_titleView release];
 	[_iconView release];
 	[_closeButton release];
+	[_iconBadge release];
 	[_application release];
     [super dealloc];
 }
 
 #pragma mark Properties
+
+- (void)redraw
+{
+	[self _relayoutViews];
+}
 
 - (void)_closeButtonWasPushed
 {
@@ -264,19 +296,26 @@
 	}
 }
 
+- (BOOL)showsBadge
+{
+	return _iconBadge != nil;
+}
+- (void)setShowsBadge:(BOOL)showsBadge
+{
+	_showsBadge = showsBadge;
+	[self _relayoutViews];
+}
+		  
+- (CGFloat)roundedCornerRadius
+{
+	return _roundedCornerRadius;
+}
 - (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
 {
 	if (_roundedCornerRadius != roundedCornerRadius) {
 		_roundedCornerRadius = roundedCornerRadius;
 		[self _relayoutViews];
 	}
-	//screen.layer.cornerRadius = roundedCornerRadius;
-}
-
-- (CGFloat)roundedCornerRadius
-{
-	return _roundedCornerRadius;
-	//return screen.layer.cornerRadius;	
 }
 
 - (BOOL)focused
@@ -294,6 +333,7 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
+	[_iconBadge setOpacity:alpha];
 	if (animated) {
 		[UIView commitAnimations];
 	}
@@ -316,6 +356,11 @@
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
 {
 	[[screen layer] setContents:(id)[application snapshot]];
+}
+
+- (void)applicationBadgeDidChange:(PSWApplication *)application
+{
+	[self _relayoutViews];
 }
 
 @end

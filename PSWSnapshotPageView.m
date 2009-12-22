@@ -23,7 +23,7 @@
 		_applications = [[applicationController activeApplications] mutableCopy];
 		NSUInteger numberOfPages = [_applications count];
 		
-		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, frame.size.height - 17.0f, frame.size.width, 17.0f)];
+		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectZero];
 		[_pageControl setNumberOfPages:numberOfPages];
 		[_pageControl setCurrentPage:0];
 		[_pageControl setHidesForSinglePage:YES];
@@ -120,12 +120,13 @@
 	scrollViewFrame.size.height = bounds.size.height - 17.0f;
 	[_scrollView.layer setTransform:CATransform3DIdentity];
 	[_scrollView setFrame:scrollViewFrame];
+	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * [_applications count] + 1.0f, scrollViewFrame.size.height)];
 	
-	NSInteger appCount = [_applications count];
-	[_pageControl setNumberOfPages:appCount];
-	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * appCount + 1.0f, scrollViewFrame.size.height)];
-	scrollViewFrame.origin.x = 0.0f;
+	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
+	[_pageControl setNumberOfPages:[_applications count]];
+	
 	PSWApplication *focusedApplication = [self focusedApplication];
+	scrollViewFrame.origin.x = 0;
 	for (PSWSnapshotView *view in _snapshotViews) {
 		[view setFrame:scrollViewFrame];
 		scrollViewFrame.origin.x += scrollViewFrame.size.width;
@@ -154,10 +155,12 @@
 		snapshot.showsCloseButton = _showsCloseButtons;
 		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
 		snapshot.roundedCornerRadius = _roundedCornerRadius;
+		
 		if ([_snapshotViews count] == 0)
 			[snapshot setFocused:YES animated:NO];
 		else
 			[snapshot setAlpha:_unfocusedAlpha];
+		
 		[_scrollView addSubview:snapshot];
 		[_snapshotViews addObject:snapshot];
 		[snapshot release];
@@ -168,7 +171,6 @@
 - (void)didRemoveSnapshotView:(NSString *)animationID finished:(NSNumber *)finished context:(PSWSnapshotView *)context
 {
 	[context removeFromSuperview];
-	self.userInteractionEnabled = YES;
 }
 
 - (void)_removeViewForApplication:(PSWApplication *)application
@@ -181,10 +183,12 @@
 		PSWSnapshotView *snapshot = [_snapshotViews objectAtIndex:index];
 		snapshot.delegate = nil;
 		[_snapshotViews removeObjectAtIndex:index];
+		
 		[UIView beginAnimations:nil context:snapshot];
 		[UIView setAnimationDuration:0.33f];
 		[UIView setAnimationDelegate:self];
 		[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshot:finished:context:)];
+		
 		CGRect frame = snapshot.frame;
 		frame.origin.y -= frame.size.height;
 		snapshot.frame = frame;
@@ -193,11 +197,19 @@
 		PSWSnapshotView *focusedView = [self focusedSnapshotView];
 		[focusedView setFocused:YES];
 		[focusedView setAlpha:1.0f];
+		
 		[UIView commitAnimations];
 	}
 }
 
 #pragma mark Properties
+
+- (void)redraw
+{
+	[self _relayoutViews];
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view redraw];
+}
 
 - (PSWApplication *)focusedApplication
 {
@@ -246,6 +258,17 @@
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setShowsCloseButton:showsCloseButtons];
 	}
+}
+
+- (BOOL)showsBadges
+{
+	return _showsBadges;
+}
+- (void)setShowsBadges:(BOOL)showsBadges
+{
+	_showsBadges = showsBadges;
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setShowsBadge:showsBadges];
 }
 
 - (BOOL)allowsSwipeToClose
@@ -348,7 +371,7 @@
 }
 - (void)setShowsPageControl:(BOOL)showsPageControl
 {
-	_pageControl.hidden = showsPageControl;
+	_pageControl.hidden = !showsPageControl;
 }
 
 - (NSArray *)ignoredDisplayIdentifiers
@@ -383,21 +406,27 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
 	CGFloat pageWidth = [scrollView bounds].size.width;
-	NSInteger page = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
+	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
 	NSInteger oldPage = [_pageControl currentPage];
-	if (oldPage != page && page < [_snapshotViews count]) {
-		PSWSnapshotView *oldView = [_snapshotViews objectAtIndex:oldPage];
-		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:page];
-		[oldView setFocused:NO];
+	
+	if (oldPage != curPage) {
+		PSWSnapshotView *oldView = oldPage < [_snapshotViews count] ? [_snapshotViews objectAtIndex:oldPage] : nil;
+		PSWSnapshotView *newView = curPage < [_snapshotViews count] ? [_snapshotViews objectAtIndex:curPage] : nil;
+		
+		[oldView setFocused:NO ];
 		[newView setFocused:YES];
+		
 		if (_unfocusedAlpha != 1.0f) {
 			[UIView beginAnimations:nil context:NULL];
 			[UIView setAnimationDuration:0.33f];
+			
 			[oldView setAlpha:_unfocusedAlpha];
-			[newView setAlpha:1.0f];
+			[newView setAlpha:1.0f           ];
+			
 			[UIView commitAnimations];
 		}
-		[_pageControl setCurrentPage:page];
+		
+		[_pageControl setCurrentPage:curPage];
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}

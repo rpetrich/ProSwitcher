@@ -4,8 +4,10 @@
 
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBApplicationController.h>
+#import <SpringBoard/SBAppContextHostView.h>
 #import <SpringBoard/SBIconModel.h>
 #import <CaptainHook/CaptainHook.h>
+#import <QuartzCore/QuartzCore.h>
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWDisplayStacks.h"
@@ -80,8 +82,36 @@ static NSUInteger defaultImagePassThrough;
 	return [_application displayName];
 }
 
+//#define SEMILIVE_ENABLED
+- (CGImageRef)_currentSnapshot
+{
+	SBAppContextHostView *chv = [_application contextHostView];
+	[chv setHostingEnabled:YES];
+	chv.frame = CGRectMake(0, 0, 320, 480);
+	chv.hidden = NO;
+	chv.alpha = 1.0;
+	
+	UIGraphicsBeginImageContext(chv.frame.size);
+	[chv.layer renderInContext:UIGraphicsGetCurrentContext()];
+	UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	CGImageRef snap = [viewImage CGImage];
+	CGImageRetain(snap);
+	
+	[chv setHostingEnabled:NO];
+	chv.hidden = YES;
+	chv.alpha = 0.0;
+	
+	return snap;
+}
+
 - (CGImageRef)snapshot
 {
+#ifdef SEMILIVE_ENABLED
+	return [self _currentSnapshot];
+#endif
+	
 	if (!_snapshotImage) {
 		defaultImagePassThrough++;
 		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);
@@ -169,6 +199,7 @@ static NSUInteger defaultImagePassThrough;
 		|| [_displayIdentifier isEqualToString:@"com.apple.mobilemail"]
 		|| [_displayIdentifier isEqualToString:@"com.apple.mobilesafari"]
 		|| [_displayIdentifier hasPrefix:@"com.apple.mobileipod"]
+		|| [_displayIdentifier hasPrefix:@"com.bigboss.categories."]
 		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"];
 }
 
@@ -299,6 +330,18 @@ static NSUInteger defaultImagePassThrough;
 	return YES;
 }
 
+- (void)_badgeDidChange
+{
+	if ([_delegate respondsToSelector:@selector(applicationBadgeDidChange:)])
+		[_delegate applicationBadgeDidChange:self];
+}
+
+- (SBIconBadge *)badgeView
+{
+	SBIcon *icon = [self springBoardIcon];
+	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
+}
+
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];
@@ -341,6 +384,15 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 		}
 	}
 	return result;
+}
+
+#pragma mark SBApplicationIcon
+
+CHMethod1(void, SBApplicationIcon, setBadge, id, value)
+{
+	CHSuper1(SBApplicationIcon, setBadge, value);
+	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+	[app _badgeDidChange];
 }
 
 CHConstructor {
