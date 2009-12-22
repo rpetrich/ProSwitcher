@@ -27,6 +27,8 @@ CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
 CHDeclareClass(SBZoomView);
 CHDeclareClass(SBSearchView);
+CHDeclareClass(SBVoiceControlAlert);
+
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
 
@@ -456,12 +458,25 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 }
 
 #pragma mark SBSearchView
+
 CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
 {
 	// Disable search view's keyboard when ProSwitcher is active
 	CHSuper2(SBSearchView, setShowsKeyboard, visible && ![[PSWViewController sharedInstance] isActive], animated, animated);
 }
 
+#pragma mark SBVoiceControlAlert
+
+CHMethod0(void, SBVoiceControlAlert, deactivate)
+{
+	PSWViewController *vc = [PSWViewController sharedInstance];
+	if ([vc isActive]) {
+		CHSuper0(SBVoiceControlAlert, deactivate);
+		[vc setActive:NO animated:NO];
+	} else {
+		CHSuper0(SBVoiceControlAlert, deactivate);
+	}
+}
 
 CHConstructor
 {
@@ -486,6 +501,8 @@ CHConstructor
 	CHHook1(SBZoomView, setTransform);
 	CHLoadLateClass(SBSearchView);
 	CHHook2(SBSearchView, setShowsKeyboard, animated);
+	CHLoadLateClass(SBVoiceControlAlert);
+	CHHook0(SBVoiceControlAlert, deactivate);
 
 	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
