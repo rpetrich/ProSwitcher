@@ -20,7 +20,7 @@
 #define PSWShowCloseButton      YES
 #define PSWShowEmptyText        YES
 #define PSWRoundedCornerRadius  0.0f
-#define PSWTapsToActivate       2
+#define PSWTapsToActivate       1
 #define PSWSnapshotInset        40.0f
 #define PSWUnfocusedAlpha       1.0f
 #define PSWShowDefaultApps      YES

@@ -189,7 +189,7 @@
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
-			<integer>2</integer>
+			<integer>1</integer>
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>detail</key>
