@@ -81,8 +81,8 @@
 		_iconView.alpha = 1.0f;
 		_iconBadge.opacity = 1.0f;
 		[UIView commitAnimations];
-		UITouch *touch = [[event allTouches] anyObject];
-		/*if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
+		/*UITouch *touch = [[event allTouches] anyObject];
+		if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
 			if ([_delegate respondsToSelector:@selector(snapshotViewDidSwipeOut:)])
 				[_delegate snapshotViewDidSwipeOut:self];
 		}*/
