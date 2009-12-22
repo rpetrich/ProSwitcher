@@ -23,7 +23,7 @@
 		_applications = [[applicationController activeApplications] mutableCopy];
 		NSUInteger numberOfPages = [_applications count];
 		
-		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, frame.size.height - 17.0f, frame.size.width, 17.0f)];
+		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectZero];
 		[_pageControl setNumberOfPages:numberOfPages];
 		[_pageControl setCurrentPage:0];
 		[_pageControl setHidesForSinglePage:YES];
@@ -122,6 +122,7 @@
 	[_scrollView setFrame:scrollViewFrame];
 	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * [_applications count] + 1.0f, scrollViewFrame.size.height)];
 	
+	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
