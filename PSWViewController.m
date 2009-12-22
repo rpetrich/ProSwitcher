@@ -36,6 +36,7 @@ static NSUInteger iconListScatterFlag = 0;
 static NSUInteger iconListRestoreFlag = 0;
 static NSUInteger iconListScrollFlag = 0;
 static NSUInteger modifyZoomTransformCountDown = 0;
+static NSUInteger ignoreZoomSetAlphaCountDown = 0;
 
 static PSWViewController *mainController;
 @implementation PSWViewController
@@ -309,7 +310,8 @@ static PSWViewController *mainController;
 			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			
 			// Chicken or the egg situation here and I'm too sleepy to figure it out :P
-			//modifyZoomTransformCountDown = 2;
+			modifyZoomTransformCountDown = 2;
+			ignoreZoomSetAlphaCountDown = 2;
 			
 			// Background
 			if (![activeApp hasNativeBackgrounding]) {
@@ -342,6 +344,7 @@ static PSWViewController *mainController;
 {
 	iconListScatterFlag += 1;
 	modifyZoomTransformCountDown = 1;
+	ignoreZoomSetAlphaCountDown = 1;
 	[application activateWithAnimation:YES];
 	iconListScatterFlag -= 1;
 }
@@ -443,11 +446,10 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 	switch (modifyZoomTransformCountDown) {
 		case 1: {
 			modifyZoomTransformCountDown = 0;
-			[self setAlpha:1.0f];
-			PSWSnapshotView *ssv = [[[PSWViewController sharedInstance] snapshotPageView] focusedSnapshotView];
-			UIWindow *window = [ssv window];
+			PSWViewController *vc = [PSWViewController sharedInstance];
+			PSWSnapshotView *ssv = [[vc snapshotPageView] focusedSnapshotView];
 			UIView *screenView = [ssv screenView];
-			CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:window];
+			CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[vc view]];
 			CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
 			break;
 		}
@@ -459,6 +461,14 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 			CHSuper1(SBZoomView, setTransform, transform);
 			break;
 	}
+}
+
+CHMethod1(void, SBZoomView, setAlpha, CGFloat, alpha)
+{
+	if (ignoreZoomSetAlphaCountDown)
+		ignoreZoomSetAlphaCountDown--;
+	else
+		CHSuper1(SBZoomView, setAlpha, alpha);
 }
 
 #pragma mark SBSearchView
@@ -501,6 +511,7 @@ CHConstructor
 	CHHook1(SBIconController, setIsEditing);
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
+	CHHook1(SBZoomView, setAlpha);
 	CHLoadLateClass(SBSearchView);
 	CHHook2(SBSearchView, setShowsKeyboard, animated);
 	CHLoadLateClass(SBVoiceControlAlert);
