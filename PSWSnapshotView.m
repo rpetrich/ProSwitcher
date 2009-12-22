@@ -152,7 +152,11 @@
 			[_titleView setFrame:titleFrame];
 		}
 		if (!_iconView) {
-			UIImage *smallIcon = [[_application springBoardIcon] icon];
+			UIImage *smallIcon;
+			if (_themedIcon)
+				smallIcon = [_application themedIcon];
+			else
+				smallIcon = [_application unthemedIcon];
 			_iconView = [[UIImageView alloc] initWithFrame:iconFrame];
 			[_iconView setImage:smallIcon];
 			[self addSubview:_iconView];
@@ -205,7 +209,7 @@
 			id badgeContents = [[badge layer] contents];
 			[_iconBadge setContents:badgeContents];
 			CGRect badgeFrame = badge.frame;
-			badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - (badgeFrame.size.width / 2.0f));
+			badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
 			badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
 			[_iconBadge setFrame:badgeFrame];
 			[[self layer] addSublayer:_iconBadge];
@@ -257,6 +261,11 @@
     [super dealloc];
 }
 
+- (void)reloadSnapshot
+{
+	[[screen layer] setContents:(id)[_application snapshot]];
+}
+
 #pragma mark Properties
 
 - (void)redraw
@@ -294,6 +303,26 @@
 		_showsTitle = showsTitle;
 		[self _relayoutViews];
 	}
+}
+
+- (BOOL)themedIcon
+{
+	return _themedIcon;
+}
+- (void)setThemedIcon:(BOOL)themedIcon
+{
+	if (_themedIcon != themedIcon) {
+		_themedIcon = themedIcon;
+	
+		// Remove icon view so it gets re-created with the new icon
+		if (_iconView) {
+			[_iconView removeFromSuperview];
+			[_iconView release];
+			_iconView = nil;
+		}
+	}
+	
+	[self _relayoutViews];
 }
 
 - (BOOL)showsBadge
@@ -355,7 +384,7 @@
 
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
 {
-	[[screen layer] setContents:(id)[application snapshot]];
+	[self reloadSnapshot];
 }
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application

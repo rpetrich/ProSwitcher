@@ -18,6 +18,7 @@
 	BOOL _allowsSwipeToClose;
 	BOOL _showsCloseButton;
 	BOOL _showsTitle;
+	BOOL _themedIcon;
 	BOOL _showsBadge;
 	BOOL _focused; 
 	UIButton *_closeButton;
@@ -40,13 +41,16 @@
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
+@property (nonatomic, assign) BOOL themedIcon;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) BOOL focused;
-@property (nonatomic, readonly) UIView *screenView;
 - (void)setFocused:(BOOL)focused animated:(BOOL)animated;
+@property (nonatomic, readonly) UIView *screenView;
+
 - (void)redraw;
+- (void)reloadSnapshot;
 
 @end
 

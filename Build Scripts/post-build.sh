@@ -22,8 +22,8 @@ if [ "${PLATFORM_NAME}" == "iphoneos" ]; then
 		rm -rf "${PROJECT_DIR}/${PACKAGE_NAME}_latest_iphoneos-arm.deb"
 		ln -s "${TARGET_BUILD_DIR}/${PACKAGE_NAME}_${PACKAGE_VERSION}_iphoneos-arm.deb" "${PROJECT_DIR}/${PACKAGE_NAME}_latest_iphoneos-arm.deb"
 		if [ -e /Volumes/iPhone/ ]; then
-			rm -rf "/Volumes/iPhone/${PACKAGE_NAME}_${PACKAGE_VERSION}_iphoneos-arm.deb"
-			cp "${TARGET_BUILD_DIR}/${PACKAGE_NAME}_${PACKAGE_VERSION}_iphoneos-arm.deb" /Volumes/iPhone/
+			rm -rf "/Volumes/iPhone/${PACKAGE_NAME}_latest_iphoneos-arm.deb"
+			cp "${PROJECT_DIR}/${PACKAGE_NAME}_latest_iphoneos-arm.deb" /Volumes/iPhone/
 		fi
 	fi
 fi

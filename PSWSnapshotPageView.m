@@ -132,6 +132,7 @@
 		scrollViewFrame.origin.x += scrollViewFrame.size.width;
 		if (focusedApplication != [view application])
 			[view setAlpha:_unfocusedAlpha];
+		[view reloadSnapshot];
 	}
 	
 	[self _applyEmptyText];
@@ -144,7 +145,7 @@
 	return nil;
 }
 
-- (void)_addViewForApplication:(PSWApplication *)application
+- (void)addViewForApplication:(PSWApplication *)application
 {
 	if (application && ![_applications containsObject:application]) {
 		[_applications addObject:application];
@@ -173,7 +174,7 @@
 	[context removeFromSuperview];
 }
 
-- (void)_removeViewForApplication:(PSWApplication *)application
+- (void)removeViewForApplication:(PSWApplication *)application
 {
 	if (!application)
 		return;
@@ -244,6 +245,19 @@
 		_showsTitles = showsTitles;
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setShowsTitle:showsTitles];
+	}
+}
+
+- (BOOL)themedIcons
+{
+	return _themedIcons;
+}
+- (void)setThemedIcons:(BOOL)themedIcons
+{
+	if (_themedIcons != themedIcons) {
+		_themedIcons = themedIcons;
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setThemedIcon:themedIcons];
 	}
 }
 
@@ -384,11 +398,11 @@
 		PSWApplicationController *ac = [PSWApplicationController sharedInstance];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
 			if (![ignoredDisplayIdentifiers containsObject:displayIdentifier])
-				[self _addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
+				[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
 		[_ignoredDisplayIdentifiers release];
 		_ignoredDisplayIdentifiers = [ignoredDisplayIdentifiers copy];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
-			[self _removeViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
+			[self removeViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
 	}
 }
 
@@ -409,9 +423,10 @@
 	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
 	NSInteger oldPage = [_pageControl currentPage];
 	
-	if (oldPage != curPage) {
-		PSWSnapshotView *oldView = oldPage < [_snapshotViews count] ? [_snapshotViews objectAtIndex:oldPage] : nil;
-		PSWSnapshotView *newView = curPage < [_snapshotViews count] ? [_snapshotViews objectAtIndex:curPage] : nil;
+	NSUInteger appCount = [_applications count];
+	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
+		PSWSnapshotView *oldView = (oldPage < appCount)?[_snapshotViews objectAtIndex:oldPage]:nil;
+		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:curPage];
 		
 		[oldView setFocused:NO ];
 		[newView setFocused:YES];
@@ -464,12 +479,12 @@
 - (void)applicationController:(PSWApplicationController *)ac applicationDidLaunch:(PSWApplication *)application
 {
 	if (![_ignoredDisplayIdentifiers containsObject:[application displayIdentifier]])
-		[self _addViewForApplication:application];
+		[self addViewForApplication:application];
 }
 
 - (void)applicationController:(PSWApplicationController *)ac applicationDidExit:(PSWApplication *)application
 {
-	[self _removeViewForApplication:application];
+	[self removeViewForApplication:application];
 }
 
 #pragma mark Touch Gestures
