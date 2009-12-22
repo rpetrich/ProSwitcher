@@ -310,9 +310,14 @@ static PSWViewController *mainController;
 		//modifyZoomTransformCountDown = 2;
 		
 		// Background
-		if (![activeApp hasNativeBackgrounding])
-			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-				[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:[activeApp displayIdentifier]];
+		if (![activeApp hasNativeBackgrounding]) {
+			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)]) {
+				// Not sure why this is required; crashes when displayIdentifier is nil
+				NSString *displayIdentifier = [activeApp displayIdentifier];
+				if ([displayIdentifier length])
+					[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
+			}
+		}
 		
 		// Deactivate
 		[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
