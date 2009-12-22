@@ -21,6 +21,7 @@
 	BOOL _showsCloseButtons;
 	BOOL _showsBadges;
 	BOOL _allowsSwipeToClose;
+	BOOL _themedIcons;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
 	CGFloat _snapshotInset;
@@ -42,6 +43,7 @@
 @property (nonatomic, assign) BOOL showsBadges;
 @property (nonatomic, assign) BOOL showsCloseButtons;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
+@property (nonatomic, assign) BOOL themedIcons;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) NSInteger tapsToActivate;
 @property (nonatomic, assign) CGFloat snapshotInset;

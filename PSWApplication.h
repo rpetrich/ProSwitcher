@@ -30,6 +30,8 @@
 @property (nonatomic, readonly) NSString *displayIdentifier;
 @property (nonatomic, readonly) NSString *displayName;
 @property (nonatomic, readonly) SBApplicationIcon *springBoardIcon;
+@property (nonatomic, readonly) UIImage *themedIcon;
+@property (nonatomic, readonly) UIImage *unthemedIcon;
 @property (nonatomic, readonly) SBApplication *application;
 @property (nonatomic, readonly) CGImageRef snapshot;
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
