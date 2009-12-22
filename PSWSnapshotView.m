@@ -28,6 +28,7 @@
 	UITouch *touch = [[event allTouches] anyObject];
 	touchDownPoint = [touch locationInView:[self superview]];
 	wasSwipedAway = NO;
+	wasSwipedUp = NO;
 	isInDrag = NO;
 }
 
@@ -40,6 +41,7 @@
 		NSInteger vert = touchDownPoint.y - [touch locationInView:[self superview]].y;
 		if (vert > 0.0f) {
 			wasSwipedAway = (vert > kSwipeThreshold);
+			wasSwipedUp = YES;
 			frame.origin.y = screenY - vert;
 			CGFloat alpha = 1.0f - (vert / 300.0f);
 			theSnapshot.alpha = (alpha > 0.0f) ? alpha:0.0f;
@@ -82,10 +84,10 @@
 		_iconBadge.opacity = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
-		/*if ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
+		if (!wasSwipedUp && [touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
 			if ([_delegate respondsToSelector:@selector(snapshotViewDidSwipeOut:)])
 				[_delegate snapshotViewDidSwipeOut:self];
-		}*/
+		}
 	}
 }
 

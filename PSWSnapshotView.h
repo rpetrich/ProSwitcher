@@ -26,6 +26,7 @@
 	UIImageView *_iconView;
 	
 	BOOL wasSwipedAway;
+	BOOL wasSwipedUp;
 	BOOL isInDrag;
 	CGPoint touchDownPoint;
 	UIButton *screen;
