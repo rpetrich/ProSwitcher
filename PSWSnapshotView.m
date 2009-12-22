@@ -257,6 +257,11 @@
     [super dealloc];
 }
 
+- (void)reloadSnapshot
+{
+	[[screen layer] setContents:(id)[_application snapshot]];
+}
+
 #pragma mark Properties
 
 - (void)redraw
@@ -355,7 +360,7 @@
 
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
 {
-	[[screen layer] setContents:(id)[application snapshot]];
+	[self reloadSnapshot];
 }
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application

@@ -31,7 +31,7 @@
 @property (nonatomic, readonly) NSString *displayName;
 @property (nonatomic, readonly) SBApplicationIcon *springBoardIcon;
 @property (nonatomic, readonly) SBApplication *application;
-@property (nonatomic, assign) CGImageRef snapshot;
+@property (nonatomic, readonly) CGImageRef snapshot;
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
 @property (nonatomic, readonly) BOOL hasNativeBackgrounding;
 @property (nonatomic, readonly) SBIconBadge *badgeView;

@@ -114,13 +114,14 @@ static NSUInteger defaultImagePassThrough;
 	
 	if (!_snapshotImage) {
 		defaultImagePassThrough++;
-		_snapshotImage = CGImageRetain([[_application defaultImage:NULL] CGImage]);
+		CGImageRef result = [[_application defaultImage:NULL] CGImage];
 		defaultImagePassThrough--;
+		return result;
 	}
 	return _snapshotImage;
 }
 
-- (void)setSnapshot:(CGImageRef)snapshot
+/*- (void)setSnapshot:(CGImageRef)snapshot
 {
 	if (_snapshotImage != snapshot) {
 		CGImageRelease(_snapshotImage);
@@ -154,7 +155,7 @@ static NSUInteger defaultImagePassThrough;
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
-}
+}*/
 
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
@@ -375,15 +376,18 @@ CHMethod0(void, SBApplication, _relaunchAfterAbnormalExit)
 
 CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 {
-	UIImage *result = CHSuper1(SBApplication, defaultImage, something);
 	if (defaultImagePassThrough == 0) {
 		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
-		CGImageRef cgResult = [app snapshot];
-		if (cgResult) {
-			result = [[[UIImage alloc] initWithCGImage:cgResult] autorelease];
+		if (![app hasNativeBackgrounding]) {
+			CGImageRef cgResult = [app snapshot];
+			if (cgResult) {
+				if (something)
+					*something = YES;
+				return [UIImage imageWithCGImage:cgResult];
+			}
 		}
 	}
-	return result;
+	return CHSuper1(SBApplication, defaultImage, something);
 }
 
 #pragma mark SBApplicationIcon

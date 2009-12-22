@@ -44,8 +44,9 @@
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) BOOL focused;
-@property (nonatomic, readonly) UIView *screenView;
 - (void)setFocused:(BOOL)focused animated:(BOOL)animated;
+@property (nonatomic, readonly) UIView *screenView;
+
 - (void)redraw;
 
 @end
