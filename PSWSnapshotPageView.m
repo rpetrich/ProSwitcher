@@ -409,8 +409,9 @@
 	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
 	NSInteger oldPage = [_pageControl currentPage];
 	
-	if (oldPage != curPage && curPage < [_applications count] && curPage >= 0) {
-		PSWSnapshotView *oldView = [_snapshotViews objectAtIndex:oldPage];
+	NSUInteger appCount = [_applications count];
+	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
+		PSWSnapshotView *oldView = (oldPage < appCount)?[_snapshotViews objectAtIndex:oldPage]:nil;
 		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:curPage];
 		
 		[oldView setFocused:NO ];
