@@ -26,6 +26,7 @@ CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBIconController);
 CHDeclareClass(SBZoomView);
+CHDeclareClass(SBStatusBar);
 CHDeclareClass(SBSearchView);
 CHDeclareClass(SBVoiceControlAlert);
 
@@ -474,6 +475,16 @@ CHMethod1(void, SBZoomView, setAlpha, CGFloat, alpha)
 		CHSuper1(SBZoomView, setAlpha, alpha);
 }
 
+#pragma mark SBStatusBar
+
+CHMethod0(CGAffineTransform, SBStatusBar, distantStatusWindowTransform)
+{
+	if (disallowIconListScatter)
+		return CGAffineTransformMakeTranslation(0.0f, -[self frame].size.height);
+	else
+		return CHSuper0(SBStatusBar, distantStatusWindowTransform);
+}
+
 #pragma mark SBSearchView
 
 CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
@@ -516,6 +527,8 @@ CHConstructor
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
 	CHHook1(SBZoomView, setAlpha);
+	CHLoadLateClass(SBStatusBar);
+	CHHook0(SBStatusBar, distantStatusWindowTransform);
 	CHLoadLateClass(SBSearchView);
 	CHHook2(SBSearchView, setShowsKeyboard, animated);
 	CHLoadLateClass(SBVoiceControlAlert);
