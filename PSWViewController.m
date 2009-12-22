@@ -467,13 +467,13 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 	}
 }
 
-CHMethod1(void, SBZoomView, setAlpha, CGFloat, alpha)
+/*CHMethod1(void, SBZoomView, setAlpha, CGFloat, alpha)
 {
 	if (ignoreZoomSetAlphaCountDown)
 		ignoreZoomSetAlphaCountDown--;
 	else
 		CHSuper1(SBZoomView, setAlpha, alpha);
-}
+}*/
 
 #pragma mark SBStatusBar
 
@@ -526,7 +526,7 @@ CHConstructor
 	CHHook1(SBIconController, setIsEditing);
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
-	CHHook1(SBZoomView, setAlpha);
+	//CHHook1(SBZoomView, setAlpha);
 	CHLoadLateClass(SBStatusBar);
 	CHHook0(SBStatusBar, distantStatusWindowTransform);
 	CHLoadLateClass(SBSearchView);
