@@ -48,6 +48,7 @@
 @property (nonatomic, readonly) UIView *screenView;
 
 - (void)redraw;
+- (void)reloadSnapshot;
 
 @end
 

@@ -12,13 +12,12 @@
 @private
 	NSString *_displayIdentifier;
 	SBApplication *_application;
-	NSData *_snapshotData;
+	id<PSWApplicationDelegate> _delegate;
+#ifdef USE_IOSURFACE
 	CGImageRef _snapshotImage;
 	NSString *_snapshotFilePath;
-#ifdef USE_IOSURFACE
 	IOSurfaceRef _surface;
 #endif
-	id<PSWApplicationDelegate> _delegate;
 }
 
 + (NSString *)snapshotPath;
@@ -36,9 +35,9 @@
 @property (nonatomic, readonly) BOOL hasNativeBackgrounding;
 @property (nonatomic, readonly) SBIconBadge *badgeView;
 
-//- (void)loadSnapshotFromBuffer:(void *)buffer width:(NSUInteger)width height:(NSUInteger)height stride:(NSUInteger)stride;
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
+//- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
 #endif
 - (BOOL)writeSnapshotToDisk;
 - (void)exit;

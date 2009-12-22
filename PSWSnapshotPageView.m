@@ -132,6 +132,7 @@
 		scrollViewFrame.origin.x += scrollViewFrame.size.width;
 		if (focusedApplication != [view application])
 			[view setAlpha:_unfocusedAlpha];
+		[view reloadSnapshot];
 	}
 	
 	[self _applyEmptyText];
