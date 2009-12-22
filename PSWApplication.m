@@ -103,8 +103,8 @@ static NSUInteger defaultImagePassThrough;
 			_snapshotFilePath = nil;
 		}
 		if (surface) {
-			size_t width = IOSurfaceGetWidth(surface) - cropInsets.left - cropInsets.right;
-			size_t height = IOSurfaceGetHeight(surface) - cropInsets.top - cropInsets.bottom;
+			int width = IOSurfaceGetWidth(surface) - cropInsets.left - cropInsets.right;
+			int height = IOSurfaceGetHeight(surface) - cropInsets.top - cropInsets.bottom;
 			if (width > 0 && height > 0) {
 				uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
 				size_t stride = IOSurfaceGetBytesPerRow(surface);
@@ -116,6 +116,7 @@ static NSUInteger defaultImagePassThrough;
 				CGDataProviderRelease(dataProvider);
 				CFRetain(surface);
 				_surface = surface;
+				_cropInsets = cropInsets;
 			} else {
 				_snapshotImage = NULL;
 				_surface = NULL;
@@ -155,11 +156,12 @@ static NSUInteger defaultImagePassThrough;
 	CFRelease(uuidString);
 	_snapshotFilePath = [[[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName] retain];
 	// Write to file
-	size_t width = IOSurfaceGetWidth(_surface);
-	size_t height = IOSurfaceGetHeight(_surface);
-	void *baseAddress = IOSurfaceGetBaseAddress(_surface);
+	int width = IOSurfaceGetWidth(_surface) - _cropInsets.left - _cropInsets.right;
+	int height = IOSurfaceGetHeight(_surface) - _cropInsets.top - _cropInsets.bottom;
+	uint8_t *baseAddress = IOSurfaceGetBaseAddress(_surface);
 	size_t stride = IOSurfaceGetBytesPerRow(_surface);
-	NSData *tempData = [[NSData alloc] initWithBytesNoCopy:baseAddress length:stride * height freeWhenDone:NO];
+	baseAddress += _cropInsets.left * 4 + stride * _cropInsets.top;
+	NSData *tempData = [[NSData alloc] initWithBytesNoCopy:baseAddress length:stride * (height - 1) + width * 4 freeWhenDone:NO];
 	[tempData writeToFile:_snapshotFilePath atomically:NO];
 	[tempData release];
 	// Read back into mapped data
