@@ -473,13 +473,11 @@ CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, a
 
 CHMethod0(void, SBVoiceControlAlert, deactivate)
 {
-	PSWViewController *vc = [PSWViewController sharedInstance];
-	if ([vc isActive]) {
-		CHSuper0(SBVoiceControlAlert, deactivate);
-		[vc setActive:NO animated:NO];
-	} else {
-		CHSuper0(SBVoiceControlAlert, deactivate);
-	}
+	CHSuper0(SBVoiceControlAlert, deactivate);
+	
+	// Fix display when coming back from VoiceControl
+	if ([[PSWViewController sharedInstance] isActive])
+		[[PSWViewController sharedInstance] setActive:NO animated:NO];
 }
 
 CHConstructor
