@@ -303,32 +303,32 @@ static PSWViewController *mainController;
 		if (newActive)
 			[event setHandled:YES];
 	} else {
-		PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[[SBWActiveDisplayStack topApplication] displayIdentifier]];
-		
-		// Chicken or the egg situation here and I'm too sleepy to figure it out :P
-		//modifyZoomTransformCountDown = 2;
-		
-		// Background
-		if (![activeApp hasNativeBackgrounding]) {
-			if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)]) {
-				// Not sure why this is required; crashes when displayIdentifier is nil
-				NSString *displayIdentifier = [activeApp displayIdentifier];
-				if ([displayIdentifier length])
+		NSString *displayIdentifier = [[SBWActiveDisplayStack topApplication] displayIdentifier];
+		// Top application will be nil when app is loading; do nothing
+		if ([displayIdentifier length]) {
+			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
+			
+			// Chicken or the egg situation here and I'm too sleepy to figure it out :P
+			//modifyZoomTransformCountDown = 2;
+			
+			// Background
+			if (![activeApp hasNativeBackgrounding]) {
+				if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
 					[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
 			}
+			
+			// Deactivate
+			[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
+			//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
+			[SBWActiveDisplayStack popDisplay:[activeApp application]];
+			[SBWSuspendingDisplayStack pushDisplay:[activeApp application]];
+			
+			// Show ProSwitcher
+			[self setActive:YES animated:NO];
+			[snapshotPageView setFocusedApplication:activeApp animated:NO];
+			[event setHandled:YES];
 		}
-		
-		// Deactivate
-		[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
-		//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
-		[SBWActiveDisplayStack popDisplay:[activeApp application]];
-		[SBWSuspendingDisplayStack pushDisplay:[activeApp application]];
-		
-		// Show ProSwitcher
-		[self setActive:YES animated:NO];
-		[snapshotPageView setFocusedApplication:activeApp animated:NO];
-		[event setHandled:YES];
-	}	
+	}
 }
 
 - (void)activator:(LAActivator *)activator abortEvent:(LAEvent *)event
