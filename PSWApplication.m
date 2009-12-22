@@ -171,6 +171,16 @@ static NSUInteger defaultImagePassThrough;
 	return (SBApplicationIcon *)[CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
 }
 
+- (UIImage *)themedIcon
+{
+	return [[self springBoardIcon] icon];
+}
+
+- (UIImage *)unthemedIcon
+{
+	return [[self springBoardIcon] smallIcon];
+}
+
 - (BOOL)hasNativeBackgrounding
 {
 	return [_displayIdentifier isEqualToString:@"com.apple.mobilephone"]

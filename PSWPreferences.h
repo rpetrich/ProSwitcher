@@ -14,6 +14,7 @@
 #define PSWAnimateActive        YES
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
+#define PSWThemedIcons			YES
 #define PSWBackgroundStyle      0
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES

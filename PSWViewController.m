@@ -95,6 +95,7 @@ static PSWViewController *mainController;
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
+	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
 }
 
 - (void)_reloadPreferences

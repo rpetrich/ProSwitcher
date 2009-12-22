@@ -248,6 +248,19 @@
 	}
 }
 
+- (BOOL)themedIcons
+{
+	return _themedIcons;
+}
+- (void)setThemedIcons:(BOOL)themedIcons
+{
+	if (_themedIcons != themedIcons) {
+		_themedIcons = themedIcons;
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setThemedIcons:themedIcons];
+	}
+}
+
 - (BOOL)showsCloseButtons
 {
 	return _showsCloseButtons;

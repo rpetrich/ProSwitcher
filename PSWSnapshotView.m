@@ -152,7 +152,11 @@
 			[_titleView setFrame:titleFrame];
 		}
 		if (!_iconView) {
-			UIImage *smallIcon = [[_application springBoardIcon] icon];
+			UIImage *smallIcon;
+			if (_themedIcon)
+				smallIcon = [_application themedIcon];
+			else
+				smallIcon = [_application unthemedIcon];
 			_iconView = [[UIImageView alloc] initWithFrame:iconFrame];
 			[_iconView setImage:smallIcon];
 			[self addSubview:_iconView];
@@ -299,6 +303,26 @@
 		_showsTitle = showsTitle;
 		[self _relayoutViews];
 	}
+}
+
+- (BOOL)themedIcon
+{
+	return _themedIcon;
+}
+- (void)setThemedIcon:(BOOL)themedIcon
+{
+	if (_themedIcon != themedIcon) {
+		_themedIcon = themedIcon;
+	
+		// Remove icon view so it gets re-created with the new icon
+		if (_iconView) {
+			[_iconView removeFromSuperview];
+			[_iconView release];
+			_iconView = nil;
+		}
+	}
+	
+	[self _relayoutViews];
 }
 
 - (BOOL)showsBadge
