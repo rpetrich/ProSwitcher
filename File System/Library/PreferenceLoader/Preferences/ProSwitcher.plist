@@ -16,8 +16,26 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Interface</string>
+			<string>Activation Methods</string>
+			<key>isController</key>
+			<true/>
+			<key>bundle</key>
+			<string>LibActivator</string>
+			<key>activatorListener</key>
+			<string>com.collab.proswitcher</string>
+		</dict>
+		
+		
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Display</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -27,9 +45,23 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
-			<string>PSWSwipeToClose</string>
+			<string>PSWShowApplicationTitle</string>
 			<key>label</key>
-			<string>Swipe to Close</string>
+			<string>Application Title</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
+			<string>PSWShowBadges</string>
+			<key>label</key>
+			<string>Show Badges</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -49,15 +81,139 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<real>0</real>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWRoundedCornerRadius</string>
+			<key>label</key>
+			<string>Rounded Corners</string>
+			<key>validTitles</key>
+			<array>
+				<string>None</string>
+				<string>Small</string>
+				<string>Medium</string>
+				<string>Large</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>0</real>
+				<real>5</real>
+				<real>10</real>
+				<real>20</real>
+			</array>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		
+		
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
-			<string>PSWShowBadges</string>
+			<string>PSWShowPageControl</string>
 			<key>label</key>
-			<string>Show Badges</string>
+			<string>Page Dots</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
+			<string>PSWSwipeToClose</string>
+			<key>label</key>
+			<string>Swipe to Close</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<real>40</real>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWSnapshotInset</string>
+			<key>label</key>
+			<string>Cards Visible</string>
+			<key>validTitles</key>
+			<array>
+				<string>Three</string>
+				<string>One</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<real>40</real>
+				<real>0</real>
+			</array>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWTapsToActivate</string>
+			<key>label</key>
+			<string>Taps to Activate</string>
+			<key>validTitles</key>
+			<array>
+				<string>One</string>
+				<string>Two</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		
+		
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Theming</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
+			<string>PSWThemedIcons</string>
+			<key>label</key>
+			<string>Themed Icons</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -91,62 +247,6 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>key</key>
-			<string>PSWShowApplicationTitle</string>
-			<key>label</key>
-			<string>Application Title</string>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>key</key>
-			<string>PSWThemedIcons</string>
-			<key>label</key>
-			<string>Themed Icons</string>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>key</key>
-			<string>PSWShowPageControl</string>
-			<key>label</key>
-			<string>Page Dots</string>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>key</key>
-			<string>PSWShowDefaultApps</string>
-			<key>label</key>
-			<string>Show Default Apps</string>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
 			<integer>0</integer>
@@ -171,98 +271,8 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>default</key>
-			<real>0</real>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>detail</key>
-			<string>PSListItemsController</string>
-			<key>key</key>
-			<string>PSWRoundedCornerRadius</string>
-			<key>label</key>
-			<string>Corner Radius</string>
-			<key>validTitles</key>
-			<array>
-				<string>None</string>
-				<string>Small</string>
-				<string>Large</string>
-			</array>
-			<key>validValues</key>
-			<array>
-				<real>0</real>
-				<real>10</real>
-				<real>20</real>
-			</array>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>default</key>
-			<integer>1</integer>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>detail</key>
-			<string>PSListItemsController</string>
-			<key>key</key>
-			<string>PSWTapsToActivate</string>
-			<key>label</key>
-			<string>Taps to Activate</string>
-			<key>validTitles</key>
-			<array>
-				<string>One</string>
-				<string>Two</string>
-			</array>
-			<key>validValues</key>
-			<array>
-				<integer>1</integer>
-				<integer>2</integer>
-			</array>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkListCell</string>
-			<key>default</key>
-			<real>40</real>
-			<key>defaults</key>
-			<string>com.collab.proswitcher</string>
-			<key>detail</key>
-			<string>PSListItemsController</string>
-			<key>key</key>
-			<string>PSWSnapshotInset</string>
-			<key>label</key>
-			<string>Cards Visible</string>
-			<key>validTitles</key>
-			<array>
-				<string>Three</string>
-				<string>One</string>
-			</array>
-			<key>validValues</key>
-			<array>
-				<real>40</real>
-				<real>0</real>
-			</array>
-			<key>PostNotification</key>
-			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>label</key>
-			<string>Activation Methods</string>
-			<key>isController</key>
-			<true/>
-			<key>bundle</key>
-			<string>LibActivator</string>
-			<key>activatorListener</key>
-			<string>com.collab.proswitcher</string>
-		</dict>
+
+
 	</array>
 	<key>title</key>
 	<string>ProSwitcher</string>
