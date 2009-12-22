@@ -91,7 +91,7 @@ static NSUInteger defaultImagePassThrough;
 }
 
 #ifdef USE_IOSURFACE
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
 {
 	if (surface != _surface) {
 		CGImageRelease(_snapshotImage);
@@ -103,17 +103,23 @@ static NSUInteger defaultImagePassThrough;
 			_snapshotFilePath = nil;
 		}
 		if (surface) {
-			void *baseAddress = IOSurfaceGetBaseAddress(surface);
-			size_t width = IOSurfaceGetWidth(surface);
-			size_t height = IOSurfaceGetHeight(surface);
-			size_t stride = IOSurfaceGetBytesPerRow(surface);
-			CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, baseAddress, stride * height, NULL);
-			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-			_snapshotImage = CGImageCreate(width, height, 8, 32, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
-			CGColorSpaceRelease(colorSpace);
-			CGDataProviderRelease(dataProvider);
-			CFRetain(surface);
-			_surface = surface;
+			size_t width = IOSurfaceGetWidth(surface) - cropInsets.left - cropInsets.right;
+			size_t height = IOSurfaceGetHeight(surface) - cropInsets.top - cropInsets.bottom;
+			if (width > 0 && height > 0) {
+				uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
+				size_t stride = IOSurfaceGetBytesPerRow(surface);
+				baseAddress += cropInsets.left * 4 + stride * cropInsets.top;
+				CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, baseAddress, stride * (height - 1) + width * 4, NULL);
+				CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+				_snapshotImage = CGImageCreate(width, height, 8, 32, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
+				CGColorSpaceRelease(colorSpace);
+				CGDataProviderRelease(dataProvider);
+				CFRetain(surface);
+				_surface = surface;
+			} else {
+				_snapshotImage = NULL;
+				_surface = NULL;
+			}
 		} else {
 			_snapshotImage = NULL;
 			_surface = NULL;
@@ -121,6 +127,16 @@ static NSUInteger defaultImagePassThrough;
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
+}
+
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
+{
+	PSWCropInsets insets;
+	insets.top = 0;
+	insets.left = 0;
+	insets.bottom = 0;
+	insets.right = 0;
+	[self loadSnapshotFromSurface:surface cropInsets:insets];
 }
 #endif
 
