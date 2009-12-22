@@ -19,7 +19,7 @@
 	BOOL _showsCloseButton;
 	BOOL _showsTitle;
 	BOOL _showsBadge;
-	BOOL _focused;
+	BOOL _focused; 
 	UIButton *_closeButton;
 	CALayer *_iconBadge;
 	UILabel *_titleView;

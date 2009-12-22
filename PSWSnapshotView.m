@@ -74,7 +74,7 @@
 	} else {
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.33f];
-		CGRect frame = [theSnapshot frame];
+		CGRect frame = [theSnapshot frame]; 
 		frame.origin.y = screenY;
 		[theSnapshot setFrame:frame];
 		theSnapshot.alpha = 1.0f;
