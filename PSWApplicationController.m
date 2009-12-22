@@ -112,11 +112,14 @@ CHMethod0(void, SBApplication, exitedCommon)
 #pragma mark SBUIController
 
 static SBApplication *currentZoomApp;
+static UIWindow *currentZoomStatusWindow;
 
-CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, id, statusWindow)
+CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, UIWindow *, statusWindow)
 {
 	currentZoomApp = application;
+	currentZoomStatusWindow = statusWindow;
 	CHSuper2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, application, includeStatusWindow, statusWindow);
+	currentZoomStatusWindow = nil;
 	currentZoomApp = nil;
 }
 
@@ -126,7 +129,24 @@ CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurfac
 {
 	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		[application loadSnapshotFromSurface:surface];
+		PSWCropInsets insets;
+		insets.top = 0;
+		insets.left = 0;
+		insets.bottom = 0;
+		insets.right = 0;
+		if (currentZoomStatusWindow) {
+			CGRect frame = [currentZoomStatusWindow frame];
+			CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+			if (frame.origin.y + frame.size.height < screenSize.height / 2.0f)
+				insets.top = frame.size.height;
+			else if (frame.origin.x + frame.size.width < screenSize.width / 2.0f)
+				insets.left = frame.size.width;
+			else if (frame.size.width > frame.size.height)
+				insets.bottom = frame.size.height;
+			else
+				insets.right = frame.size.width;
+		}
+		[application loadSnapshotFromSurface:surface cropInsets:insets];
 	}
 	return self;
 }
