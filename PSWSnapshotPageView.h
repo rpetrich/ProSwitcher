@@ -52,6 +52,10 @@
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
 - (void)redraw;
 
+// Allow temporarily adding/removing views
+- (void)addViewForApplication:(PSWApplication *)application;
+- (void)removeViewForApplication:(PSWApplication *)application;
+
 @end
 
 @protocol PSWSnapshotPageViewDelegate <NSObject>

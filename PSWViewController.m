@@ -345,24 +345,25 @@ static PSWViewController *mainController;
 
 #pragma mark PSWSnapshotPageView delegate
 
-- (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application
+- (void)snapshotPageView:(PSWSnapshotPageView *)sspv didSelectApplication:(PSWApplication *)app
 {
 	disallowIconListScatter++;
 	modifyZoomTransformCountDown = 1;
 	ignoreZoomSetAlphaCountDown = 1;
-	[application activateWithAnimation:YES];
+	[app activateWithAnimation:YES];
 	disallowIconListScatter--;
 }
 
-- (void)snapshotPageView:(PSWSnapshotPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application
+- (void)snapshotPageView:(PSWSnapshotPageView *)sspv didCloseApplication:(PSWApplication *)app
 {
 	disallowRestoreIconList++;
-	[application exit];
+	[app exit];
 	[self reparentView]; // Fix layout
+	[snapshotPageView removeViewForApplication:app];
 	disallowRestoreIconList--;
 }
 
-- (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)snapshotPageView
+- (void)snapshotPageViewShouldExit:(PSWSnapshotPageView *)sspv
 {
 	[self setActive:NO];
 }
