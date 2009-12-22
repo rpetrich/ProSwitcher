@@ -254,11 +254,9 @@
 }
 - (void)setThemedIcons:(BOOL)themedIcons
 {
-	if (_themedIcons != themedIcons) {
-		_themedIcons = themedIcons;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setThemedIcon:themedIcons];
-	}
+	_themedIcons = themedIcons;
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setThemedIcon:themedIcons];
 }
 
 - (BOOL)showsCloseButtons

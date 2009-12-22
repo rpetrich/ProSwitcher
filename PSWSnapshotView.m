@@ -311,15 +311,13 @@
 }
 - (void)setThemedIcon:(BOOL)themedIcon
 {
-	if (_themedIcon != themedIcon) {
-		_themedIcon = themedIcon;
+	_themedIcon = themedIcon;
 	
-		// Remove icon view so it gets re-created with the new icon
-		if (_iconView) {
-			[_iconView removeFromSuperview];
-			[_iconView release];
-			_iconView = nil;
-		}
+	// Remove icon view so it gets re-created with the new icon
+	if (_iconView) {
+		[_iconView removeFromSuperview];
+		[_iconView release];
+		_iconView = nil;
 	}
 	
 	[self _relayoutViews];
