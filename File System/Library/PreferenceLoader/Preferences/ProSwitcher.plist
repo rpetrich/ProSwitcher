@@ -147,7 +147,7 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
-			<string>PSWShowSpringBoard</string>
+			<string>PSWSpringBoardCard</string>
 			<key>label</key>
 			<string>SpringBoard Card</string>
 			<key>PostNotification</key>
