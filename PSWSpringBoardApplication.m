@@ -17,37 +17,21 @@ CHDeclareClass(SpringBoard);
 CHDeclareClass(SBUIController);
 
 static CGImageRef springBoardSnapshot = nil;
-static PSWSpringBoardApplication *sba = nil;
+static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 @implementation PSWSpringBoardApplication
 @synthesize displayName = _displayName;
 
-+ (id) sharedInstance
++ (id)sharedInstance
 {
-	if (sba == nil)
-		sba = [[self alloc] init];
-	return sba;
+	if (!sharedSpringBoardApplication)
+		sharedSpringBoardApplication = [[self alloc] init];
+	return sharedSpringBoardApplication;
 }
 
-- (id) init
+- (id)init
 {
-	if ((self = [super init])) {
-		_application = nil;
-		_displayIdentifier = [[NSString alloc] initWithString:@"com.apple.springboard"];
-		_displayName = @"SpringBoard";
-		sba = self;
-	}
-	return self;
-}
-
-- (id)initWithDisplayIdentifier:(NSString *)displayIdentifier
-{
-	return [self init];
-}
-
-- (id)initWithSBApplication:(SBApplication *)application
-{
-	return [self init];
+	return [super initWithDisplayIdentifier:@"com.apple.springboard"];
 }
 
 - (CGImageRef)snapshot
@@ -63,11 +47,6 @@ static PSWSpringBoardApplication *sba = nil;
 - (SBApplicationIcon *)springBoardIcon
 {
 	return nil;
-}
-
-- (NSString *)displayIdentifier
-{
-	return _displayIdentifier;
 }
 
 - (UIImage *)themedIcon
@@ -95,19 +74,14 @@ static PSWSpringBoardApplication *sba = nil;
 	[[PSWViewController sharedInstance] setActive:NO animated:animation];
 }
 
-- (void)activate
-{
-	[self activateWithAnimation:YES];
-}
-
 - (SBIconBadge *)badgeView
 {
 	return nil;
 }
 
-- (NSString *)description
+- (NSString *)displayName
 {
-	return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];
+	return @"SpringBoard";
 }
 
 @end
