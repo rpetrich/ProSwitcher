@@ -13,6 +13,7 @@
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
 // Defaults
+#define PSWSingleHomeTap		NO
 #define PSWShowDock             YES
 #define PSWShowBadges			YES
 #define PSWAnimateActive        YES
