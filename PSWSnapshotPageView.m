@@ -286,11 +286,9 @@
 }
 - (void)setShowsCloseButtons:(BOOL)showsCloseButtons
 {
-	if (_showsCloseButtons != showsCloseButtons) {
-		_showsCloseButtons = showsCloseButtons;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setShowsCloseButton:showsCloseButtons];
-	}
+	_showsCloseButtons = showsCloseButtons;
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setShowsCloseButton:_showsCloseButtons];
 }
 
 - (BOOL)showsBadges

@@ -442,7 +442,7 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 			[vc activator:nil receiveEvent:nil];
 			
 			// NOTE: _handleMenuButtonEvent is responsible for resetting the home tap count
-            unsigned int *_menuButtonClickCount = CHIvarRef(self, _menuButtonClickCount, unsigned int);
+            unsigned int *_menuButtonClickCount = &CHIvar(self, _menuButtonClickCount, unsigned int);
             *_menuButtonClickCount = 0x8000;
 			
 			return;

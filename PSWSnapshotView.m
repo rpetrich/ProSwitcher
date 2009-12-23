@@ -132,8 +132,27 @@
 	} else {
 		CALayer *layer = [CALayer layer];
 		[layer setFrame:CGRectMake(0.0f, 0.0f, screenFrame.size.width, screenFrame.size.height)];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
+		[layer setContents:(id) [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
+	}
+	
+	if (_closeButton != nil) {
+		[_closeButton removeFromSuperview];
+		[_closeButton release];
+		_closeButton = nil;
+	}
+	if (_showsCloseButton) {
+		UIImage *closeImage = PSWImage(@"closebox");
+		_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+		[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
+		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
+		
+		CGSize closeImageSize = [closeImage size];
+		CGFloat offsetX = (NSInteger)(closeImageSize.width / 2.0f);
+		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
+		[_closeButton setFrame:CGRectMake(screenFrame.origin.x - offsetX, screenFrame.origin.y - offsetY, closeImageSize.width, closeImageSize.height)];	
+		
+		[self addSubview:_closeButton];
 	}
 	
 	if (_showsTitle) {
@@ -184,33 +203,12 @@
 			_iconView = nil;
 		}
 	}
-	
-	if (_showsCloseButton) {
-		UIImage *closeImage = PSWImage(@"closebox");
-		if (!_closeButton) {
-			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
-			[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
-			[self addSubview:_closeButton];
-		}
-		CGSize closeImageSize = [closeImage size];
-		CGFloat offsetX = (NSInteger)(closeImageSize.width / 2.0f);
-		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
-		[_closeButton setFrame:CGRectMake(screenFrame.origin.x - offsetX, screenFrame.origin.y - offsetY, closeImageSize.width, closeImageSize.height)];		
-	} else {
-		if (_closeButton) {
-			[_closeButton removeFromSuperview];
-			[_closeButton release];
-			_closeButton = nil;
-		}
-	}
-	
+		
 	if (_iconBadge != nil) {
 		[_iconBadge removeFromSuperlayer];
 		[_iconBadge release];
 		_iconBadge = nil;
 	}
-	
 	if (_showsBadge) {
 		SBIconBadge *badge = [_application badgeView];
 		if (badge) {	
@@ -308,10 +306,8 @@
 
 - (void)setShowsTitle:(BOOL)showsTitle
 {
-	if (_showsTitle != showsTitle) {
-		_showsTitle = showsTitle;
-		[self _relayoutViews];
-	}
+	_showsTitle = showsTitle;
+	[self _relayoutViews];
 }
 
 - (BOOL)themedIcon
