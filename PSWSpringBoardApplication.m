@@ -22,14 +22,14 @@ static PSWSpringBoardApplication *sba = nil;
 @implementation PSWSpringBoardApplication
 @synthesize displayName = _displayName;
 
-+ (id) sharedInstance
++ (id)sharedInstance
 {
 	if (sba == nil)
 		sba = [[self alloc] init];
 	return sba;
 }
 
-- (id) init
+- (id)init
 {
 	if ((self = [super init])) {
 		_application = nil;

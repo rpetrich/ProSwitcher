@@ -33,6 +33,8 @@ CHDeclareClass(SBVoiceControlAlert);
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
 
+static NSDictionary *preferences = nil;
+
 static NSUInteger disallowIconListScatter;
 static NSUInteger disallowRestoreIconList;
 static NSUInteger disallowIconListScroll;
@@ -435,6 +437,16 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 		disallowIconListScroll--;
 		
 		return;
+	} else {
+		if (GetPreference(PSWSingleHomeTap, BOOL)) {
+			[vc activator:nil receiveEvent:nil];
+			
+			// NOTE: _handleMenuButtonEvent is responsible for resetting the home tap count
+            unsigned int *_menuButtonClickCount = CHIvarRef(self, _menuButtonClickCount, unsigned int);
+            *_menuButtonClickCount = 0x8000;
+			
+			return;
+		}
 	}
 	
 	CHSuper0(SpringBoard, _handleMenuButtonEvent);
