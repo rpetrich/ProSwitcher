@@ -413,11 +413,10 @@ CHMethod0(void, SBUIController, finishLaunching)
 	
 	BOOL value = [[plistDict objectForKey:@"PSWAlert"] boolValue];
 	if (!value) {
-		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Welcome to ProSwitcher" message:@"To change settings or to setup launching in *any* app, go to the Settings app. Otherwise, tap the ProSwitcher icon to activate.\n\nProSwitcher is (c) 2009 Ryan Petrich and Grant Paul, released under the LGPL." delegate:self cancelButtonTitle:nil otherButtonTitles:@"Continue", nil] autorelease];
+		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Welcome to ProSwitcher" message:@"To change settings or to setup launching in *any* app, go to the Settings app. Otherwise, tap the ProSwitcher icon to activate.\n\nProSwitcher is (c) 2009 Ryan Petrich and Grant Paul, released under the LGPL." delegate:nil cancelButtonTitle:nil otherButtonTitles:@"Continue", nil] autorelease];
 		[alert show];
-		
 		[plistDict setObject:[NSNumber numberWithBool:YES] forKey:@"PSWAlert"];
-		[plistDict writeToFile:PSWPreferencesFilePath atomically:YES];
+		PSWWriteBinaryPropertyList(plistDict, PSWPreferencesFilePath);
 	}
 	[plistDict release];
 	
