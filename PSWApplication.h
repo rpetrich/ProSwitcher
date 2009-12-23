@@ -12,7 +12,7 @@ typedef struct PSWCropInsets {
 @protocol PSWApplicationDelegate;
 
 @interface PSWApplication : NSObject {
-@private
+@protected
 	NSString *_displayIdentifier;
 	SBApplication *_application;
 	id<PSWApplicationDelegate> _delegate;

@@ -67,7 +67,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<true/>
+			<false/>
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
@@ -136,6 +136,20 @@
 			<string>PSWShowPageControl</string>
 			<key>label</key>
 			<string>Page Dots</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
+			<string>PSWShowSpringBoard</string>
+			<key>label</key>
+			<string>SpringBoard Card</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
