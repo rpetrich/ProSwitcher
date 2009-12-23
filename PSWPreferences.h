@@ -13,15 +13,15 @@
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
 // Defaults
-#define PSWSingleHomeTap		NO
+#define PSWBecomeHomeScreen     NO
 #define PSWShowDock             YES
-#define PSWShowBadges			YES
+#define PSWShowBadges           YES
 #define PSWAnimateActive        YES
-#define PSWAllowsZoom			NO
-#define PSWSpringBoardCard		NO
+#define PSWAllowsZoom           NO
+#define PSWSpringBoardCard      NO
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
-#define PSWThemedIcons			YES
+#define PSWThemedIcons          YES
 #define PSWBackgroundStyle      0
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES
@@ -39,9 +39,9 @@
 __attribute__((always_inline))
 static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *fileName)
 {
-	NSError *error = nil;
-	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&error];
-	if (error)
+	NSString *errorDescription = nil;
+	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&errorDescription];
+	if (errorDescription)
 		[dict writeToFile:fileName atomically:YES];
 	else
 		[data writeToFile:fileName atomically:YES];

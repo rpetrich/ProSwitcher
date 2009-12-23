@@ -18,7 +18,8 @@ CHDeclareClass(LAActivator);
 
 CHDeclareClass(SBAwayController);
 CHDeclareClass(SBStatusBarController);
-CHDeclareClass(SBApplication)
+CHDeclareClass(SBApplication);
+CHDeclareClass(SBDisplayStack);
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBIconListPageControl);
 CHDeclareClass(SBUIController);
@@ -321,9 +322,9 @@ static PSWViewController *mainController;
 		if ([displayIdentifier length]) {
 			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			
-			// Chicken or the egg situation here and I'm too sleepy to figure it out :P
 			modifyZoomTransformCountDown = 2;
 			ignoreZoomSetAlphaCountDown = 2;
+			disallowIconListScatter++;
 			
 			// Background
 			if (![activeApp hasNativeBackgrounding]) {
@@ -341,6 +342,8 @@ static PSWViewController *mainController;
 			[self setActive:YES animated:NO];
 			[snapshotPageView setFocusedApplication:activeApp animated:NO];
 			[event setHandled:YES];
+			
+			disallowIconListScatter--;
 		}
 	}
 }
@@ -401,10 +404,10 @@ CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, a
 	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && !disallowIconListScatter);
 }
 
-CHMethod1(void, SBUIController, restoreIconList, BOOL, unknown)
+CHMethod1(void, SBUIController, restoreIconList, BOOL, animated)
 {
-	if (disallowRestoreIconList == 0)	
-		CHSuper1(SBUIController, restoreIconList, unknown);
+	if (disallowRestoreIconList == 0)
+		CHSuper1(SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
 }
 
 CHMethod0(void, SBUIController, finishLaunching)
@@ -423,6 +426,29 @@ CHMethod0(void, SBUIController, finishLaunching)
 	CHSuper0(SBUIController, finishLaunching);
 }
 
+#pragma mark SBDisplayStack
+CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay *, display)
+{
+	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, BOOL)) {
+		if (CHIsClass(display, SBApplication)) {
+			SBApplication *application = (SBApplication *)display;
+			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[application displayIdentifier]];
+			if (suspendingApp) {
+				modifyZoomTransformCountDown = 2;
+				ignoreZoomSetAlphaCountDown = 2;
+				disallowIconListScatter++;
+				CHSuper1(SBDisplayStack, pushDisplay, display);
+				PSWViewController *vc = [PSWViewController sharedInstance];
+				[vc setActive:YES animated:NO];
+				[[vc snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
+				disallowIconListScatter--;
+				return;
+			}
+		}
+	}
+	CHSuper1(SBDisplayStack, pushDisplay, display);
+}
+
 #pragma mark SpringBoard
 CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 {
@@ -436,16 +462,6 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 		disallowIconListScroll--;
 		
 		return;
-	} else {
-		if (GetPreference(PSWSingleHomeTap, BOOL)) {
-			[vc activator:nil receiveEvent:nil];
-			
-			// NOTE: _handleMenuButtonEvent is responsible for resetting the home tap count
-            unsigned int *_menuButtonClickCount = &CHIvar(self, _menuButtonClickCount, unsigned int);
-            *_menuButtonClickCount = 0x8000;
-			
-			return;
-		}
 	}
 	
 	CHSuper0(SpringBoard, _handleMenuButtonEvent);
@@ -554,6 +570,8 @@ CHConstructor
 	CHHook0(SBUIController, finishLaunching);
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
+	CHLoadLateClass(SBDisplayStack);
+	CHHook1(SBDisplayStack, pushDisplay);
 	CHLoadLateClass(SpringBoard);
 	CHHook0(SpringBoard, _handleMenuButtonEvent);
 	CHLoadLateClass(SBIconController);
