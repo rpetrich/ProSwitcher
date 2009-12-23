@@ -117,7 +117,8 @@
 {
 	for (PSWSnapshotView *view in _snapshotViews)
 		[view setZoomed:NO];
-	if (_snapshotViews.count > 0) {
+	if (_snapshotViews.count > 0 && (!_scrollingToSide || [_pageControl currentPage] == 0 || [_pageControl currentPage] == [_applications count] - 1)) {
+		_scrollingToSide = NO;
 		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
 		[activeView setZoomed:YES];
 	}	
@@ -547,14 +548,16 @@
 		CGSize size = [self bounds].size;
 		if (point.y < size.height * (4.0f / 5.0f)) {
 			if (point.x < size.width / 2.0f) {
-				if (tapCount == 2)
+				if (tapCount == 2) {
+					_scrollingToSide = YES;
 					[self setFocusedApplication:[_applications objectAtIndex:0]];
-				else
+				} else
 					[self tapPreviousAndContinue];
 			} else {
-				if (tapCount == 2)
+				if (tapCount == 2) {
+					_scrollingToSide = YES;
 					[self setFocusedApplication:[_applications lastObject]];
-				else
+				} else
 					[self tapNextAndContinue];
 			}
 			return;

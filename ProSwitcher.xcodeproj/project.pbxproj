@@ -20,6 +20,7 @@
 		945C24FB10C22AFA0089A705 /* PSWProSwitcherIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */; };
 		949485F110C1FC3800467E51 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 949485F010C1FC3800467E51 /* QuartzCore.framework */; };
 		94B298C410C2266400F64150 /* PSWViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 94B298C210C2266400F64150 /* PSWViewController.m */; };
+		C441ADEC10E2081B00860249 /* PSWSpringBoardApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = C441ADEB10E2081B00860249 /* PSWSpringBoardApplication.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,8 @@
 		94B298C310C2266400F64150 /* PSWViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWViewController.h; sourceTree = "<group>"; };
 		94EEDE2C10D47425007133E9 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		94EEDE3510D474AC007133E9 /* libactivator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libactivator.h; sourceTree = "<group>"; };
+		C441ADEA10E2081B00860249 /* PSWSpringBoardApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWSpringBoardApplication.h; sourceTree = "<group>"; };
+		C441ADEB10E2081B00860249 /* PSWSpringBoardApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWSpringBoardApplication.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +121,8 @@
 		7DD43FE410C0979E0063020D /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				C441ADEA10E2081B00860249 /* PSWSpringBoardApplication.h */,
+				C441ADEB10E2081B00860249 /* PSWSpringBoardApplication.m */,
 				942FC5E110CB8DCF006F6990 /* PSWApplication.h */,
 				942FC5E210CB8DCF006F6990 /* PSWApplication.m */,
 				942FC6BA10CB9D1D006F6990 /* PSWApplicationController.h */,
@@ -319,6 +324,7 @@
 				942FC6BC10CB9D1D006F6990 /* PSWApplicationController.m in Sources */,
 				942FC6C310CBA11F006F6990 /* PSWDisplayStacks.m in Sources */,
 				942FC77B10CBB8F7006F6990 /* PSWResources.m in Sources */,
+				C441ADEC10E2081B00860249 /* PSWSpringBoardApplication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

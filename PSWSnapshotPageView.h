@@ -23,6 +23,7 @@
 	BOOL _allowsZoom;
 	BOOL _allowsSwipeToClose;
 	BOOL _themedIcons;
+	BOOL _scrollingToSide;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
 	CGFloat _snapshotInset;
