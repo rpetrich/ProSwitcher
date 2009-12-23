@@ -7,7 +7,7 @@
 #     simulator app with MobileSubstrate activated
 
 rm -rf "${TARGET_BUILD_DIR}/File System/"
-cp -r "${PROJECT_DIR}/File System/" "${TARGET_BUILD_DIR}/File System/"
+cp -R "${PROJECT_DIR}/File System/" "${TARGET_BUILD_DIR}/File System/"
 find "${TARGET_BUILD_DIR}/File System/" -name '._*' -or -name '.DS_Store' -delete
 cp "${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}" "${TARGET_BUILD_DIR}/File System/Library/MobileSubstrate/DynamicLibraries/${EXECUTABLE_NAME}.dylib"
 

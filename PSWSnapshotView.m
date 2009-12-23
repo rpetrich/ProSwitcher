@@ -186,7 +186,7 @@
 	}
 	
 	if (_showsCloseButton) {
-		UIImage *closeImage = PSWGetCachedSpringBoardResource(@"closebox");
+		UIImage *closeImage = PSWImage(@"closebox");
 		if (!_closeButton) {
 			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
 			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
