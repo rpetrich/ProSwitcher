@@ -1,3 +1,7 @@
+#import <Foundation/Foundation.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
 #define floatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
 #define NSIntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
@@ -30,3 +34,14 @@
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 
+
+__attribute__((always_inline))
+static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *fileName)
+{
+	NSError *error = nil;
+	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&error];
+	if (error)
+		[dict writeToFile:fileName atomically:YES];
+	else
+		[data writeToFile:fileName atomically:YES];
+}
