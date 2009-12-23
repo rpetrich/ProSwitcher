@@ -54,6 +54,7 @@
 		943D542510CCF9EC0007FAFF /* ProSwitcher.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ProSwitcher.plist; sourceTree = "<group>"; };
 		943D546410CCFA510007FAFF /* SpringBoard+Backgrounder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SpringBoard+Backgrounder.h"; sourceTree = "<group>"; };
 		943D54F910CD06DA0007FAFF /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		945742E810E2D7C300CF56B8 /* Icon.psd */ = {isa = PBXFileReference; lastKnownFileType = file; path = Icon.psd; sourceTree = "<group>"; };
 		945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWProSwitcherIcon.m; sourceTree = "<group>"; };
 		949485F010C1FC3800467E51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		94B298C210C2266400F64150 /* PSWViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWViewController.m; sourceTree = "<group>"; };
@@ -99,6 +100,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				943D541C10CCF9EC0007FAFF /* File System */,
+				945742E710E2D7C300CF56B8 /* Resources */,
 				943D541810CCF9750007FAFF /* Packaging */,
 				943D541610CCF8230007FAFF /* Build Scripts */,
 			);
@@ -228,6 +230,14 @@
 				940499DF10DE37EC0007872E /* SBUIController+CategoriesSB.h */,
 			);
 			path = Headers;
+			sourceTree = "<group>";
+		};
+		945742E710E2D7C300CF56B8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				945742E810E2D7C300CF56B8 /* Icon.psd */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		94EEDE2910D47425007133E9 /* Activator */ = {
