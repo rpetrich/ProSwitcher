@@ -120,7 +120,7 @@
 	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
 	
 	if (isZoomed)
-		screenFrame.origin.y += 10;
+		screenFrame.origin.y += 8;
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
@@ -389,11 +389,21 @@
 
 - (void)setZoomed:(BOOL)zoomed
 {
-	[UIView beginAnimations:nil context:NULL];
-	[UIView setAnimationDuration:0.2f];
-	isZoomed = zoomed;
-	[self _relayoutViews];
-	[UIView commitAnimations];
+	if (_allowsZoom) {
+		[UIView beginAnimations:nil context:NULL];
+		[UIView setAnimationDuration:0.2f];
+		isZoomed = zoomed;
+		[self _relayoutViews];
+		[UIView commitAnimations];
+	} else {
+		if (isZoomed) {
+			[UIView beginAnimations:nil context:NULL];
+			[UIView setAnimationDuration:0.2f];
+			isZoomed = NO;
+			[self _relayoutViews];
+			[UIView commitAnimations];
+		}
+	}
 }
 
 #pragma mark PSWApplicationDelegate

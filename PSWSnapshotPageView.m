@@ -107,6 +107,22 @@
 	}
 }
 
+- (void)unZoom
+{
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:NO];
+}
+
+- (void)zoomActive
+{
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:NO];
+	if (_snapshotViews.count > 0) {
+		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+		[activeView setZoomed:YES];
+	}	
+}
+
 - (void)_relayoutViews
 {
 	CGRect bounds = [self frame];
@@ -124,13 +140,6 @@
 	
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
-	
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view setZoomed:NO];
-	if (_snapshotViews.count > 0) {
-		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
-		[activeView setZoomed:YES];
-	}
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
@@ -241,9 +250,6 @@
 		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
 		if (!animated)
 			[self scrollViewDidScroll:_scrollView];
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setZoomed:NO];
-		[[_snapshotViews objectAtIndex:index] setZoomed:YES];
 	}
 }
 
@@ -318,6 +324,8 @@
 		_allowsZoom = allowsZoom;
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsZoom:allowsZoom];
+		if (!_allowsZoom)
+			[self unZoom];
 	}
 }
 
@@ -448,7 +456,7 @@
 	
 	NSUInteger appCount = [_applications count];
 	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
-		PSWSnapshotView *oldView = (oldPage < appCount)?[_snapshotViews objectAtIndex:oldPage]:nil;
+		PSWSnapshotView *oldView = (oldPage < appCount) ? [_snapshotViews objectAtIndex:oldPage] : nil;
 		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:curPage];
 		
 		[oldView setFocused:NO ];
@@ -465,21 +473,11 @@
 		}
 		
 		[_pageControl setCurrentPage:curPage];
+		[self zoomActive];
+		
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
-}
-
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
-{
-	PSWSnapshotView *pageView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
-	[pageView setZoomed:NO];
-}
-
-- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
-{
-	PSWSnapshotView *pageView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
-	[pageView setZoomed:YES];
 }
 
 #pragma mark PSWSnapshotViewDelegate
