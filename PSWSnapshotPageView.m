@@ -124,6 +124,9 @@
 	
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
+	
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:NO];
 	if (_snapshotViews.count > 0) {
 		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
 		[activeView setZoomed:YES];
@@ -238,6 +241,8 @@
 		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
 		if (!animated)
 			[self scrollViewDidScroll:_scrollView];
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setZoomed:NO];
 		[[_snapshotViews objectAtIndex:index] setZoomed:YES];
 	}
 }
@@ -471,7 +476,7 @@
 	[pageView setZoomed:NO];
 }
 
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
 {
 	PSWSnapshotView *pageView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
 	[pageView setZoomed:YES];
