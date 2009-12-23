@@ -94,7 +94,7 @@ static PSWViewController *mainController;
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [[NSMutableArray alloc] init] : [GetPreference(PSWDefaultApps, id) mutableCopy];
-	if (GetPreference(PSWSpringBoardCard, BOOL) == YES)
+	if (GetPreference(PSWSpringBoardCard, BOOL) == NO)
 		[ignored addObject:@"com.apple.springboard"];
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
