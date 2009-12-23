@@ -141,9 +141,7 @@
 		NSString *title = [_application displayName];
 		CGSize textSize = [title sizeWithFont:titleFont];
 		CGRect titleFrame;
-		titleFrame.origin.x = (NSInteger)(([self bounds].size.width - textSize.width) / 2.0f);
-		if (![title isEqualToString:@"SpringBoard"])
-			titleFrame.origin.x += 18.0f;
+		titleFrame.origin.x = (NSInteger)(([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
 		titleFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 25.0f - (NSInteger)(textSize.height / 2.0f);
 		titleFrame.size.width = textSize.width;
 		titleFrame.size.height = textSize.height;
