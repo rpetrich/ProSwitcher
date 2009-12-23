@@ -96,6 +96,7 @@ static PSWViewController *mainController;
 	snapshotPageView.ignoredDisplayIdentifiers = GetPreference(PSWShowDefaultApps, BOOL) ? nil : GetPreference(PSWDefaultApps, id);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
+	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
 }
 
 - (void)_reloadPreferences

@@ -124,6 +124,10 @@
 	
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
+	if (_snapshotViews.count > 0) {
+		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+		[activeView setZoomed:YES];
+	}
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
@@ -153,6 +157,8 @@
 		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:frame application:application];
 		snapshot.delegate = self;
 		snapshot.showsTitle = _showsTitles;
+		snapshot.showsBadge = _showsBadges;
+		snapshot.allowsZoom = _allowsZoom;
 		snapshot.showsCloseButton = _showsCloseButtons;
 		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
 		snapshot.roundedCornerRadius = _roundedCornerRadius;
@@ -232,6 +238,7 @@
 		[_scrollView setContentOffset:CGPointMake(_scrollView.bounds.size.width * index, 0.0f) animated:animated];
 		if (!animated)
 			[self scrollViewDidScroll:_scrollView];
+		[[_snapshotViews objectAtIndex:index] setZoomed:YES];
 	}
 }
 
@@ -285,7 +292,7 @@
 
 - (BOOL)allowsSwipeToClose
 {
-	return _showsCloseButtons;
+	return _allowsSwipeToClose;
 }
 - (void)setAllowsSwipeToClose:(BOOL)allowsSwipeToClose
 {
@@ -293,6 +300,19 @@
 		_allowsSwipeToClose = allowsSwipeToClose;
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsSwipeToClose:allowsSwipeToClose];
+	}
+}
+
+- (BOOL)allowsZoom
+{
+	return _allowsZoom;
+}
+- (void)setAllowsZoom:(BOOL)allowsZoom
+{
+	if (_allowsZoom != allowsZoom) {
+		_allowsZoom = allowsZoom;
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setAllowsZoom:allowsZoom];
 	}
 }
 
@@ -443,6 +463,18 @@
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+	PSWSnapshotView *pageView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+	[pageView setZoomed:NO];
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+	PSWSnapshotView *pageView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+	[pageView setZoomed:YES];
 }
 
 #pragma mark PSWSnapshotViewDelegate

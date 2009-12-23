@@ -21,6 +21,7 @@
 	BOOL _themedIcon;
 	BOOL _showsBadge;
 	BOOL _focused; 
+	BOOL _allowsZoom;
 	UIButton *_closeButton;
 	CALayer *_iconBadge;
 	UILabel *_titleView;
@@ -29,6 +30,7 @@
 	BOOL wasSwipedAway;
 	BOOL wasSwipedUp;
 	BOOL isInDrag;
+	BOOL isZoomed;
 	CGPoint touchDownPoint;
 	UIButton *screen;
 	CGFloat screenY;
@@ -41,6 +43,8 @@
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
+@property (nonatomic, assign) BOOL allowsZoom;
+- (void)setZoomed:(BOOL)zoomed;
 @property (nonatomic, assign) BOOL themedIcon;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;

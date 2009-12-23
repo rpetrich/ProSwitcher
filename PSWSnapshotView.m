@@ -13,6 +13,7 @@
 @synthesize application = _application;
 @synthesize delegate = _delegate;
 @synthesize allowsSwipeToClose = _allowsSwipeToClose;
+@synthesize allowsZoom = _allowsZoom;
 @synthesize screenView = screen;
 
 - (void)snapshot:(UIButton *)snapshot touchUpInside:(UIEvent *)event
@@ -100,9 +101,14 @@
 	
 	CGRect frame = [self frame];
 	CGSize boundingSize;
-	boundingSize.width = frame.size.width - 30.0f;
-	boundingSize.height = frame.size.height - 60.0f;
-	
+	if (isZoomed) {
+		boundingSize.width = frame.size.width;
+		boundingSize.height = frame.size.height - 45.0f;
+	} else {
+		boundingSize.width = frame.size.width - 30.0f;
+		boundingSize.height = frame.size.height - 60.0f;
+	}
+		
 	CGFloat ratioW = boundingSize.width  / imageSize.width;
 	CGFloat ratioH = boundingSize.height / imageSize.height;
 	CGFloat properRatio = (ratioW < ratioH)?ratioW:ratioH;
@@ -112,6 +118,9 @@
 	screenFrame.size.height = properRatio * imageSize.height;
 	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
+	
+	if (isZoomed)
+		screenFrame.origin.y += 10;
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
@@ -332,7 +341,7 @@
 	_showsBadge = showsBadge;
 	[self _relayoutViews];
 }
-		  
+  
 - (CGFloat)roundedCornerRadius
 {
 	return _roundedCornerRadius;
@@ -376,6 +385,15 @@
 		[super setFrame:frame];
 		[self _relayoutViews];
 	}
+}
+
+- (void)setZoomed:(BOOL)zoomed
+{
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:0.2f];
+	isZoomed = zoomed;
+	[self _relayoutViews];
+	[UIView commitAnimations];
 }
 
 #pragma mark PSWApplicationDelegate
