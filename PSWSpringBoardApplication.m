@@ -90,8 +90,14 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 CHMethod0(void, SBUIController, finishLaunching)
 {
 	UIView *sbView = [self contentView];
-	UIGraphicsBeginImageContext(sbView.bounds.size);
-	[sbView.layer renderInContext:UIGraphicsGetCurrentContext()];
+	CGRect bounds = sbView.bounds;
+	bounds.size.height -= 22.0f;
+	UIGraphicsBeginImageContext(bounds.size);
+	[[UIColor blackColor] set];
+	UIRectFill(bounds);
+	CGContextRef c = UIGraphicsGetCurrentContext();
+	CGContextTranslateCTM(c, 0.0f, -22.0f);
+	[sbView.layer renderInContext:c];
 	UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	springBoardSnapshot = CGImageRetain([viewImage CGImage]);
