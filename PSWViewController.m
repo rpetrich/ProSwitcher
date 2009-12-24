@@ -559,6 +559,7 @@ CHConstructor
 	CHAutoreleasePoolForScope();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 	CHLoadLateClass(SBAwayController);
+	CHLoadLateClass(SBApplication);
 	CHLoadLateClass(SBStatusBarController);
 	CHLoadLateClass(SBIconListPageControl);
 	CHLoadLateClass(SBUIController);
