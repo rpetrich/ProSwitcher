@@ -39,10 +39,10 @@
 __attribute__((always_inline))
 static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *fileName)
 {
-	NSString *errorDescription = nil;
+	/*NSString *errorDescription = nil;
 	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&errorDescription];
-	if (errorDescription)
+	if (errorDescription)*/
 		[dict writeToFile:fileName atomically:YES];
-	else
-		[data writeToFile:fileName atomically:YES];
+	/*else
+		[data writeToFile:fileName atomically:YES];*/
 }
