@@ -145,7 +145,7 @@
 	[_pageControl setNumberOfPages:[_applications count]];
 	
 	_pageControl.hidden = !_showsPageControl;
-	
+	[self zoomActive];
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
 	for (PSWSnapshotView *view in _snapshotViews) {
