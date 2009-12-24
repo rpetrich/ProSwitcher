@@ -144,6 +144,11 @@
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
 	
+	if (!_showsPageControl)
+		_pageControl.hidden = YES;
+	else
+		_pageControl.hidden = NO;
+	
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
 	for (PSWSnapshotView *view in _snapshotViews) {
@@ -413,11 +418,12 @@
 
 - (BOOL)showsPageControl
 {
-	return _pageControl.hidden;
+	return _showsPageControl;
 }
 - (void)setShowsPageControl:(BOOL)showsPageControl
 {
-	_pageControl.hidden = !showsPageControl;
+	_showsPageControl = showsPageControl;
+	[self _relayoutViews];
 }
 
 - (NSArray *)ignoredDisplayIdentifiers
