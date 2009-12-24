@@ -1,14 +1,8 @@
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
-#import <Foundation/Foundation.h>
-#import <CoreFoundation/CoreFoundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import <SpringBoard/SpringBoard.h>
-#import <SpringBoard/SBIconBadge.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "PSWApplication.h"
 
+@class CALayer;
 @protocol PSWSnapshotViewDelegate;
 
 @interface PSWSnapshotView : UIView<PSWApplicationDelegate> {

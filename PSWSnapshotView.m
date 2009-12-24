@@ -1,7 +1,10 @@
 #import "PSWSnapshotView.h"
 
+#import <QuartzCore/QuartzCore.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
-#import <SpringBoard/SBAppContextHostView.h>
+#import <CaptainHook/CaptainHook.h>
 
 #import "PSWApplication.h"
 #import "PSWResources.h"
