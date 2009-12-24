@@ -9,5 +9,5 @@ Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 0.9.1), ba
 Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w
 Replaces: com.aaronash.Multifl0w
-Author: rpetrich and chpwn
+Author: rpetrich and chpwn <proswitcher@xuzz.net>
 Depiction: http://booleanmagic.com/cydia/proswitcher/
