@@ -317,10 +317,12 @@ static PSWViewController *mainController;
 		if (newActive)
 			[event setHandled:YES];
 	} else {
-		NSString *displayIdentifier = [[SBWActiveDisplayStack topApplication] displayIdentifier];
+		SBApplication *application = [SBWActiveDisplayStack topApplication];
+		NSString *displayIdentifier = [application displayIdentifier];
 		// Top application will be nil when app is loading; do nothing
 		if ([displayIdentifier length]) {
 			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
+			[self setActive:YES animated:NO];
 			
 			modifyZoomTransformCountDown = 2;
 			ignoreZoomSetAlphaCountDown = 2;
@@ -335,11 +337,11 @@ static PSWViewController *mainController;
 			// Deactivate
 			[[activeApp application] setDeactivationSetting:0x2 flag:YES]; // animate
 			//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
-			[SBWActiveDisplayStack popDisplay:[activeApp application]];
-			[SBWSuspendingDisplayStack pushDisplay:[activeApp application]];
+			[SBWActiveDisplayStack popDisplay:application];
+			[SBWSuspendingDisplayStack pushDisplay:application];
 			
 			// Show ProSwitcher
-			[self setActive:YES animated:NO];
+			[self reparentView];
 			[snapshotPageView setFocusedApplication:activeApp animated:NO];
 			[event setHandled:YES];
 			
