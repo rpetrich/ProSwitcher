@@ -41,6 +41,7 @@ static NSUInteger disallowRestoreIconList;
 static NSUInteger disallowIconListScroll;
 static NSUInteger modifyZoomTransformCountDown;
 static NSUInteger ignoreZoomSetAlphaCountDown;
+static NSUInteger isInClosing;
 
 static PSWViewController *mainController;
 @implementation PSWViewController
@@ -369,9 +370,11 @@ static PSWViewController *mainController;
 - (void)snapshotPageView:(PSWSnapshotPageView *)sspv didCloseApplication:(PSWApplication *)app
 {
 	disallowRestoreIconList++;
+	isInClosing++;
 	[app exit];
 	[self reparentView]; // Fix layout
 	[snapshotPageView removeViewForApplication:app];
+	isInClosing--;
 	disallowRestoreIconList--;
 }
 
@@ -391,13 +394,6 @@ static PSWViewController *mainController;
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
 	[[PSWViewController sharedInstance] _reloadPreferences];
-}
-
-#pragma mark SBApplication
-CHMethod0(void, SBApplication, activate)
-{
-	[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
-	CHSuper0(SBApplication, activate);
 }
 
 #pragma mark SBUIController
@@ -446,6 +442,11 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay *, display)
 				disallowIconListScatter--;
 				return;
 			}
+		}
+	} else if (self == SBWPreActivateDisplayStack) {
+		if (CHIsClass(display, SBApplication)) {
+			if (isInClosing == 0)
+				[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 		}
 	}
 	CHSuper1(SBDisplayStack, pushDisplay, display);
@@ -563,8 +564,6 @@ CHConstructor
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBStatusBarController);
-	CHLoadLateClass(SBApplication);
-	CHHook0(SBApplication, activate);
 	CHLoadLateClass(SBIconListPageControl);
 	CHLoadLateClass(SBUIController);
 	CHHook1(SBUIController, restoreIconList);
