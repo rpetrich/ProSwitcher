@@ -350,12 +350,15 @@ CHMethod1(void, SBApplicationIcon, setBadge, id, value)
 }
 
 CHConstructor {
+	CHAutoreleasePoolForScope();
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-	CHHook0(SBApplication, _relaunchAfterAbnormalExit);
+    if ([[[UIDevice currentDevice] systemVersion] hasPrefix:@"3.0"])
+		CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+    else
+		CHHook0(SBApplication, _relaunchAfterAbnormalExit);
 	CHHook1(SBApplication, defaultImage);
 }
 
