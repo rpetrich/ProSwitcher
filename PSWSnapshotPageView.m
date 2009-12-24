@@ -107,6 +107,23 @@
 	}
 }
 
+- (void)unZoom
+{
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:NO];
+}
+
+- (void)zoomActive
+{
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:NO];
+	if (_snapshotViews.count > 0 && (!_scrollingToSide || [_pageControl currentPage] == 0 || [_pageControl currentPage] == [_applications count] - 1)) {
+		_scrollingToSide = NO;
+		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+		[activeView setZoomed:YES];
+	}	
+}
+
 - (void)_relayoutViews
 {
 	CGRect bounds = [self frame];
@@ -118,12 +135,16 @@
 	scrollViewFrame.origin.y = 0.0;
 	scrollViewFrame.size.width = bounds.size.width - (_snapshotInset + _snapshotInset);
 	scrollViewFrame.size.height = bounds.size.height - 17.0f;
+	if ([_applications count] == 0)
+		scrollViewFrame = CGRectZero;
 	[_scrollView.layer setTransform:CATransform3DIdentity];
 	[_scrollView setFrame:scrollViewFrame];
 	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * [_applications count] + 1.0f, scrollViewFrame.size.height)];
 	
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
+	
+	_pageControl.hidden = !_showsPageControl;
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
@@ -153,6 +174,8 @@
 		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:frame application:application];
 		snapshot.delegate = self;
 		snapshot.showsTitle = _showsTitles;
+		snapshot.showsBadge = _showsBadges;
+		snapshot.allowsZoom = _allowsZoom;
 		snapshot.showsCloseButton = _showsCloseButtons;
 		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
 		snapshot.roundedCornerRadius = _roundedCornerRadius;
@@ -254,11 +277,9 @@
 }
 - (void)setThemedIcons:(BOOL)themedIcons
 {
-	if (_themedIcons != themedIcons) {
-		_themedIcons = themedIcons;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setThemedIcon:themedIcons];
-	}
+	_themedIcons = themedIcons;
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setThemedIcon:themedIcons];
 }
 
 - (BOOL)showsCloseButtons
@@ -267,11 +288,9 @@
 }
 - (void)setShowsCloseButtons:(BOOL)showsCloseButtons
 {
-	if (_showsCloseButtons != showsCloseButtons) {
-		_showsCloseButtons = showsCloseButtons;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setShowsCloseButton:showsCloseButtons];
-	}
+	_showsCloseButtons = showsCloseButtons;
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setShowsCloseButton:_showsCloseButtons];
 }
 
 - (BOOL)showsBadges
@@ -287,7 +306,7 @@
 
 - (BOOL)allowsSwipeToClose
 {
-	return _showsCloseButtons;
+	return _allowsSwipeToClose;
 }
 - (void)setAllowsSwipeToClose:(BOOL)allowsSwipeToClose
 {
@@ -295,6 +314,21 @@
 		_allowsSwipeToClose = allowsSwipeToClose;
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsSwipeToClose:allowsSwipeToClose];
+	}
+}
+
+- (BOOL)allowsZoom
+{
+	return _allowsZoom;
+}
+- (void)setAllowsZoom:(BOOL)allowsZoom
+{
+	if (_allowsZoom != allowsZoom) {
+		_allowsZoom = allowsZoom;
+		for (PSWSnapshotView *view in _snapshotViews)
+			[view setAllowsZoom:allowsZoom];
+		if (!_allowsZoom)
+			[self unZoom];
 	}
 }
 
@@ -381,11 +415,12 @@
 
 - (BOOL)showsPageControl
 {
-	return _pageControl.hidden;
+	return _showsPageControl;
 }
 - (void)setShowsPageControl:(BOOL)showsPageControl
 {
-	_pageControl.hidden = !showsPageControl;
+	_showsPageControl = showsPageControl;
+	[self _relayoutViews];
 }
 
 - (NSArray *)ignoredDisplayIdentifiers
@@ -425,7 +460,7 @@
 	
 	NSUInteger appCount = [_applications count];
 	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
-		PSWSnapshotView *oldView = (oldPage < appCount)?[_snapshotViews objectAtIndex:oldPage]:nil;
+		PSWSnapshotView *oldView = (oldPage < appCount) ? [_snapshotViews objectAtIndex:oldPage] : nil;
 		PSWSnapshotView *newView = [_snapshotViews objectAtIndex:curPage];
 		
 		[oldView setFocused:NO ];
@@ -442,6 +477,8 @@
 		}
 		
 		[_pageControl setCurrentPage:curPage];
+		[self zoomActive];
+		
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
 	}
@@ -509,25 +546,28 @@
 {
 	UITouch *touch = [touches anyObject];
 	NSInteger tapCount = [touch tapCount];
-	if ([_applications count]) {
+	if ([_applications count] > 0) {
 		CGPoint point = [touch locationInView:self];
 		CGSize size = [self bounds].size;
 		if (point.y < size.height * (4.0f / 5.0f)) {
 			if (point.x < size.width / 2.0f) {
-				if (tapCount == 2)
+				if (tapCount == 2) {
+					_scrollingToSide = YES;
 					[self setFocusedApplication:[_applications objectAtIndex:0]];
-				else
+				} else
 					[self tapPreviousAndContinue];
 			} else {
-				if (tapCount == 2)
+				if (tapCount == 2) {
+					_scrollingToSide = YES;
 					[self setFocusedApplication:[_applications lastObject]];
-				else
+				} else
 					[self tapNextAndContinue];
 			}
 			return;
 		}
 	}
-	if (tapCount == _tapsToActivate)
+	
+	if (tapCount == _tapsToActivate || [_applications count] == 0)
 		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
 			[_delegate snapshotPageViewShouldExit:self];
 }

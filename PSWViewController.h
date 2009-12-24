@@ -8,7 +8,6 @@
 	PSWApplication *focusedApplication;
 	BOOL isActive;
 	BOOL isAnimating;
-	NSDictionary *preferences;
 	UIStatusBarStyle formerStatusBarStyle;
 }
 + (PSWViewController *)sharedInstance;

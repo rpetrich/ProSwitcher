@@ -21,6 +21,23 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 	return result;
 }
 
+UIImage *PSWImage(NSString *name)
+{
+	NSString *key = [NSString stringWithFormat:@"/Applications/ProSwitcher.app/%@.png", name];
+	UIImage *result = [imageCache objectForKey:key];
+	if (!result) {
+		if (!imageCache)
+			imageCache = [[NSMutableDictionary alloc] init];
+		result = [UIImage imageWithContentsOfFile:key];
+		if (result)
+			if (imageCache)
+				[imageCache setObject:result forKey:key];
+			else
+				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+	}
+	return result;
+}
+
 static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius)
 {
 	CGSize half;

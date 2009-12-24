@@ -1,14 +1,8 @@
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
-#import <Foundation/Foundation.h>
-#import <CoreFoundation/CoreFoundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import <SpringBoard/SpringBoard.h>
-#import <SpringBoard/SBIconBadge.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "PSWApplication.h"
 
+@class CALayer;
 @protocol PSWSnapshotViewDelegate;
 
 @interface PSWSnapshotView : UIView<PSWApplicationDelegate> {
@@ -21,6 +15,7 @@
 	BOOL _themedIcon;
 	BOOL _showsBadge;
 	BOOL _focused; 
+	BOOL _allowsZoom;
 	UIButton *_closeButton;
 	CALayer *_iconBadge;
 	UILabel *_titleView;
@@ -29,6 +24,7 @@
 	BOOL wasSwipedAway;
 	BOOL wasSwipedUp;
 	BOOL isInDrag;
+	BOOL isZoomed;
 	CGPoint touchDownPoint;
 	UIButton *screen;
 	CGFloat screenY;
@@ -41,6 +37,8 @@
 @property (nonatomic, assign) id<PSWSnapshotViewDelegate> delegate;
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
+@property (nonatomic, assign) BOOL allowsZoom;
+- (void)setZoomed:(BOOL)zoomed;
 @property (nonatomic, assign) BOOL themedIcon;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;

@@ -4,6 +4,7 @@
 #import <SpringBoard/SpringBoard.h>
 
 #import "PSWApplication.h"
+#import "PSWSpringBoardApplication.h"
 
 CHDeclareClass(SBApplication);
 
@@ -32,6 +33,7 @@ static PSWApplicationController *sharedApplicationController;
 {
 	if ((self = [super init])) {
 		_activeApplications = [[NSMutableDictionary alloc] init];
+		[_activeApplications setObject:[[PSWSpringBoardApplication alloc] init] forKey:@"com.apple.springboard"];
 		[PSWApplication clearSnapshotCache];
 	}
 	return self;
