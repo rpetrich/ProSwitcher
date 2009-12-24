@@ -218,9 +218,9 @@
 			_iconBadge = [[CALayer layer] retain];
 			id badgeContents = [[badge layer] contents];
 			[_iconBadge setContents:badgeContents];
-			CGRect badgeFrame = badge.frame;
-			badgeFrame.origin.x = (NSInteger)(screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
-			badgeFrame.origin.y = (NSInteger)(screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+			CGRect badgeFrame = [badge frame];
+			badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
+			badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
 			[_iconBadge setFrame:badgeFrame];
 			[[self layer] addSublayer:_iconBadge];
 		}
