@@ -66,7 +66,7 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 - (void)exit
 {
-	[CHSharedInstance(SpringBoard) relaunchSpringBoard];
+	[(SpringBoard *)[UIApplication sharedApplication] relaunchSpringBoard];
 }
 
 - (void)activateWithAnimation:(BOOL)animation
