@@ -388,9 +388,9 @@
 
 - (void)setZoomed:(BOOL)zoomed
 {
+	if ((!zoomed && !isZoomed) || (zoomed && isZoomed))
+		return;
 	if (_allowsZoom) {
-		if (!zoomed && !isZoomed)
-			return;
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.2f];
 		isZoomed = zoomed;
