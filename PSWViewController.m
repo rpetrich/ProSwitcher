@@ -508,9 +508,13 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 			modifyZoomTransformCountDown = 0;
 			PSWViewController *vc = [PSWViewController sharedInstance];
 			PSWSnapshotView *ssv = [[vc snapshotPageView] focusedSnapshotView];
-			UIView *screenView = [ssv screenView];
-			CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[vc view]];
-			CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
+			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"])
+				CHSuper1(SBZoomView, setTransform, transform);
+			else {
+				UIView *screenView = [ssv screenView];
+				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[vc view]];
+				CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
+			}
 			break;
 		}
 		case 0:
