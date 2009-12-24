@@ -313,14 +313,14 @@ CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 	}
 }
 
-CHMethod0(void, SBApplication, _relaunchAfterAbnormalExit)
+CHMethod0(void, SBApplication, _relaunchAfterExit)
 {
 	// Method for 3.1.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper0(SBApplication, _relaunchAfterAbnormalExit);
+		CHSuper0(SBApplication, _relaunchAfterExit);
 	}
 }
 
@@ -355,10 +355,8 @@ CHConstructor {
 	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
-    if ([[[UIDevice currentDevice] systemVersion] hasPrefix:@"3.0"])
-		CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-    else
-		CHHook0(SBApplication, _relaunchAfterAbnormalExit);
+	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+	CHHook0(SBApplication, _relaunchAfterExit);
 	CHHook1(SBApplication, defaultImage);
 }
 
