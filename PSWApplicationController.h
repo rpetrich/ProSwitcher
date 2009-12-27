@@ -6,6 +6,7 @@
 @interface PSWApplicationController : NSObject {
 @private
 	NSMutableDictionary *_activeApplications;
+	NSMutableArray *_activeApplicationsOrder;
 	id<PSWApplicationControllerDelegate> _delegate;
 }
 
