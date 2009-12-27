@@ -60,6 +60,7 @@
 
 // Allow temporarily adding/removing views
 - (void)addViewForApplication:(PSWApplication *)application;
+- (void)addViewForApplication:(PSWApplication *)application atPosition:(NSUInteger)position;
 - (void)removeViewForApplication:(PSWApplication *)application;
 
 @end

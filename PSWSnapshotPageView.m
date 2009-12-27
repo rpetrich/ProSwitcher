@@ -168,8 +168,13 @@
 
 - (void)addViewForApplication:(PSWApplication *)application
 {
+	[self addViewForApplication:application atPosition:[_applications count]];
+}
+
+- (void)addViewForApplication:(PSWApplication *)application atPosition:(NSUInteger)position
+{
 	if (application && ![_applications containsObject:application]) {
-		[_applications addObject:application];
+		[_applications insertObject:application atIndex:position];
 		CGRect frame = [_scrollView bounds];
 		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:frame application:application];
 		snapshot.delegate = self;
@@ -186,7 +191,7 @@
 			[snapshot setAlpha:_unfocusedAlpha];
 		
 		[_scrollView addSubview:snapshot];
-		[_snapshotViews addObject:snapshot];
+		[_snapshotViews insertObject:snapshot atIndex:position];
 		[snapshot release];
 		[self _relayoutViews];
 	}
@@ -433,7 +438,10 @@
 		PSWApplicationController *ac = [PSWApplicationController sharedInstance];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
 			if (![ignoredDisplayIdentifiers containsObject:displayIdentifier])
-				[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
+				if ([displayIdentifier isEqualToString:@"com.apple.springboard"])
+					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier] atPosition:0];
+				else
+					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
 		[_ignoredDisplayIdentifiers release];
 		_ignoredDisplayIdentifiers = [ignoredDisplayIdentifiers copy];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
