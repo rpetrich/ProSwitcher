@@ -146,16 +146,23 @@
 	}
 	if (_showsCloseButton) {
 		UIImage *closeImage = PSWImage(@"closebox");
-		_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-		[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
-		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
-		
-		CGSize closeImageSize = [closeImage size];
-		CGFloat offsetX = (NSInteger)(closeImageSize.width / 2.0f);
-		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
-		[_closeButton setFrame:CGRectMake(screenFrame.origin.x - offsetX, screenFrame.origin.y - offsetY, closeImageSize.width, closeImageSize.height)];	
-		
-		[self addSubview:_closeButton];
+		CGRect closeButtonFrame;
+		closeButtonFrame.size = [closeImage size];
+		closeButtonFrame.origin.x = (NSInteger)(screenFrame.origin.x - closeButtonFrame.size.width / 2.0f);
+		closeButtonFrame.origin.y = (NSInteger)(screenFrame.origin.y - closeButtonFrame.size.height / 2.0f);
+		if (_closeButton) {
+			[_closeButton setFrame:closeButtonFrame];
+		} else {
+			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
+			[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
+			[_closeButton setFrame:closeButtonFrame];
+			[self addSubview:_closeButton];
+		}
+	} else {
+		[_closeButton removeFromSuperview];
+		[_closeButton release];
+		_closeButton = nil;
 	}
 	
 	if (_showsTitle) {
