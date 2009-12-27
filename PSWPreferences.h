@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -39,10 +40,10 @@
 __attribute__((always_inline))
 static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *fileName)
 {
-	/*NSString *errorDescription = nil;
-	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&errorDescription];
-	if (errorDescription)*/
-		[dict writeToFile:fileName atomically:YES];
-	/*else
-		[data writeToFile:fileName atomically:YES];*/
+	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)fileName, kCFURLPOSIXPathStyle, NO);
+    CFWriteStreamRef stream = CFWriteStreamCreateWithFile(kCFAllocatorDefault, url);
+	CFRelease(url);
+    CFWriteStreamOpen(stream);
+    CFPropertyListWriteToStream((CFPropertyListRef)dict, stream, kCFPropertyListBinaryFormat_v1_0, NULL);
+    CFWriteStreamClose(stream);
 }
