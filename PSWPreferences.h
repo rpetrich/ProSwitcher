@@ -15,6 +15,7 @@
 
 // Defaults
 #define PSWBecomeHomeScreen     NO
+#define PSWBecomeHomeScreenShouldBackground NO
 #define PSWShowDock             YES
 #define PSWShowBadges           YES
 #define PSWAnimateActive        YES

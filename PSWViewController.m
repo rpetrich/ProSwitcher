@@ -434,8 +434,16 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay *, display)
 	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, BOOL)) {
 		if (CHIsClass(display, SBApplication)) {
 			SBApplication *application = (SBApplication *)display;
-			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[application displayIdentifier]];
+			NSString *displayIdentifier = [application displayIdentifier];
+			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			if (suspendingApp) {
+				if (GetPreference(PSWBecomeHomeScreenShouldBackground, BOOL)) {
+					// Background
+					if (![suspendingApp hasNativeBackgrounding]) {
+						if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+							[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
+					}
+				}
 				modifyZoomTransformCountDown = 2;
 				ignoreZoomSetAlphaCountDown = 2;
 				disallowIconListScatter++;
