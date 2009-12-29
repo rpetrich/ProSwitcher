@@ -353,12 +353,12 @@ CHMethod1(void, SBApplicationIcon, setBadge, id, value)
 CHConstructor {
 	CHAutoreleasePoolForScope();
 	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
 	CHHook0(SBApplication, _relaunchAfterExit);
 	CHHook1(SBApplication, defaultImage);
-	CHHook1(SBApplication, setBadge);
+	CHLoadLateClass(SBApplicationIcon);
+	CHHook1(SBApplicationIcon, setBadge);
 }
 
