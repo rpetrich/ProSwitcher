@@ -206,7 +206,8 @@ static NSUInteger defaultImagePassThrough;
 		|| [_displayIdentifier isEqualToString:@"com.apple.mobilesafari"]
 		|| [_displayIdentifier hasPrefix:@"com.apple.mobileipod"]
 		|| [_displayIdentifier hasPrefix:@"com.bigboss.categories."]
-		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"];
+		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"]
+		|| [_displayIdentifier isEqualToString:@"ch.ringwald.keyboard"];
 }
 
 - (void)exit
