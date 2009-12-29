@@ -359,5 +359,6 @@ CHConstructor {
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
 	CHHook0(SBApplication, _relaunchAfterExit);
 	CHHook1(SBApplication, defaultImage);
+	CHHook1(SBApplication, setBadge);
 }
 
