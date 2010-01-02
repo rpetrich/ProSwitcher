@@ -68,7 +68,7 @@ static PSWViewController *mainController;
 - (void)_applyPreferences
 {
 	UIView *view = [self view];
-	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8] : [UIColor clearColor];
 	
 	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
 		[[view layer] setContents:(id) [PSWImage(@"Background") CGImage]];
@@ -190,6 +190,10 @@ static PSWViewController *mainController;
 }
 - (void)activateWithAnimation:(BOOL)animated
 {
+	// Fix for bug #174: don't activate when in editing mode
+	if ([CHSharedInstance(SBIconController) isEditing])
+		return;
+	
 	// Always reparent view
 	[self reparentView];
 	

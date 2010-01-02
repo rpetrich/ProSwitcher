@@ -202,7 +202,7 @@
 	[context removeFromSuperview];
 }
 
-- (void)removeViewForApplication:(PSWApplication *)application
+- (void)removeViewForApplication:(PSWApplication *)application animated:(BOOL)animated
 {
 	if (!application)
 		return;
@@ -213,10 +213,12 @@
 		snapshot.delegate = nil;
 		[_snapshotViews removeObjectAtIndex:index];
 		
-		[UIView beginAnimations:nil context:snapshot];
-		[UIView setAnimationDuration:0.33f];
-		[UIView setAnimationDelegate:self];
-		[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshot:finished:context:)];
+		if (animated) {
+			[UIView beginAnimations:nil context:snapshot];
+			[UIView setAnimationDuration:0.33f];
+			[UIView setAnimationDelegate:self];
+			[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshot:finished:context:)];
+		}
 		
 		CGRect frame = snapshot.frame;
 		frame.origin.y -= frame.size.height;
@@ -227,8 +229,17 @@
 		[focusedView setFocused:YES];
 		[focusedView setAlpha:1.0f];
 		
-		[UIView commitAnimations];
+		if (animated) {
+			[UIView commitAnimations];
+		} else {
+			[self didRemoveSnapshotView:nil finished:nil context:snapshot];
+		}
 	}
+}
+
+- (void)removeViewForApplication:(PSWApplication *)application
+{
+	[self removeViewForApplication:application animated:YES];
 }
 
 #pragma mark Properties
@@ -445,7 +456,7 @@
 		[_ignoredDisplayIdentifiers release];
 		_ignoredDisplayIdentifiers = [ignoredDisplayIdentifiers copy];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
-			[self removeViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
+			[self removeViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier] animated:NO];
 	}
 }
 
