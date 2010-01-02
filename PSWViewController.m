@@ -201,8 +201,6 @@ static PSWViewController *mainController;
 	// Don't double-activate
 	if (isActive)
 		return;
-	
-	NSLog(@"Activating PSW!");
 		
 	// Deactivate CategoriesSB
 	if ([CHSharedInstance(SBUIController) respondsToSelector:@selector(categoriesSBCloseAll)])
@@ -283,9 +281,6 @@ static PSWViewController *mainController;
 			
 	// Hide ProSwitcher
 	isActive = NO;
-	
-	NSLog(@"Hiding PSW!");
-	
 	
 	self.view.alpha = 0.0f;
 	isAnimating = YES;			
