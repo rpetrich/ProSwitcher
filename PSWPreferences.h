@@ -21,6 +21,10 @@
 #define PSWBackgroundStyleDefault 0
 #define PSWBackgroundStyleImage   1
 
+#define PSWEmptyStyleText  0
+#define PSWEmptyStyleBlank 1
+#define PSWEmptyStyleExit  2
+
 // Defaults
 #define PSWBecomeHomeScreen     PSWBecomeHomeScreenDisabled
 #define PSWShowDock             YES
@@ -35,7 +39,8 @@
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES
 #define PSWShowCloseButton      YES
-#define PSWShowEmptyText        YES
+#define PSWEmptyStyle           PSWEmptyStyleText
+#define PSWEmptyTapClose        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       1
 #define PSWSnapshotInset        40.0f

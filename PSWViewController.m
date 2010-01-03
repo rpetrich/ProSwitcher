@@ -90,7 +90,9 @@ static PSWViewController *mainController;
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
 	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running" : nil;
+	snapshotPageView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
+	snapshotPageView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
+	snapshotPageView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
@@ -188,6 +190,7 @@ static PSWViewController *mainController;
 - (void)didFinishActivate
 {
 	isAnimating = NO;
+	[snapshotPageView redraw];
 }
 - (void)activateWithAnimation:(BOOL)animated
 {

@@ -78,35 +78,6 @@
 
 #pragma mark Private Methods
 
-- (void)_applyEmptyText
-{
-	if ([_emptyText length] != 0 && [_applications count] == 0) {
-		if (!_emptyLabel) {
-			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
-			CGFloat height = [_emptyText sizeWithFont:font].height;
-			CGRect bounds = [self bounds];
-			bounds.origin.x = 0.0f;
-			bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
-			bounds.size.height = height;
-			_emptyLabel = [[UILabel alloc] initWithFrame:bounds];
-			_emptyLabel.backgroundColor = [UIColor clearColor];
-			_emptyLabel.textAlignment = UITextAlignmentCenter;
-			_emptyLabel.font = font;
-			_emptyLabel.textColor = [UIColor whiteColor];
-			[self addSubview:_emptyLabel];
-		} else {
-			CGRect bounds = [_emptyLabel bounds];
-			bounds.origin.y = (NSInteger)(([self bounds].size.height - bounds.size.height) / 2.0f);
-			[_emptyLabel setBounds:bounds];
-		}
-		_emptyLabel.text = _emptyText;
-	} else {
-		[_emptyLabel removeFromSuperview];
-		[_emptyLabel release];
-		_emptyLabel = nil;
-	}
-}
-
 - (void)unZoom
 {
 	for (PSWSnapshotView *view in _snapshotViews)
@@ -156,7 +127,34 @@
 		[view reloadSnapshot];
 	}
 	
-	[self _applyEmptyText];
+	if ([_applications count] == 0 && _autoExit) {
+		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
+			[_delegate snapshotPageViewShouldExit:self];
+	} else if ([_emptyText length] != 0 && [_applications count] == 0) {
+		if (!_emptyLabel) {
+			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
+			CGFloat height = [_emptyText sizeWithFont:font].height;
+			CGRect bounds = [self bounds];
+			bounds.origin.x = 0.0f;
+			bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
+			bounds.size.height = height;
+			_emptyLabel = [[UILabel alloc] initWithFrame:bounds];
+			_emptyLabel.backgroundColor = [UIColor clearColor];
+			_emptyLabel.textAlignment = UITextAlignmentCenter;
+			_emptyLabel.font = font;
+			_emptyLabel.textColor = [UIColor whiteColor];
+			[self addSubview:_emptyLabel];
+		} else {
+			CGRect bounds = [_emptyLabel bounds];
+			bounds.origin.y = (NSInteger)(([self bounds].size.height - bounds.size.height) / 2.0f);
+			[_emptyLabel setBounds:bounds];
+		}
+		_emptyLabel.text = _emptyText;
+	} else {
+		[_emptyLabel removeFromSuperview];
+		[_emptyLabel release];
+		_emptyLabel = nil;
+	}
 }
 
 - (PSWSnapshotView *)focusedSnapshotView
@@ -360,6 +358,29 @@
 	}
 }
 
+- (BOOL)autoExit
+{
+	return _autoExit;
+}
+- (void)setAutoExit:(BOOL)autoExit
+{
+	if (_autoExit != autoExit) {
+		_autoExit = autoExit;
+		[self _relayoutViews];
+	}
+}
+
+- (BOOL)emptyTapClose
+{
+	return _emptyTapClose;
+}
+- (void)setEmptyTapClose:(BOOL)emptyTapClose
+{
+	if (_emptyTapClose != emptyTapClose) {
+		_emptyTapClose = emptyTapClose;
+	}
+}
+
 - (NSString *)emptyText
 {
 	return _emptyText;
@@ -370,7 +391,7 @@
 		if (![_emptyText isEqualToString:_emptyText]) {
 			[_emptyText autorelease];
 			_emptyText = [emptyText copy];
-			[self _applyEmptyText];
+			[self _relayoutViews];
 		}
 	}
 }
@@ -586,7 +607,7 @@
 		}
 	}
 	
-	if (tapCount == _tapsToActivate || [_applications count] == 0)
+	if ((tapCount == _tapsToActivate || [_applications count] == 0) && _emptyTapClose)
 		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
 			[_delegate snapshotPageViewShouldExit:self];
 }

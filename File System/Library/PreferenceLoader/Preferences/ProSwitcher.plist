@@ -121,6 +121,20 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
+			<string>PSWEmptyTapClose</string>
+			<key>label</key>
+			<string>Empty Tap to Close</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
 			<real>0</real>
@@ -206,6 +220,34 @@
 			<string>PSWSwipeToClose</string>
 			<key>label</key>
 			<string>Swipe to Close</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<real>0</real>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>PSWEmptyStyle</string>
+			<key>label</key>
+			<string>Empty Style</string>
+			<key>validTitles</key>
+			<array>
+				<string>Text</string>
+				<string>Blank</string>
+				<string>Disabled</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
