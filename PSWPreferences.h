@@ -18,6 +18,9 @@
 #define PSWBecomeHomeScreenEnabled    1
 #define PSWBecomeHomeScreenBackground 2
 
+#define PSWBackgroundStyleDefault 0
+#define PSWBackgroundStyleImage   1
+
 // Defaults
 #define PSWBecomeHomeScreen     PSWBecomeHomeScreenDisabled
 #define PSWShowDock             YES
@@ -28,7 +31,7 @@
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
 #define PSWThemedIcons          YES
-#define PSWBackgroundStyle      0
+#define PSWBackgroundStyle      PSWBackgroundStyleDefault
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES
 #define PSWShowCloseButton      YES

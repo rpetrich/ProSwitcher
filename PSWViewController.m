@@ -71,7 +71,7 @@ static PSWViewController *mainController;
 	UIView *view = [self view];
 	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8] : [UIColor clearColor];
 	
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
 		[[view layer] setContents:(id) [PSWImage(@"Background") CGImage]];
 	else
 		[[view layer] setContents:nil];
