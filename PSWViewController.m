@@ -433,7 +433,7 @@ CHMethod0(void, SBUIController, finishLaunching)
 	}
 	[plistDict release];
 	
-	if (GetPreference(PSWBecomeHomeScreen, NSInteger) > 0) {
+	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
 		PSWViewController *vc = [PSWViewController sharedInstance];
 		[vc setActive:YES animated:NO];
 	}
@@ -444,13 +444,13 @@ CHMethod0(void, SBUIController, finishLaunching)
 #pragma mark SBDisplayStack
 CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 {
-	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) > 0) {
+	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
 		if (CHIsClass(display, SBApplication)) {
 			SBApplication *application = (SBApplication *) display;
 			NSString *displayIdentifier = [application displayIdentifier];
 			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			if (suspendingApp) {
-				if (GetPreference(PSWBecomeHomeScreen, NSInteger) == 2) {
+				if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenBackground) {
 					// Background
 					if (![suspendingApp hasNativeBackgrounding]) {
 						if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])

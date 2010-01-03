@@ -13,8 +13,13 @@
 
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
+// Constants
+#define PSWBecomeHomeScreenDisabled   0
+#define PSWBecomeHomeScreenEnabled    1
+#define PSWBecomeHomeScreenBackground 2
+
 // Defaults
-#define PSWBecomeHomeScreen     0
+#define PSWBecomeHomeScreen     PSWBecomeHomeScreenDisabled
 #define PSWShowDock             YES
 #define PSWShowBadges           YES
 #define PSWAnimateActive        YES
