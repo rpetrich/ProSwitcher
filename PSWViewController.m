@@ -30,6 +30,7 @@ CHDeclareClass(SBZoomView);
 CHDeclareClass(SBStatusBar);
 CHDeclareClass(SBSearchView);
 CHDeclareClass(SBVoiceControlAlert);
+CHDeclareClass(SBApplicationIcon);
 
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
@@ -68,9 +69,9 @@ static PSWViewController *mainController;
 - (void)_applyPreferences
 {
 	UIView *view = [self view];
-	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]:[UIColor clearColor];
+	view.backgroundColor = GetPreference(PSWDimBackground, BOOL) ? [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8] : [UIColor clearColor];
 	
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == 1)
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
 		[[view layer] setContents:(id) [PSWImage(@"Background") CGImage]];
 	else
 		[[view layer] setContents:nil];
@@ -89,7 +90,9 @@ static PSWViewController *mainController;
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
 	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.emptyText           = GetPreference(PSWShowEmptyText, BOOL) ? @"No Apps Running" : nil;
+	snapshotPageView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
+	snapshotPageView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
+	snapshotPageView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
 	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
@@ -187,9 +190,14 @@ static PSWViewController *mainController;
 - (void)didFinishActivate
 {
 	isAnimating = NO;
+	[snapshotPageView redraw];
 }
 - (void)activateWithAnimation:(BOOL)animated
 {
+	// Fix for bug #174: don't activate when in editing mode
+	if ([CHSharedInstance(SBIconController) isEditing])
+		return;
+	
 	// Always reparent view
 	[self reparentView];
 	
@@ -247,7 +255,7 @@ static PSWViewController *mainController;
 
 - (void)didFinishDeactivate
 {
-	[[self view] removeFromSuperview];
+	[self.view removeFromSuperview];
 	isAnimating = NO;
 }
 - (void)deactivateWithAnimation:(BOOL)animated
@@ -276,7 +284,9 @@ static PSWViewController *mainController;
 			
 	// Hide ProSwitcher
 	isActive = NO;
-			
+	
+	self.view.alpha = 0.0f;
+	isAnimating = YES;			
 	if (animated) {
 		self.view.alpha = 0.0f;
 		isAnimating = YES;
@@ -284,6 +294,7 @@ static PSWViewController *mainController;
 		[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
 		[UIView commitAnimations];
 	} else {
+		
 		[self didFinishDeactivate];
 	}
 
@@ -403,14 +414,14 @@ CHMethod1(void, SBUIController, restoreIconList, BOOL, animated)
 {
 	if (disallowRestoreIconList == 0)
 		CHSuper1(SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
+	
+	[[PSWViewController sharedInstance] reparentView];
 }
 
 CHMethod0(void, SBUIController, finishLaunching)
 {
 	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
-	
-	BOOL value = [[plistDict objectForKey:@"PSWAlert"] boolValue];
-	if (!value) {
+	if (![[plistDict objectForKey:@"PSWAlert"] boolValue]) {
 		// Tutorial
 		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Welcome to ProSwitcher" message:@"To change settings or to setup gestures, go to the Settings app.\n\n(c) 2009 Ryan Petrich and Grant Paul\nLGPL Licensed" delegate:nil cancelButtonTitle:nil otherButtonTitles:@"Continue", nil] autorelease];
 		[alert show];
@@ -425,19 +436,24 @@ CHMethod0(void, SBUIController, finishLaunching)
 	}
 	[plistDict release];
 	
+	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
+		PSWViewController *vc = [PSWViewController sharedInstance];
+		[vc setActive:YES animated:NO];
+	}
+	
 	CHSuper0(SBUIController, finishLaunching);
 }
 
 #pragma mark SBDisplayStack
-CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay *, display)
+CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 {
-	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, BOOL)) {
+	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
 		if (CHIsClass(display, SBApplication)) {
-			SBApplication *application = (SBApplication *)display;
+			SBApplication *application = (SBApplication *) display;
 			NSString *displayIdentifier = [application displayIdentifier];
 			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			if (suspendingApp) {
-				if (GetPreference(PSWBecomeHomeScreenShouldBackground, BOOL)) {
+				if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenBackground) {
 					// Background
 					if (![suspendingApp hasNativeBackgrounding]) {
 						if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
@@ -576,31 +592,46 @@ CHMethod0(void, SBVoiceControlAlert, deactivate)
 CHConstructor
 {
 	CHAutoreleasePoolForScope();
+	
+	// SpringBoard only!
+	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
+		return;
+	
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
+	
 	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBApplication);
 	CHLoadLateClass(SBStatusBarController);
 	CHLoadLateClass(SBIconListPageControl);
+	CHLoadLateClass(SBApplicationIcon);
+	CHLoadLateClass(SBApplicationController);
+	CHLoadLateClass(SBIconModel);
+	
 	CHLoadLateClass(SBUIController);
 	CHHook1(SBUIController, restoreIconList);
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHHook0(SBUIController, finishLaunching);
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBIconModel);
+
 	CHLoadLateClass(SBDisplayStack);
 	CHHook1(SBDisplayStack, pushDisplay);
+	
 	CHLoadLateClass(SpringBoard);
 	CHHook0(SpringBoard, _handleMenuButtonEvent);
+	
 	CHLoadLateClass(SBIconController);
 	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	CHHook1(SBIconController, setIsEditing);
+	
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
 	//CHHook1(SBZoomView, setAlpha);
+	
 	CHLoadLateClass(SBStatusBar);
 	CHHook0(SBStatusBar, distantStatusWindowTransform);
+	
 	CHLoadLateClass(SBSearchView);
 	CHHook2(SBSearchView, setShowsKeyboard, animated);
+	
 	CHLoadLateClass(SBVoiceControlAlert);
 	CHHook0(SBVoiceControlAlert, deactivate);
 

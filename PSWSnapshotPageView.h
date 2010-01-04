@@ -17,6 +17,8 @@
 	
 	id<PSWSnapshotPageViewDelegate> _delegate;
 	
+	BOOL _autoExit;
+	BOOL _emptyTapClose;
 	BOOL _showsTitles;
 	BOOL _showsCloseButtons;
 	BOOL _showsBadges;
@@ -48,6 +50,8 @@
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) BOOL themedIcons;
 @property (nonatomic, assign) BOOL allowsZoom;
+@property (nonatomic, assign) BOOL emptyTapClose;
+@property (nonatomic, assign) BOOL autoExit;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) NSInteger tapsToActivate;
 @property (nonatomic, assign) CGFloat snapshotInset;
@@ -61,6 +65,7 @@
 // Allow temporarily adding/removing views
 - (void)addViewForApplication:(PSWApplication *)application;
 - (void)addViewForApplication:(PSWApplication *)application atPosition:(NSUInteger)position;
+- (void)removeViewForApplication:(PSWApplication *)application animated:(BOOL)animated;
 - (void)removeViewForApplication:(PSWApplication *)application;
 
 @end

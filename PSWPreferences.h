@@ -13,9 +13,20 @@
 
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
+// Constants
+#define PSWBecomeHomeScreenDisabled   0
+#define PSWBecomeHomeScreenEnabled    1
+#define PSWBecomeHomeScreenBackground 2
+
+#define PSWBackgroundStyleDefault 0
+#define PSWBackgroundStyleImage   1
+
+#define PSWEmptyStyleText  0
+#define PSWEmptyStyleBlank 1
+#define PSWEmptyStyleExit  2
+
 // Defaults
-#define PSWBecomeHomeScreen     NO
-#define PSWBecomeHomeScreenShouldBackground NO
+#define PSWBecomeHomeScreen     PSWBecomeHomeScreenDisabled
 #define PSWShowDock             YES
 #define PSWShowBadges           YES
 #define PSWAnimateActive        YES
@@ -24,11 +35,12 @@
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
 #define PSWThemedIcons          YES
-#define PSWBackgroundStyle      0
+#define PSWBackgroundStyle      PSWBackgroundStyleDefault
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES
 #define PSWShowCloseButton      YES
-#define PSWShowEmptyText        YES
+#define PSWEmptyStyle           PSWEmptyStyleText
+#define PSWEmptyTapClose        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       1
 #define PSWSnapshotInset        40.0f
