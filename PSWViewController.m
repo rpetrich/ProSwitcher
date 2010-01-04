@@ -15,7 +15,7 @@
 
 // Using late binding until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
-CHDeclareClass(LA
+CHDeclareClass(LAEvent);
 
 CHDeclareClass(SBAwayController);
 CHDeclareClass(SBStatusBarController);
