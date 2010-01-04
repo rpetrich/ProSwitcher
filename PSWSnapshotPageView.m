@@ -37,6 +37,8 @@
 		[_scrollView setScrollsToTop:NO];
 		[_scrollView setDelegate:self];
 		[_scrollView setBackgroundColor:[UIColor clearColor]];
+		[_scrollView setAlwaysBounceVertical:NO];
+		[_scrollView setAlwaysBounceHorizontal:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
 		for (int i = 0; i < numberOfPages; i++) {
@@ -101,16 +103,20 @@
 	bounds.origin.x = 0.0f;
 	bounds.origin.y = 0.0f;
 	
-	CGRect scrollViewFrame;
-	scrollViewFrame.origin.x = _snapshotInset;
-	scrollViewFrame.origin.y = 0.0;
-	scrollViewFrame.size.width = bounds.size.width - (_snapshotInset + _snapshotInset);
-	scrollViewFrame.size.height = bounds.size.height - 17.0f;
-	if ([_applications count] == 0)
-		scrollViewFrame = CGRectZero;
+	NSUInteger appCount = [_applications count];
+	
 	[_scrollView.layer setTransform:CATransform3DIdentity];
+	CGRect scrollViewFrame;
+	if (appCount == 0)
+		scrollViewFrame = CGRectZero;
+	else {
+		scrollViewFrame.origin.x = _snapshotInset;
+		scrollViewFrame.origin.y = 0.0;
+		scrollViewFrame.size.width = bounds.size.width - (_snapshotInset + _snapshotInset);
+		scrollViewFrame.size.height = bounds.size.height - 17.0f;
+	}
+	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * appCount, scrollViewFrame.size.height)];
 	[_scrollView setFrame:scrollViewFrame];
-	[_scrollView setContentSize:CGSizeMake(scrollViewFrame.size.width * [_applications count] + 1.0f, scrollViewFrame.size.height)];
 	
 	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
 	[_pageControl setNumberOfPages:[_applications count]];
@@ -127,7 +133,7 @@
 		[view reloadSnapshot];
 	}
 	
-	if ([_applications count] == 0 && _autoExit) {
+	if (appCount == 0 && _autoExit) {
 		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
 			[_delegate snapshotPageViewShouldExit:self];
 	} else if ([_emptyText length] != 0 && [_applications count] == 0) {
