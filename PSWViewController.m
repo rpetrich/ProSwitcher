@@ -15,6 +15,7 @@
 
 // Using late binding until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
+CHDeclareClass(LA
 
 CHDeclareClass(SBAwayController);
 CHDeclareClass(SBStatusBarController);
@@ -638,5 +639,11 @@ CHConstructor
 	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
-	[CHSharedInstance(LAActivator) registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
+	CHLoadLateClass(LAEvent);
+	LAActivator *la = CHSharedInstance(LAActivator);
+	if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)]) {
+		if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
+			[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+	}
+	[la registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
 }
