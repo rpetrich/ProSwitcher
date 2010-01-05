@@ -48,6 +48,7 @@
 #define PSWShowDefaultApps      YES
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
+#define PSWShowDockApps         YES
 
 
 __attribute__((always_inline))

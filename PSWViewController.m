@@ -100,9 +100,13 @@ static PSWViewController *mainController;
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
-	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [[NSMutableArray alloc] init] : [GetPreference(PSWDefaultApps, id) mutableCopy];
-	if (GetPreference(PSWSpringBoardCard, BOOL) == NO)
+	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [NSMutableArray array] : [[GetPreference(PSWDefaultApps, id) mutableCopy] autorelease];
+	if (!GetPreference(PSWSpringBoardCard, BOOL))
 		[ignored addObject:@"com.apple.springboard"];
+	if (!GetPreference(PSWShowDockApps, BOOL)) {
+		for (SBIcon *icon in [[CHSharedInstance(SBIconModel) buttonBar] icons])
+			[ignored addObject:[icon displayIdentifier]];
+	}
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
 	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
