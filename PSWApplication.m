@@ -300,8 +300,13 @@ static NSUInteger defaultImagePassThrough;
 	SBIcon *icon = [self springBoardIcon];
 	if (icon) {
 		id result = CHIvar(icon, _badgeNumberOrString, id);
-		if (result)
-			return [NSString stringWithFormat:@"%@", result];
+		if ([result isKindOfClass:[NSNumber class]]) {
+			NSInteger value = [result integerValue];
+			if (value != 0)
+				return [NSString stringWithFormat:@"%i", value];
+		} else if ([result isKindOfClass:[NSString class]]) {
+			return result;
+		}
 	}
 	return nil;
 }
