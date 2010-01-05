@@ -16,7 +16,6 @@
 @synthesize application = _application;
 @synthesize delegate = _delegate;
 @synthesize allowsSwipeToClose = _allowsSwipeToClose;
-@synthesize allowsZoom = _allowsZoom;
 @synthesize screenView = screen;
 
 - (void)snapshot:(UIButton *)snapshot touchUpInside:(UIEvent *)event
@@ -393,25 +392,41 @@
 	}
 }
 
-- (void)setZoomed:(BOOL)zoomed
+- (BOOL)isZoomed
 {
-	if ((!zoomed && !isZoomed) || (zoomed && isZoomed))
-		return;
+	return isZoomed;
+}
+- (void)setZoomed:(BOOL)zoomed animated:(BOOL)animated
+{
 	if (_allowsZoom) {
-		[UIView beginAnimations:nil context:NULL];
-		[UIView setAnimationDuration:0.2f];
-		isZoomed = zoomed;
-		[self _relayoutViews];
-		[UIView commitAnimations];
-	} else {
-		if (isZoomed) {
-			[UIView beginAnimations:nil context:NULL];
-			[UIView setAnimationDuration:0.2f];
-			isZoomed = NO;
-			[self _relayoutViews];
-			[UIView commitAnimations];
+		if (zoomed ^ isZoomed) {
+			if (animated) {
+				[UIView beginAnimations:nil context:NULL];
+				[UIView setAnimationDuration:0.33f];
+				isZoomed = zoomed;
+				[self _relayoutViews];
+				[UIView commitAnimations];
+			} else {
+				isZoomed = zoomed;
+				[self _relayoutViews];
+			}
 		}
 	}
+}
+- (void)setZoomed:(BOOL)zoomed
+{
+	[self setZoomed:zoomed animated:YES];
+}
+
+- (BOOL)allowsZoom
+{
+	return _allowsZoom;
+}
+- (void)setAllowsZoom:(BOOL)allowsZoom
+{
+	if (!allowsZoom)
+		[self setZoomed:NO];
+	_allowsZoom = allowsZoom;
 }
 
 #pragma mark PSWApplicationDelegate
