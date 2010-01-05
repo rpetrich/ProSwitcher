@@ -88,13 +88,16 @@
 
 - (void)zoomActive
 {
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view setZoomed:NO];
-	if (_snapshotViews.count > 0 && (!_scrollingToSide || [_pageControl currentPage] == 0 || [_pageControl currentPage] == [_applications count] - 1)) {
+	PSWSnapshotView *activeView;
+	NSInteger currentPage = [_pageControl currentPage];
+	if (_snapshotViews.count > 0 && (!_scrollingToSide || currentPage == 0 || currentPage == [_applications count] - 1)) {
 		_scrollingToSide = NO;
-		PSWSnapshotView *activeView = [_snapshotViews objectAtIndex:[_pageControl currentPage]];
-		[activeView setZoomed:YES];
-	}	
+		activeView = [_snapshotViews objectAtIndex:currentPage];
+	} else {
+		activeView = nil;
+	}
+	for (PSWSnapshotView *view in _snapshotViews)
+		[view setZoomed:activeView == view];
 }
 
 - (void)_relayoutViews
