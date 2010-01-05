@@ -1,6 +1,6 @@
 #import "PSWSnapshotPageView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "CaptainHook.h"
+#import <CaptainHook/CaptainHook.h>
 
 @interface PSWSnapshotPageView ()
 - (void)_relayoutViews;

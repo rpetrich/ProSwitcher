@@ -3,7 +3,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
-#import "CaptainHook.h"
+#import <CaptainHook/CaptainHook.h>
 
 #include <dlfcn.h>
 
