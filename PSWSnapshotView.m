@@ -61,7 +61,7 @@
 			_closeButton.alpha = 0.0f;
 			_titleView.alpha = 0.0f;
 			_iconView.alpha = 0.0f;
-			_iconBadge.opacity = 0.0f;
+			_iconBadge.alpha = 0.0f;
 			[UIView commitAnimations];
 			isInDrag = YES;
 		}
@@ -84,7 +84,7 @@
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
-		_iconBadge.opacity = 1.0f;
+		_iconBadge.alpha = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
 		if (!wasSwipedUp && [touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
@@ -130,7 +130,6 @@
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
 	
-	[screen setFrame:screenFrame];
 	screenY = screenFrame.origin.y;
 	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
@@ -140,6 +139,7 @@
 		[layer setContents:(id) [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
+	[screen setFrame:screenFrame];
 	
 	if (_showsCloseButton) {
 		UIImage *closeImage = PSWImage(@"closebox");
@@ -211,28 +211,49 @@
 		}
 	}
 		
-	if (_iconBadge != nil) {
-		[_iconBadge removeFromSuperlayer];
+	if (_showsBadge) {
+		NSString *badgeText = [_application badgeText];
+		if ([badgeText length]) {
+			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
+			UIImage *badgeImage = PSWImage(@"badge");
+			if (badgeImage) {
+				CGRect badgeFrame;
+				badgeFrame.size = [badgeImage size];
+				CGFloat minWidth = [badgeText sizeWithFont:font].width + 19.0f;
+				if (badgeFrame.size.width < minWidth) {
+					badgeFrame.size.width = minWidth;
+					badgeImage = PSWScaledImage(@"badge", badgeFrame.size);
+				}
+				badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
+				badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+				_iconBadge = [[UIView alloc] initWithFrame:badgeFrame];
+				[[_iconBadge layer] setContents:(id)[badgeImage CGImage]];
+				badgeFrame.origin = CGPointZero;
+				badgeFrame.size.height -= 8.0f;
+				UILabel *badgeLabel = [[UILabel alloc] initWithFrame:badgeFrame];
+				[badgeLabel setBackgroundColor:[UIColor clearColor]];
+				[badgeLabel setTextColor:[UIColor whiteColor]];
+				[badgeLabel setFont:font];
+				[badgeLabel setText:badgeText];
+				[badgeLabel setTextAlignment:UITextAlignmentCenter];
+				[_iconBadge addSubview:badgeLabel];
+				[badgeLabel release];
+				[self addSubview:_iconBadge];
+			}
+		} else {
+			[_iconBadge removeFromSuperview];
+			[_iconBadge release];
+			_iconBadge = nil;
+		}
+	} else {
+		[_iconBadge removeFromSuperview];
 		[_iconBadge release];
 		_iconBadge = nil;
-	}
-	if (_showsBadge) {
-		SBIconBadge *badge = [_application badgeView];
-		if (badge) {	
-			_iconBadge = [[CALayer layer] retain];
-			id badgeContents = [[badge layer] contents];
-			[_iconBadge setContents:badgeContents];
-			CGRect badgeFrame = [badge frame];
-			badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
-			badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
-			[_iconBadge setFrame:badgeFrame];
-			[[self layer] addSublayer:_iconBadge];
-		}
 	}
 	
 	CGFloat alpha = _focused?1.0f:0.0f;
 	[_closeButton setAlpha:alpha];
-	[_iconBadge setOpacity:alpha];
+	[_iconBadge setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 }
@@ -373,7 +394,7 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
-	[_iconBadge setOpacity:alpha];
+	[_iconBadge setAlpha:alpha];
 	if (animated) {
 		[UIView commitAnimations];
 	}
@@ -437,6 +458,9 @@
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application
 {
+	[_iconBadge removeFromSuperview];
+	[_iconBadge release];
+	_iconBadge = nil;
 	[self _relayoutViews];
 }
 

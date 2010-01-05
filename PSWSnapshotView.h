@@ -17,7 +17,7 @@
 	BOOL _focused; 
 	BOOL _allowsZoom;
 	UIButton *_closeButton;
-	CALayer *_iconBadge;
+	UIView *_iconBadge;
 	UILabel *_titleView;
 	UIImageView *_iconView;
 	

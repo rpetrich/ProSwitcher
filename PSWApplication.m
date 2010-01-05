@@ -295,6 +295,17 @@ static NSUInteger defaultImagePassThrough;
 	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
 }
 
+- (NSString *)badgeText
+{
+	SBIcon *icon = [self springBoardIcon];
+	if (icon) {
+		id result = CHIvar(icon, _badgeNumberOrString, id);
+		if (result)
+			return [NSString stringWithFormat:@"%@", result];
+	}
+	return nil;
+}
+
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];

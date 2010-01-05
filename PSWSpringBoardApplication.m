@@ -80,6 +80,11 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 	return nil;
 }
 
+- (NSString *)badgeText
+{
+	return nil;
+}
+
 - (NSString *)displayName
 {
 	return @"SpringBoard";

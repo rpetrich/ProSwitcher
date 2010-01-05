@@ -40,6 +40,7 @@ typedef struct PSWCropInsets {
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
 @property (nonatomic, readonly) BOOL hasNativeBackgrounding;
 @property (nonatomic, readonly) SBIconBadge *badgeView;
+@property (nonatomic, readonly) NSString *badgeText;
 
 #ifdef USE_IOSURFACE
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
