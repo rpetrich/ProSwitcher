@@ -3,7 +3,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 
 #include <dlfcn.h>
 
@@ -15,7 +15,7 @@
 
 // Using late binding until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
-CHDeclareClass(LA
+CHDeclareClass(LAEvent);
 
 CHDeclareClass(SBAwayController);
 CHDeclareClass(SBStatusBarController);

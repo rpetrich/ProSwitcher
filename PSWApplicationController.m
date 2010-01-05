@@ -1,6 +1,6 @@
 #import "PSWApplicationController.h"
 
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 #import <SpringBoard/SpringBoard.h>
 
 #import "PSWApplication.h"
