@@ -1,7 +1,7 @@
 #import "PSWViewController.h"
 
 #import <SpringBoard/SpringBoard.h>
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 
 static BOOL isUninstalled = NO;
 

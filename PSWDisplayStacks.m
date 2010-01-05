@@ -1,6 +1,6 @@
 #import "PSWDisplayStacks.h"
 
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 
 static NSMutableArray *displayStacks;
 

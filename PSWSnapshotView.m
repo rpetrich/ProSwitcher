@@ -4,7 +4,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 
 #import "PSWApplication.h"
 #import "PSWResources.h"

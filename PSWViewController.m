@@ -3,7 +3,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 
 #include <dlfcn.h>
 
@@ -207,6 +207,8 @@ static PSWViewController *mainController;
 	// Don't double-activate
 	if (isActive)
 		return;
+	isActive = YES;
+	[self reparentView];
 		
 	// Deactivate CategoriesSB
 	if ([CHSharedInstance(SBUIController) respondsToSelector:@selector(categoriesSBCloseAll)])
@@ -242,7 +244,6 @@ static PSWViewController *mainController;
 	// Show ProSwitcher
 	[scrollLayer setTransform:CATransform3DIdentity];
 	view.alpha = 1.0f;
-	isActive = YES;
 			
 	if (animated) {
 		isAnimating = YES;

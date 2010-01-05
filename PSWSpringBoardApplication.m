@@ -4,7 +4,7 @@
 
 #import <SpringBoard/SpringBoard.h>
 #import <QuartzCore/QuartzCore.h>
-#import <CaptainHook/CaptainHook.h>
+#import "CaptainHook.h"
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWSpringBoardApplication.h"
