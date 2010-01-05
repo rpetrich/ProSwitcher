@@ -370,6 +370,11 @@ static PSWViewController *mainController;
 	[self setActive:NO animated:NO];
 }
 
+- (void)activator:(LAActivator *)activator otherListenerDidHandleEvent:(LAEvent *)event
+{
+	[self setActive:NO animated:NO];
+}
+
 #pragma mark PSWSnapshotPageView delegate
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)sspv didSelectApplication:(PSWApplication *)app
