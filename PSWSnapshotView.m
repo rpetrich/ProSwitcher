@@ -104,12 +104,15 @@
 	CGRect frame = [self frame];
 	CGSize boundingSize;
 	if (isZoomed) {
-		boundingSize.width = frame.size.width;
-		boundingSize.height = frame.size.height - 45.0f;
+		boundingSize.width = frame.size.width - 25.0f;
+		boundingSize.height = frame.size.height - 25.0f;
 	} else {
-		boundingSize.width = frame.size.width - 30.0f;
-		boundingSize.height = frame.size.height - 60.0f;
+		boundingSize.width = frame.size.width - 35.0f;
+		boundingSize.height = frame.size.height - 35.0f;
 	}
+	
+	if (_showsTitle)
+		boundingSize.height -= 32.0f;
 		
 	CGFloat ratioW = boundingSize.width  / imageSize.width;
 	CGFloat ratioH = boundingSize.height / imageSize.height;
@@ -121,8 +124,8 @@
 	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
 	
-	if (isZoomed)
-		screenFrame.origin.y += 8;
+	/*if (isZoomed)
+		screenFrame.origin.y += 8;*/
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
@@ -138,11 +141,6 @@
 		[[screen layer] setMask:layer];
 	}
 	
-	if (_closeButton != nil) {
-		[_closeButton removeFromSuperview];
-		[_closeButton release];
-		_closeButton = nil;
-	}
 	if (_showsCloseButton) {
 		UIImage *closeImage = PSWImage(@"closebox");
 		CGRect closeButtonFrame;
@@ -246,6 +244,7 @@
 		_application.delegate = self;
 		self.userInteractionEnabled = YES;
 		self.opaque = NO;
+		isZoomed = YES;
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -425,7 +424,7 @@
 - (void)setAllowsZoom:(BOOL)allowsZoom
 {
 	if (!allowsZoom)
-		[self setZoomed:NO];
+		[self setZoomed:YES];
 	_allowsZoom = allowsZoom;
 }
 

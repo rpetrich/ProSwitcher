@@ -86,7 +86,7 @@
 		[view setZoomed:NO];
 }
 
-- (void)zoomActive
+- (void)zoomActiveWithAnimation:(BOOL)animated
 {
 	PSWSnapshotView *activeView;
 	NSInteger currentPage = [_pageControl currentPage];
@@ -97,7 +97,7 @@
 		activeView = nil;
 	}
 	for (PSWSnapshotView *view in _snapshotViews)
-		[view setZoomed:activeView == view];
+		[view setZoomed:activeView == view animated:animated];
 }
 
 - (void)_relayoutViews
@@ -125,7 +125,7 @@
 	[_pageControl setNumberOfPages:[_applications count]];
 	
 	_pageControl.hidden = !_showsPageControl;
-	[self zoomActive];
+	[self zoomActiveWithAnimation:NO];
 	PSWApplication *focusedApplication = [self focusedApplication];
 	scrollViewFrame.origin.x = 0;
 	for (PSWSnapshotView *view in _snapshotViews) {
@@ -526,7 +526,7 @@
 		}
 		
 		[_pageControl setCurrentPage:curPage];
-		[self zoomActive];
+		[self zoomActiveWithAnimation:YES];
 		
 		if ([_delegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
 			[_delegate snapshotPageView:self didFocusApplication:[self focusedApplication]];
