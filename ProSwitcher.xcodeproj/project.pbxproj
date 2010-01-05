@@ -59,6 +59,7 @@
 		949485F010C1FC3800467E51 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		94B298C210C2266400F64150 /* PSWViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWViewController.m; sourceTree = "<group>"; };
 		94B298C310C2266400F64150 /* PSWViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWViewController.h; sourceTree = "<group>"; };
+		94EE17D210F38D96009D8678 /* PSWProSwitcherIcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWProSwitcherIcon.h; sourceTree = "<group>"; };
 		94EEDE2C10D47425007133E9 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		94EEDE3510D474AC007133E9 /* libactivator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libactivator.h; sourceTree = "<group>"; };
 		C441ADEA10E2081B00860249 /* PSWSpringBoardApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWSpringBoardApplication.h; sourceTree = "<group>"; };
@@ -139,6 +140,7 @@
 				94B298C210C2266400F64150 /* PSWViewController.m */,
 				942FC6C110CBA11F006F6990 /* PSWDisplayStacks.h */,
 				942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */,
+				94EE17D210F38D96009D8678 /* PSWProSwitcherIcon.h */,
 				945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */,
 				7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */,
 			);

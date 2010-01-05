@@ -12,6 +12,7 @@
 #import "PSWResources.h"
 #import "SpringBoard+Backgrounder.h"
 #import "SBUIController+CategoriesSB.h"
+#import "PSWProSwitcherIcon.h"
 
 // Using late binding until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
@@ -35,8 +36,6 @@ CHDeclareClass(SBApplicationIcon);
 
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
-
-static NSDictionary *preferences = nil;
 
 static NSUInteger disallowIconListScatter;
 static NSUInteger disallowRestoreIconList;
@@ -100,6 +99,11 @@ static PSWViewController *mainController;
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
 	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
+	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
+	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
+	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
+	
+	// Load ignored display identifiers
 	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [NSMutableArray array] : [[GetPreference(PSWDefaultApps, id) mutableCopy] autorelease];
 	if (!GetPreference(PSWSpringBoardCard, BOOL))
 		[ignored addObject:@"com.apple.springboard"];
@@ -108,15 +112,12 @@ static PSWViewController *mainController;
 			[ignored addObject:[icon displayIdentifier]];
 	}
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
-	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
-	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
-	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
+	PSWUpdateIconVisibility();
 }
 
 - (void)_reloadPreferences
 {
-	[preferences release];
-	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+	PSWPreparePreferences();
 	[self _applyPreferences];
 }
 

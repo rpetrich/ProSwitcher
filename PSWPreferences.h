@@ -49,6 +49,7 @@
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 #define PSWShowDockApps         YES
+#define PSWShowIcon             YES
 
 
 __attribute__((always_inline))
@@ -61,3 +62,13 @@ static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *file
     CFPropertyListWriteToStream((CFPropertyListRef)dict, stream, kCFPropertyListBinaryFormat_v1_0, NULL);
     CFWriteStreamClose(stream);
 }
+
+NSDictionary *preferences;
+
+__attribute__((always_inline))
+static inline void PSWPreparePreferences()
+{
+	[preferences release];
+	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+}
+
