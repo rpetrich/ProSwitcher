@@ -112,7 +112,6 @@ static PSWViewController *mainController;
 			[ignored addObject:[icon displayIdentifier]];
 	}
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
-	PSWUpdateIconVisibility();
 }
 
 - (void)_reloadPreferences
@@ -416,6 +415,7 @@ static PSWViewController *mainController;
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
 	[[PSWViewController sharedInstance] _reloadPreferences];
+	PSWUpdateIconVisibility();
 }
 
 #pragma mark SBUIController
