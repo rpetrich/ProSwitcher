@@ -1,8 +1,10 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
+#import <CaptainHook/CaptainHook.h>
 
 static NSMutableDictionary *imageCache;
+static NSBundle *sharedBundle;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
@@ -62,12 +64,12 @@ UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSiz
 
 UIImage *PSWImage(NSString *name)
 {
-	return PSWGetCachedImageResource(name, [NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"]);
+	return PSWGetCachedImageResource(name, sharedBundle);
 }
 
 UIImage *PSWScaledImage(NSString *name, CGSize size)
 {
-	return PSWGetScaledCachedImageResource(name, [NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"], size);
+	return PSWGetScaledCachedImageResource(name, sharedBundle, size);
 }
 
 
@@ -115,4 +117,10 @@ void PSWClearResourceCache()
 {
 	[imageCache release];
 	imageCache = nil;
+}
+
+CHConstructor
+{
+	CHAutoreleasePoolForScope();
+	sharedBundle = [[NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"] retain];
 }
