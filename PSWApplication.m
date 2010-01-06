@@ -16,8 +16,11 @@ CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBApplication);
 
-static NSString *ignoredRelaunchDisplayIdentifier;
+static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
+
+// Fuck my life
+NSString *fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
 
 @implementation PSWApplication
 
@@ -229,6 +232,9 @@ static NSUInteger defaultImagePassThrough;
 		}
 		// Deactivate the application
 		[_application setActivationSetting:0x2 flag:NO]; // don't animate
+		
+		// Fix for bug where exiting the app just backgrounds it again, fucking stupid fix
+		fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = [_displayIdentifier retain];
 		[SBWSuspendingDisplayStack pushDisplay:_application];
 	}
 }

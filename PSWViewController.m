@@ -461,10 +461,15 @@ CHMethod0(void, SBUIController, finishLaunching)
 #pragma mark SBDisplayStack
 CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 {
-	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
+	SBApplication *application;
+	NSString *displayIdentifier;
+	if (CHIsClass(display, SBApplication)) {
+		application = (SBApplication *) display;
+		displayIdentifier = [application displayIdentifier];
+	}
+	
+	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled && ![displayIdentifier isEqualToString:fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier]) {
 		if (CHIsClass(display, SBApplication)) {
-			SBApplication *application = (SBApplication *) display;
-			NSString *displayIdentifier = [application displayIdentifier];
 			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			if (suspendingApp) {
 				if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenBackground) {
@@ -490,6 +495,8 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 			[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 		}
 	}
+	
+	fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
 	CHSuper1(SBDisplayStack, pushDisplay, display);
 }
 
