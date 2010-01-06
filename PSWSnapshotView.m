@@ -226,8 +226,16 @@
 				}
 				badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
 				badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
-				_iconBadge = [[UIView alloc] initWithFrame:badgeFrame];
-				[[_iconBadge layer] setContents:(id)[badgeImage CGImage]];
+				if (CGRectEqualToRect([_iconBadge frame], badgeFrame)) {
+					for (UIView *subview in [_iconBadge subviews])
+						[subview removeFromSuperview];
+				} else {
+					[_iconBadge removeFromSuperview];
+					[_iconBadge release];
+					_iconBadge = [[UIView alloc] initWithFrame:badgeFrame];
+					[[_iconBadge layer] setContents:(id)[badgeImage CGImage]];
+					[self addSubview:_iconBadge];
+				}
 				badgeFrame.origin = CGPointZero;
 				badgeFrame.size.height -= 8.0f;
 				UILabel *badgeLabel = [[UILabel alloc] initWithFrame:badgeFrame];
@@ -238,7 +246,6 @@
 				[badgeLabel setTextAlignment:UITextAlignmentCenter];
 				[_iconBadge addSubview:badgeLabel];
 				[badgeLabel release];
-				[self addSubview:_iconBadge];
 			}
 		} else {
 			[_iconBadge removeFromSuperview];
