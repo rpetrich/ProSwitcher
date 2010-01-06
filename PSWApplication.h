@@ -58,8 +58,3 @@ typedef struct PSWCropInsets {
 - (void)applicationSnapshotDidChange:(PSWApplication *)application;
 - (void)applicationBadgeDidChange:(PSWApplication *)application;
 @end
-
-// Fuck my life
-extern NSString *fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier;
-
-

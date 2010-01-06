@@ -2,6 +2,8 @@
 #import "libactivator.h"
 #import "PSWSnapshotPageView.h"
 
+void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier);
+
 @interface PSWViewController : UIViewController<PSWSnapshotPageViewDelegate, LAListener> {
 @private
 	PSWSnapshotPageView *snapshotPageView;

@@ -43,6 +43,14 @@ static NSUInteger disallowIconListScroll;
 static NSUInteger modifyZoomTransformCountDown;
 static NSUInteger ignoreZoomSetAlphaCountDown;
 
+static NSString *displayIdentifierToSuppressBackgroundingOn;
+
+void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
+{
+	[displayIdentifierToSuppressBackgroundingOn release];
+	displayIdentifierToSuppressBackgroundingOn = [displayIdentifier copy];
+}
+
 static PSWViewController *mainController;
 @implementation PSWViewController
 @synthesize snapshotPageView;
@@ -466,37 +474,43 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 	if (CHIsClass(display, SBApplication)) {
 		application = (SBApplication *) display;
 		displayIdentifier = [application displayIdentifier];
+	} else {
+		application = nil;
+		displayIdentifier = nil;
 	}
 	
-	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled && ![displayIdentifier isEqualToString:fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier]) {
-		if (CHIsClass(display, SBApplication)) {
-			PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
-			if (suspendingApp) {
-				if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenBackground) {
-					// Background
-					if (![suspendingApp hasNativeBackgrounding]) {
-						if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
-							[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
+	if (self == SBWSuspendingDisplayStack && GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
+		if (application) {
+			if ([displayIdentifier isEqualToString:displayIdentifierToSuppressBackgroundingOn]) {
+				[displayIdentifierToSuppressBackgroundingOn release];
+				displayIdentifierToSuppressBackgroundingOn = nil;
+			} else {
+				PSWApplication *suspendingApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
+				if (suspendingApp) {
+					if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenBackground) {
+						// Background
+						if (![suspendingApp hasNativeBackgrounding]) {
+							if ([SBSharedInstance respondsToSelector:@selector(setBackgroundingEnabled:forDisplayIdentifier:)])
+								[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
+						}
 					}
+					modifyZoomTransformCountDown = 2;
+					ignoreZoomSetAlphaCountDown = 2;
+					disallowIconListScatter++;
+					CHSuper1(SBDisplayStack, pushDisplay, display);
+					PSWViewController *vc = [PSWViewController sharedInstance];
+					[vc setActive:YES animated:NO];
+					[[vc snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
+					disallowIconListScatter--;
+					return;
 				}
-				modifyZoomTransformCountDown = 2;
-				ignoreZoomSetAlphaCountDown = 2;
-				disallowIconListScatter++;
-				CHSuper1(SBDisplayStack, pushDisplay, display);
-				PSWViewController *vc = [PSWViewController sharedInstance];
-				[vc setActive:YES animated:NO];
-				[[vc snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
-				disallowIconListScatter--;
-				return;
 			}
 		}
 	} else if (self == SBWPreActivateDisplayStack) {
 		if (CHIsClass(display, SBApplication)) {
 			[[PSWViewController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 		}
-	}
-	
-	fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
+	}	
 	CHSuper1(SBDisplayStack, pushDisplay, display);
 }
 

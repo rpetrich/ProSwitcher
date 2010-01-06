@@ -10,6 +10,7 @@
 
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
+#import "PSWViewController.h"
 
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);
@@ -233,8 +234,8 @@ NSString *fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
 		// Deactivate the application
 		[_application setActivationSetting:0x2 flag:NO]; // don't animate
 		
-		// Fix for bug where exiting the app just backgrounds it again, fucking stupid fix
-		fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = [_displayIdentifier retain];
+		// Fix for bug where exiting the app just backgrounds it again
+		PSWSuppressBackgroundingOnDisplayIdentifer(_displayIdentifier);
 		[SBWSuspendingDisplayStack pushDisplay:_application];
 	}
 }
