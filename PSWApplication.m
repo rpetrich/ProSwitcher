@@ -379,8 +379,8 @@ CHConstructor {
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
-	CHAddHook1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL);
-	CHAddHook0(void, SBApplication, _relaunchAfterExit);
+	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
+	CHHook0(SBApplication, _relaunchAfterExit);
 	CHHook1(SBApplication, defaultImage);
 	CHLoadLateClass(SBApplicationIcon);
 	CHHook1(SBApplicationIcon, setBadge);
