@@ -103,12 +103,24 @@
 	
 	CGRect frame = [self frame];
 	CGSize boundingSize;
-	if (isZoomed) {
-		boundingSize.width = frame.size.width - 25.0f;
-		boundingSize.height = frame.size.height - 25.0f;
+	boundingSize.width = frame.size.width - 25.0f;
+	boundingSize.height = frame.size.height - 25.0f;
+	
+	if (frame.size.height < 423.f) { //If there is a better way to check if the dock is on, you should change it
+		if (_allowsZoom && !isZoomed) { //If dock is on, make unactive cards smaller and keep active card at max size
+			boundingSize.width -= 10.0f;
+			boundingSize.height -= 10.0f;
+		}
 	} else {
-		boundingSize.width = frame.size.width - 35.0f;
-		boundingSize.height = frame.size.height - 35.0f;
+		if (isZoomed) { //Make active card as big as possible if dock is off
+			boundingSize.width += 25.0f;
+			boundingSize.height += 25.0f;
+		} else {
+			boundingSize.width -= 10.0f;
+			boundingSize.height -= 10.0f;
+		}
+		if (!_allowsZoom) //Leave space between cards when zoom is off
+			boundingSize.width -= 25.0f;
 	}
 	
 	if (_showsTitle)
