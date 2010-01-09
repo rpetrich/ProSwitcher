@@ -151,12 +151,17 @@ static PSWViewController *mainController;
 	if (isActive) {
 		// Find appropriate superview and add as subview
 		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
-		UIView *buttonBarParent = [buttonBar superview];
-		UIView *targetSuperview = [buttonBarParent superview];
-		if (GetPreference(PSWShowDock, BOOL))
-			[targetSuperview insertSubview:self.view belowSubview:buttonBarParent];
-		else
-			[targetSuperview insertSubview:self.view aboveSubview:buttonBarParent];
+		if (buttonBar) {
+			UIView *buttonBarParent = [buttonBar superview];
+			UIView *targetSuperview = [buttonBarParent superview];
+			if (GetPreference(PSWShowDock, BOOL))
+				[targetSuperview insertSubview:self.view belowSubview:buttonBarParent];
+			else
+				[targetSuperview insertSubview:self.view aboveSubview:buttonBarParent];
+		} else {
+			UIView *contentView = [CHSharedInstance(SBUIController) contentView];
+			[[contentView superview] insertSubview:self.view aboveSubview:contentView];
+		}
 	}
 }
 
