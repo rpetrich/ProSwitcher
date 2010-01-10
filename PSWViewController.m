@@ -536,10 +536,10 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 	CHSuper0(SpringBoard, _handleMenuButtonEvent);
 }
 
-CHMethod0(void, SpringBoard, invokeProSwitcher)
+/*CHMethod0(void, SpringBoard, invokeProSwitcher)
 {
 	[[PSWViewController sharedInstance] activator:nil abortEvent:nil];
-}
+}*/
 
 #pragma mark SBIconController
 CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
@@ -685,7 +685,7 @@ CHConstructor
 	
 	CHLoadLateClass(SpringBoard);
 	CHHook0(SpringBoard, _handleMenuButtonEvent);
-	CHAddHook0(void, SpringBoard, invokeProSwitcher);
+	//CHHook0(SpringBoard, invokeProSwitcher);
 	
 	CHLoadLateClass(SBIconController);
 	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
