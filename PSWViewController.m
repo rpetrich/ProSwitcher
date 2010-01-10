@@ -298,14 +298,14 @@ static PSWViewController *mainController;
 		[UIView setAnimationDuration:0.5f];
 		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 	}
-			
-	// Show SpringBoard's page control
-	if (GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
-			
+	
 	// Hide ProSwitcher
 	isActive = NO;
 	
+	// Show SpringBoard's page control
+	if (GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
+		
 	self.view.alpha = 0.0f;
 	isAnimating = YES;			
 	if (animated) {
@@ -315,7 +315,6 @@ static PSWViewController *mainController;
 		[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];
 		[UIView commitAnimations];
 	} else {
-		
 		[self didFinishDeactivate];
 	}
 
@@ -553,6 +552,16 @@ CHMethod1(void, SBIconController, setIsEditing, BOOL, isEditing)
 	CHSuper1(SBIconController, setIsEditing, isEditing);
 }
 
+CHMethod1(void, SBIconController, setPageControlVisible, BOOL, visible)
+{
+	if ([[PSWViewController sharedInstance] isActive] && GetPreference(PSWShowPageControl, BOOL)) {
+		CHSuper1(SBIconController, setPageControlVisible, NO);
+		return;
+	}
+	
+	CHSuper1(SBIconController, setPageControlVisible, visible);
+}
+
 #pragma mark SBZoomView
 __attribute__((always_inline))
 static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRect)
@@ -629,6 +638,18 @@ CHMethod0(void, SBVoiceControlAlert, deactivate)
 		[vc setActive:NO animated:NO];
 }
 
+#pragma mark SBIconListPageControl
+
+CHMethod0(id, SBIconListPageControl, init)
+{
+	self = CHSuper0(SBIconListPageControl, init);
+	
+	if ([[PSWViewController sharedInstance] isActive] && GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+	
+	return self;
+}
+
 CHConstructor
 {
 	CHAutoreleasePoolForScope();
@@ -642,10 +663,12 @@ CHConstructor
 	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBApplication);
 	CHLoadLateClass(SBStatusBarController);
-	CHLoadLateClass(SBIconListPageControl);
 	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
+	
+	CHLoadLateClass(SBIconListPageControl);
+	CHHook0(SBIconListPageControl, init);
 	
 	CHLoadLateClass(SBUIController);
 	CHHook1(SBUIController, restoreIconList);
@@ -661,6 +684,7 @@ CHConstructor
 	CHLoadLateClass(SBIconController);
 	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	CHHook1(SBIconController, setIsEditing);
+	CHHook1(SBIconController, setPageControlVisible);
 	
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
