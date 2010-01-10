@@ -31,7 +31,7 @@
 #define PSWShowBadges           YES
 #define PSWAnimateActive        YES
 #define PSWAllowsZoom           NO
-#define PSWSpringBoardCard      YES
+#define PSWSpringBoardCard      NO
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
 #define PSWThemedIcons          YES
