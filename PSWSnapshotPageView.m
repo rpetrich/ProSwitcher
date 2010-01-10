@@ -50,6 +50,7 @@
 		}
 		if (numberOfPages != 0)
 			[[_snapshotViews objectAtIndex:0] setFocused:YES animated:NO];
+		
 		[self addSubview:_scrollView];
 
 		[self setBackgroundColor:[UIColor clearColor]];
@@ -98,6 +99,14 @@
 	}
 	for (PSWSnapshotView *view in _snapshotViews)
 		[view setZoomed:activeView == view animated:animated];
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+	UIView *child = nil;
+    if ((child = [super hitTest:point withEvent:event]) == self)
+        return _scrollView;         
+    return child;
 }
 
 - (void)_relayoutViews
