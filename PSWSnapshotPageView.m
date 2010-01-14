@@ -103,10 +103,14 @@
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-	UIView *child = nil;
-    if ((child = [super hitTest:point withEvent:event]) == self)
-        return _scrollView;         
-    return child;
+	if ([_applications count]) {
+		UIView *child = nil;
+		if ((child = [super hitTest:point withEvent:event]) == self)
+			return _scrollView;         
+		return child;
+	} else {
+		return [super hitTest:point withEvent:event];
+	}
 }
 
 - (void)_relayoutViews
