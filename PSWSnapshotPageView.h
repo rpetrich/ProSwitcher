@@ -25,7 +25,6 @@
 	BOOL _allowsZoom;
 	BOOL _allowsSwipeToClose;
 	BOOL _themedIcons;
-	BOOL _scrollingToSide;
 	BOOL _showsPageControl;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;

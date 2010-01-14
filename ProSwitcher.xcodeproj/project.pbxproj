@@ -13,6 +13,7 @@
 		7DB8A5B31086D4C100C1FD1D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DB8A5B21086D4C100C1FD1D /* AudioToolbox.framework */; };
 		7DD43FE710C097C90063020D /* PSWSnapshotPageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD43FE610C097C90063020D /* PSWSnapshotPageView.m */; };
 		7DD5643210CA325A00771158 /* PSWSnapshotView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DD5643110CA325A00771158 /* PSWSnapshotView.m */; };
+		940D13D510FEB502003914C6 /* PSWPageScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 940D13D410FEB502003914C6 /* PSWPageScrollView.m */; };
 		942FC5E310CB8DCF006F6990 /* PSWApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC5E210CB8DCF006F6990 /* PSWApplication.m */; };
 		942FC6BC10CB9D1D006F6990 /* PSWApplicationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC6BB10CB9D1D006F6990 /* PSWApplicationController.m */; };
 		942FC6C310CBA11F006F6990 /* PSWDisplayStacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */; };
@@ -36,6 +37,8 @@
 		7DD5643110CA325A00771158 /* PSWSnapshotView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWSnapshotView.m; sourceTree = "<group>"; };
 		7DE9723210CDD727001262FC /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		940499DF10DE37EC0007872E /* SBUIController+CategoriesSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SBUIController+CategoriesSB.h"; sourceTree = "<group>"; };
+		940D13D310FEB502003914C6 /* PSWPageScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWPageScrollView.h; sourceTree = "<group>"; };
+		940D13D410FEB502003914C6 /* PSWPageScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWPageScrollView.m; sourceTree = "<group>"; };
 		942FC5E110CB8DCF006F6990 /* PSWApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWApplication.h; sourceTree = "<group>"; };
 		942FC5E210CB8DCF006F6990 /* PSWApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSWApplication.m; sourceTree = "<group>"; };
 		942FC6BA10CB9D1D006F6990 /* PSWApplicationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSWApplicationController.h; sourceTree = "<group>"; };
@@ -143,6 +146,8 @@
 				94EE17D210F38D96009D8678 /* PSWProSwitcherIcon.h */,
 				945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */,
 				7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */,
+				940D13D310FEB502003914C6 /* PSWPageScrollView.h */,
+				940D13D410FEB502003914C6 /* PSWPageScrollView.m */,
 			);
 			name = Code;
 			sourceTree = "<group>";
@@ -337,6 +342,7 @@
 				942FC6C310CBA11F006F6990 /* PSWDisplayStacks.m in Sources */,
 				942FC77B10CBB8F7006F6990 /* PSWResources.m in Sources */,
 				C441ADEC10E2081B00860249 /* PSWSpringBoardApplication.m in Sources */,
+				940D13D510FEB502003914C6 /* PSWPageScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

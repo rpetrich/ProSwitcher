@@ -1,6 +1,9 @@
 #import "PSWSnapshotPageView.h"
+
 #import <QuartzCore/QuartzCore.h>
 #import <CaptainHook/CaptainHook.h>
+
+#import "PSWPageScrollView.h"
 
 @interface PSWSnapshotPageView ()
 - (void)_relayoutViews;
@@ -30,7 +33,7 @@
 		[_pageControl setUserInteractionEnabled:NO];
 		[self addSubview:_pageControl];
 		
-		_scrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
+		_scrollView = [[PSWPageScrollView alloc] initWithFrame:CGRectZero];
 		[_scrollView setClipsToBounds:NO];
 		[_scrollView setShowsHorizontalScrollIndicator:NO];
 		[_scrollView setShowsVerticalScrollIndicator:NO];
@@ -91,8 +94,7 @@
 {
 	PSWSnapshotView *activeView;
 	NSInteger currentPage = [_pageControl currentPage];
-	if (_snapshotViews.count > 0 && (!_scrollingToSide || currentPage == 0 || currentPage == [_applications count] - 1)) {
-		_scrollingToSide = NO;
+	if (_snapshotViews.count > 0 && (currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
 		activeView = nil;
@@ -584,60 +586,6 @@
 - (void)applicationController:(PSWApplicationController *)ac applicationDidExit:(PSWApplication *)application
 {
 	[self removeViewForApplication:application];
-}
-
-#pragma mark Touch Gestures
-
-- (void)tapPreviousAndContinue
-{
-	NSInteger currentPage = [_pageControl currentPage];
-	if (currentPage != 0)
-		[self setFocusedApplication:[_applications objectAtIndex:currentPage - 1]];
-	[self performSelector:@selector(tapPreviousAndContinue) withObject:nil afterDelay:0.5f];
-}
-
-- (void)tapNextAndContinue
-{
-	NSInteger currentPage = [_pageControl currentPage];
-	if (currentPage < [_applications count] - 1)
-		[self setFocusedApplication:[_applications objectAtIndex:currentPage + 1]];
-	[self performSelector:@selector(tapNextAndContinue) withObject:nil afterDelay:0.5f];
-}
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	UITouch *touch = [touches anyObject];
-	NSInteger tapCount = [touch tapCount];
-	if ([_applications count] > 0) {
-		CGPoint point = [touch locationInView:self];
-		CGSize size = [self bounds].size;
-		if (point.y < size.height * (4.0f / 5.0f)) {
-			if (point.x < size.width / 2.0f) {
-				if (tapCount == 2) {
-					_scrollingToSide = YES;
-					[self setFocusedApplication:[_applications objectAtIndex:0]];
-				} else
-					[self tapPreviousAndContinue];
-			} else {
-				if (tapCount == 2) {
-					_scrollingToSide = YES;
-					[self setFocusedApplication:[_applications lastObject]];
-				} else
-					[self tapNextAndContinue];
-			}
-			return;
-		}
-	}
-	
-	if ((tapCount == _tapsToActivate || [_applications count] == 0) && _emptyTapClose)
-		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
-			[_delegate snapshotPageViewShouldExit:self];
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapPreviousAndContinue) object:nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
 }
 
 @end
