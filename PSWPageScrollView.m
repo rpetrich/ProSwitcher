@@ -2,6 +2,7 @@
 
 @implementation PSWPageScrollView
 
+@synthesize doubleTapped = _doubleTapped;
 
 - (void)dealloc {
     [super dealloc];
@@ -62,7 +63,9 @@
 	NSInteger tapCount = [touch tapCount];
 	CGPoint point = [touch locationInView:[self superview]];
 	point.x -= [self frame].origin.x;
+	_doubleTapped = NO;
 	if (tapCount == 2) {
+		_doubleTapped = YES;
 		if (point.x <= 0.0f) {
 			[self setContentOffset:CGPointZero animated:YES];
 		} else {

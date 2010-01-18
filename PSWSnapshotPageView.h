@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import "PSWSnapshotView.h"
 #import "PSWApplicationController.h"
+#import "PSWPageScrollView.h"
 
 @protocol PSWSnapshotPageViewDelegate;
 
@@ -9,7 +10,7 @@
 	PSWApplicationController *_applicationController;
 	NSMutableArray *_applications;
 	NSMutableArray *_snapshotViews;
-	UIScrollView *_scrollView;
+	PSWPageScrollView *_scrollView;
 	UIPageControl *_pageControl;
 	UILabel *_emptyLabel;
 	NSString *_emptyText;
@@ -35,7 +36,7 @@
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 
 @property (nonatomic, assign) id<PSWSnapshotPageViewDelegate> delegate;
-@property (nonatomic, readonly) UIScrollView *scrollView;
+@property (nonatomic, readonly) PSWPageScrollView *scrollView;
 @property (nonatomic, readonly) NSArray *snapshotViews;
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;

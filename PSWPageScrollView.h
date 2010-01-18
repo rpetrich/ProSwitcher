@@ -2,7 +2,10 @@
 
 @interface PSWPageScrollView : UIScrollView {
 @private
-	BOOL _shouldScrollOnUp; 
+	BOOL _shouldScrollOnUp;
+	BOOL _doubleTapped;
 }
+
+@property (nonatomic, readonly) BOOL doubleTapped;
 
 @end

@@ -3,8 +3,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CaptainHook/CaptainHook.h>
 
-#import "PSWPageScrollView.h"
-
 @interface PSWSnapshotPageView ()
 - (void)_relayoutViews;
 @end
@@ -94,7 +92,7 @@
 {
 	PSWSnapshotView *activeView;
 	NSInteger currentPage = [_pageControl currentPage];
-	if (_snapshotViews.count > 0 && (currentPage == 0 || currentPage == [_applications count] - 1)) {
+	if (_snapshotViews.count > 0 && (_scrollView.dragging || !_scrollView.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
 		activeView = nil;
