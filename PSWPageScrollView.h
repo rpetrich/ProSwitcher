@@ -8,7 +8,7 @@
 	PSWSnapshotPageView *_pageView;
 }
 
-@property (nonatomic, readonly) BOOL doubleTapped;
+@property (nonatomic, readwrite) BOOL doubleTapped;
 @property (nonatomic, assign) PSWSnapshotPageView *pageView;
 
 - (id)initWithFrame:(CGRect)frame pageView:(PSWSnapshotPageView *)pageView;

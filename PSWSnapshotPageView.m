@@ -92,7 +92,7 @@
 {
 	PSWSnapshotView *activeView;
 	NSInteger currentPage = [_pageControl currentPage];
-	if (_snapshotViews.count > 0 && (_scrollView.dragging || !_scrollView.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
+	if (_snapshotViews.count > 0 && (!_scrollView.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
 		activeView = nil;
@@ -105,6 +105,7 @@
 {
 	if ([_applications count]) {
 		UIView *child = nil;
+		_scrollView.doubleTapped = NO;
 		if ((child = [super hitTest:point withEvent:event]) == self)
 			return _scrollView;
 		return child;
