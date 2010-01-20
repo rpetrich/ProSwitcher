@@ -5,18 +5,23 @@
 #import <SpringBoard/SpringBoard.h>
 #import <QuartzCore/QuartzCore.h>
 #import <CaptainHook/CaptainHook.h>
+
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
+#import "PSWViewController.h"
 
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(SBIconModel);
 CHDeclareClass(SBApplication);
 
-static NSString *ignoredRelaunchDisplayIdentifier;
+static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
+
+// Fuck my life
+NSString *fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
 
 @implementation PSWApplication
 
@@ -206,7 +211,8 @@ static NSUInteger defaultImagePassThrough;
 		|| [_displayIdentifier isEqualToString:@"com.apple.mobilesafari"]
 		|| [_displayIdentifier hasPrefix:@"com.apple.mobileipod"]
 		|| [_displayIdentifier hasPrefix:@"com.bigboss.categories."]
-		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"];
+		|| [_displayIdentifier isEqualToString:@"com.googlecode.mobileterminal"]
+		|| [_displayIdentifier isEqualToString:@"ch.ringwald.keyboard"];
 }
 
 - (void)exit
@@ -227,6 +233,9 @@ static NSUInteger defaultImagePassThrough;
 		}
 		// Deactivate the application
 		[_application setActivationSetting:0x2 flag:NO]; // don't animate
+		
+		// Fix for bug where exiting the app just backgrounds it again
+		PSWSuppressBackgroundingOnDisplayIdentifer(_displayIdentifier);
 		[SBWSuspendingDisplayStack pushDisplay:_application];
 	}
 }
@@ -293,6 +302,22 @@ static NSUInteger defaultImagePassThrough;
 	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
 }
 
+- (NSString *)badgeText
+{
+	SBIcon *icon = [self springBoardIcon];
+	if (icon) {
+		id result = CHIvar(icon, _badgeNumberOrString, id);
+		if ([result isKindOfClass:[NSNumber class]]) {
+			NSInteger value = [result integerValue];
+			if (value != 0)
+				return [NSString stringWithFormat:@"%i", value];
+		} else if ([result isKindOfClass:[NSString class]]) {
+			return result;
+		}
+	}
+	return nil;
+}
+
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"<%s %p %@>", class_getName([self class]), self, _displayIdentifier];
@@ -352,11 +377,12 @@ CHMethod1(void, SBApplicationIcon, setBadge, id, value)
 CHConstructor {
 	CHAutoreleasePoolForScope();
 	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBApplicationIcon);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
 	CHHook0(SBApplication, _relaunchAfterExit);
 	CHHook1(SBApplication, defaultImage);
+	CHLoadLateClass(SBApplicationIcon);
+	CHHook1(SBApplicationIcon, setBadge);
 }
 

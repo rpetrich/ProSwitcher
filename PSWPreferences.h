@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -12,8 +13,20 @@
 
 #define GetPreference(name, type) type ## ForKeyWithDefault(preferences, @#name, (name))
 
+// Constants
+#define PSWBecomeHomeScreenDisabled   0
+#define PSWBecomeHomeScreenEnabled    1
+#define PSWBecomeHomeScreenBackground 2
+
+#define PSWBackgroundStyleDefault 0
+#define PSWBackgroundStyleImage   1
+
+#define PSWEmptyStyleText  0
+#define PSWEmptyStyleBlank 1
+#define PSWEmptyStyleExit  2
+
 // Defaults
-#define PSWBecomeHomeScreen     NO
+#define PSWBecomeHomeScreen     PSWBecomeHomeScreenDisabled
 #define PSWShowDock             YES
 #define PSWShowBadges           YES
 #define PSWAnimateActive        YES
@@ -22,11 +35,12 @@
 #define PSWDimBackground        YES
 #define PSWShowPageControl      YES
 #define PSWThemedIcons          YES
-#define PSWBackgroundStyle      0
+#define PSWBackgroundStyle      PSWBackgroundStyleDefault
 #define PSWSwipeToClose         YES
 #define PSWShowApplicationTitle YES
 #define PSWShowCloseButton      YES
-#define PSWShowEmptyText        YES
+#define PSWEmptyStyle           PSWEmptyStyleText
+#define PSWEmptyTapClose        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       1
 #define PSWSnapshotInset        40.0f
@@ -34,15 +48,27 @@
 #define PSWShowDefaultApps      YES
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
+#define PSWShowDockApps         YES
+#define PSWShowIcon             YES
 
 
 __attribute__((always_inline))
 static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *fileName)
 {
-	/*NSString *errorDescription = nil;
-	NSData *data = [NSPropertyListSerialization dataFromPropertyList:dict format:NSPropertyListBinaryFormat_v1_0 errorDescription:&errorDescription];
-	if (errorDescription)*/
-		[dict writeToFile:fileName atomically:YES];
-	/*else
-		[data writeToFile:fileName atomically:YES];*/
+	CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)fileName, kCFURLPOSIXPathStyle, NO);
+    CFWriteStreamRef stream = CFWriteStreamCreateWithFile(kCFAllocatorDefault, url);
+	CFRelease(url);
+    CFWriteStreamOpen(stream);
+    CFPropertyListWriteToStream((CFPropertyListRef)dict, stream, kCFPropertyListBinaryFormat_v1_0, NULL);
+    CFWriteStreamClose(stream);
 }
+
+NSDictionary *preferences;
+
+__attribute__((always_inline))
+static inline void PSWPreparePreferences()
+{
+	[preferences release];
+	preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+}
+

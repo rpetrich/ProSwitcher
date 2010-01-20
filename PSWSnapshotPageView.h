@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import "PSWSnapshotView.h"
 #import "PSWApplicationController.h"
+#import "PSWPageScrollView.h"
 
 @protocol PSWSnapshotPageViewDelegate;
 
@@ -9,7 +10,7 @@
 	PSWApplicationController *_applicationController;
 	NSMutableArray *_applications;
 	NSMutableArray *_snapshotViews;
-	UIScrollView *_scrollView;
+	PSWPageScrollView *_scrollView;
 	UIPageControl *_pageControl;
 	UILabel *_emptyLabel;
 	NSString *_emptyText;
@@ -17,13 +18,14 @@
 	
 	id<PSWSnapshotPageViewDelegate> _delegate;
 	
+	BOOL _autoExit;
+	BOOL _emptyTapClose;
 	BOOL _showsTitles;
 	BOOL _showsCloseButtons;
 	BOOL _showsBadges;
 	BOOL _allowsZoom;
 	BOOL _allowsSwipeToClose;
 	BOOL _themedIcons;
-	BOOL _scrollingToSide;
 	BOOL _showsPageControl;
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
@@ -34,7 +36,7 @@
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 
 @property (nonatomic, assign) id<PSWSnapshotPageViewDelegate> delegate;
-@property (nonatomic, readonly) UIScrollView *scrollView;
+@property (nonatomic, readonly) PSWPageScrollView *scrollView;
 @property (nonatomic, readonly) NSArray *snapshotViews;
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;
@@ -48,6 +50,8 @@
 @property (nonatomic, assign) BOOL allowsSwipeToClose;
 @property (nonatomic, assign) BOOL themedIcons;
 @property (nonatomic, assign) BOOL allowsZoom;
+@property (nonatomic, assign) BOOL emptyTapClose;
+@property (nonatomic, assign) BOOL autoExit;
 @property (nonatomic, assign) CGFloat roundedCornerRadius;
 @property (nonatomic, assign) NSInteger tapsToActivate;
 @property (nonatomic, assign) CGFloat snapshotInset;
@@ -60,6 +64,8 @@
 
 // Allow temporarily adding/removing views
 - (void)addViewForApplication:(PSWApplication *)application;
+- (void)addViewForApplication:(PSWApplication *)application atPosition:(NSUInteger)position;
+- (void)removeViewForApplication:(PSWApplication *)application animated:(BOOL)animated;
 - (void)removeViewForApplication:(PSWApplication *)application;
 
 @end

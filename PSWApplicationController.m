@@ -33,7 +33,9 @@ static PSWApplicationController *sharedApplicationController;
 {
 	if ((self = [super init])) {
 		_activeApplications = [[NSMutableDictionary alloc] init];
-		[_activeApplications setObject:[[PSWSpringBoardApplication alloc] init] forKey:@"com.apple.springboard"];
+		PSWSpringBoardApplication *springBoardApp = [[[PSWSpringBoardApplication alloc] init] autorelease];
+		[_activeApplications setObject:springBoardApp forKey:@"com.apple.springboard"];
+		_activeApplicationsOrder = [[NSMutableArray alloc] initWithObjects:springBoardApp, nil];
 		[PSWApplication clearSnapshotCache];
 	}
 	return self;
@@ -41,13 +43,14 @@ static PSWApplicationController *sharedApplicationController;
 
 - (void)dealloc
 {
+	[_activeApplicationsOrder release];
 	[_activeApplications release];
 	[super dealloc];
 }
 
 - (NSArray *)activeApplications
 {
-	return [_activeApplications allValues];
+	return [[_activeApplicationsOrder copy] autorelease];
 }
 
 - (PSWApplication *)applicationWithDisplayIdentifier:(NSString *)displayIdentifier
@@ -57,7 +60,7 @@ static PSWApplicationController *sharedApplicationController;
 
 - (void)writeSnapshotsToDisk
 {
-	for (PSWApplication *application in [_activeApplications allValues])
+	for (PSWApplication *application in _activeApplicationsOrder)
 		[application writeSnapshotToDisk];
 }
 
@@ -74,6 +77,7 @@ static PSWApplicationController *sharedApplicationController;
 	if (![_activeApplications objectForKey:displayIdentifier]) {
 		PSWApplication *app = [[PSWApplication alloc] initWithDisplayIdentifier:displayIdentifier];
 		[_activeApplications setObject:app forKey:displayIdentifier];
+		[_activeApplicationsOrder addObject:app];
 		if ([_delegate respondsToSelector:@selector(applicationController:applicationDidLaunch:)])
 			[_delegate applicationController:self applicationDidLaunch:app];
 		[app release];
@@ -87,6 +91,7 @@ static PSWApplicationController *sharedApplicationController;
 	if (app) {
 		[app retain];
 		[_activeApplications removeObjectForKey:displayIdentifier];
+		[_activeApplicationsOrder removeObject:app];
 		if ([_delegate respondsToSelector:@selector(applicationController:applicationDidExit:)])
 			[_delegate applicationController:self applicationDidExit:app];
 		[app release];

@@ -1,8 +1,10 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
+#import <CaptainHook/CaptainHook.h>
 
 static NSMutableDictionary *imageCache;
+static NSBundle *sharedBundle;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
@@ -21,22 +23,55 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 	return result;
 }
 
+UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSize size)
+{
+	// Search for cached image
+	NSString *key = [NSString stringWithFormat:@"%@#%@#%@", [bundle bundlePath], name, NSStringFromCGSize(size)];
+	UIImage *image = [imageCache objectForKey:key];
+	if (image)
+		return image;
+	// Get unscaled image and check if is already the right size
+	image = PSWGetCachedImageResource(name, bundle);
+	if (!image)
+		return image;
+	CGSize unscaledSize = [image size];
+	if (unscaledSize.width == size.width && unscaledSize.height == size.height)
+		return image;
+	// Create a bitmap context that mimics the format of the source context
+	CGImageRef cgImage = [image CGImage];
+	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+	CGContextRef context = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, 4 * (size_t)size.width, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+	CGColorSpaceRelease(colorSpace);
+	// Setup transformation
+	CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+	CGContextTranslateCTM(context, 0.0f, size.height); 
+	CGContextScaleCTM(context, 1.0f, -1.0f);
+	// Draw stretchable image
+	UIGraphicsPushContext(context);
+	[[image stretchableImageWithLeftCapWidth:((NSInteger)unscaledSize.width)/2 topCapHeight:((NSInteger)unscaledSize.height)/2] drawInRect:CGRectMake(0.0f, 0.0f, size.width, size.height)];
+	UIGraphicsPopContext();
+	// Create CGImage
+	CGContextFlush(context);
+	cgImage = CGBitmapContextCreateImage(context);
+	CGContextRelease(context);
+	// Create UIImage
+	image = [UIImage imageWithCGImage:cgImage];
+	CGImageRelease(cgImage);
+	// Update cache
+	[imageCache setObject:image forKey:key];
+	return image;
+}
+
 UIImage *PSWImage(NSString *name)
 {
-	NSString *key = [NSString stringWithFormat:@"/Applications/ProSwitcher.app/%@.png", name];
-	UIImage *result = [imageCache objectForKey:key];
-	if (!result) {
-		if (!imageCache)
-			imageCache = [[NSMutableDictionary alloc] init];
-		result = [UIImage imageWithContentsOfFile:key];
-		if (result)
-			if (imageCache)
-				[imageCache setObject:result forKey:key];
-			else
-				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
-	}
-	return result;
+	return PSWGetCachedImageResource(name, sharedBundle);
 }
+
+UIImage *PSWScaledImage(NSString *name, CGSize size)
+{
+	return PSWGetScaledCachedImageResource(name, sharedBundle, size);
+}
+
 
 static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius)
 {
@@ -82,4 +117,10 @@ void PSWClearResourceCache()
 {
 	[imageCache release];
 	imageCache = nil;
+}
+
+CHConstructor
+{
+	CHAutoreleasePoolForScope();
+	sharedBundle = [[NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"] retain];
 }

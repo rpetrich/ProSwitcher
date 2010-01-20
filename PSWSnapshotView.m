@@ -16,7 +16,6 @@
 @synthesize application = _application;
 @synthesize delegate = _delegate;
 @synthesize allowsSwipeToClose = _allowsSwipeToClose;
-@synthesize allowsZoom = _allowsZoom;
 @synthesize screenView = screen;
 
 - (void)snapshot:(UIButton *)snapshot touchUpInside:(UIEvent *)event
@@ -62,7 +61,7 @@
 			_closeButton.alpha = 0.0f;
 			_titleView.alpha = 0.0f;
 			_iconView.alpha = 0.0f;
-			_iconBadge.opacity = 0.0f;
+			_iconBadge.alpha = 0.0f;
 			[UIView commitAnimations];
 			isInDrag = YES;
 		}
@@ -85,7 +84,7 @@
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
-		_iconBadge.opacity = 1.0f;
+		_iconBadge.alpha = 1.0f;
 		[UIView commitAnimations];
 		UITouch *touch = [[event allTouches] anyObject];
 		if (!wasSwipedUp && [touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
@@ -104,13 +103,28 @@
 	
 	CGRect frame = [self frame];
 	CGSize boundingSize;
-	if (isZoomed) {
-		boundingSize.width = frame.size.width;
-		boundingSize.height = frame.size.height - 45.0f;
+	boundingSize.width = frame.size.width - 25.0f;
+	boundingSize.height = frame.size.height - 25.0f;
+	
+	if (frame.size.height < 423.f) { //If there is a better way to check if the dock is on, you should change it
+		if (_allowsZoom && !isZoomed) { //If dock is on, make unactive cards smaller and keep active card at max size
+			boundingSize.width -= 10.0f;
+			boundingSize.height -= 10.0f;
+		}
 	} else {
-		boundingSize.width = frame.size.width - 30.0f;
-		boundingSize.height = frame.size.height - 60.0f;
+		if (isZoomed) { //Make active card as big as possible if dock is off
+			boundingSize.width += 25.0f;
+			boundingSize.height += 25.0f;
+		} else {
+			boundingSize.width -= 10.0f;
+			boundingSize.height -= 10.0f;
+		}
+		if (!_allowsZoom) //Leave space between cards when zoom is off
+			boundingSize.width -= 25.0f;
 	}
+	
+	if (_showsTitle)
+		boundingSize.height -= 32.0f;
 		
 	CGFloat ratioW = boundingSize.width  / imageSize.width;
 	CGFloat ratioH = boundingSize.height / imageSize.height;
@@ -122,13 +136,12 @@
 	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
 	
-	if (isZoomed)
-		screenFrame.origin.y += 8;
+	/*if (isZoomed)
+		screenFrame.origin.y += 8;*/
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
 	
-	[screen setFrame:screenFrame];
 	screenY = screenFrame.origin.y;
 	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
@@ -138,24 +151,27 @@
 		[layer setContents:(id) [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
+	[screen setFrame:screenFrame];
 	
-	if (_closeButton != nil) {
+	if (_showsCloseButton) {
+		UIImage *closeImage = PSWImage(@"closebox");
+		CGRect closeButtonFrame;
+		closeButtonFrame.size = [closeImage size];
+		closeButtonFrame.origin.x = (NSInteger)(screenFrame.origin.x - closeButtonFrame.size.width / 2.0f);
+		closeButtonFrame.origin.y = (NSInteger)(screenFrame.origin.y - closeButtonFrame.size.height / 2.0f);
+		if (_closeButton) {
+			[_closeButton setFrame:closeButtonFrame];
+		} else {
+			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
+			[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
+			[_closeButton setFrame:closeButtonFrame];
+			[self addSubview:_closeButton];
+		}
+	} else {
 		[_closeButton removeFromSuperview];
 		[_closeButton release];
 		_closeButton = nil;
-	}
-	if (_showsCloseButton) {
-		UIImage *closeImage = PSWImage(@"closebox");
-		_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-		[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
-		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
-		
-		CGSize closeImageSize = [closeImage size];
-		CGFloat offsetX = (NSInteger)(closeImageSize.width / 2.0f);
-		CGFloat offsetY = (NSInteger)(closeImageSize.height / 2.0f);
-		[_closeButton setFrame:CGRectMake(screenFrame.origin.x - offsetX, screenFrame.origin.y - offsetY, closeImageSize.width, closeImageSize.height)];	
-		
-		[self addSubview:_closeButton];
 	}
 	
 	if (_showsTitle) {
@@ -207,28 +223,56 @@
 		}
 	}
 		
-	if (_iconBadge != nil) {
-		[_iconBadge removeFromSuperlayer];
+	if (_showsBadge) {
+		NSString *badgeText = [_application badgeText];
+		if ([badgeText length]) {
+			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
+			UIImage *badgeImage = PSWImage(@"badge");
+			if (badgeImage) {
+				CGRect badgeFrame;
+				badgeFrame.size = [badgeImage size];
+				CGFloat minWidth = [badgeText sizeWithFont:font].width + 19.0f;
+				if (badgeFrame.size.width < minWidth) {
+					badgeFrame.size.width = minWidth;
+					badgeImage = PSWScaledImage(@"badge", badgeFrame.size);
+				}
+				badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
+				badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+				if (CGRectEqualToRect([_iconBadge frame], badgeFrame)) {
+					for (UIView *subview in [_iconBadge subviews])
+						[subview removeFromSuperview];
+				} else {
+					[_iconBadge removeFromSuperview];
+					[_iconBadge release];
+					_iconBadge = [[UIView alloc] initWithFrame:badgeFrame];
+					[[_iconBadge layer] setContents:(id)[badgeImage CGImage]];
+					[self addSubview:_iconBadge];
+				}
+				badgeFrame.origin = CGPointZero;
+				badgeFrame.size.height -= 8.0f;
+				UILabel *badgeLabel = [[UILabel alloc] initWithFrame:badgeFrame];
+				[badgeLabel setBackgroundColor:[UIColor clearColor]];
+				[badgeLabel setTextColor:[UIColor whiteColor]];
+				[badgeLabel setFont:font];
+				[badgeLabel setText:badgeText];
+				[badgeLabel setTextAlignment:UITextAlignmentCenter];
+				[_iconBadge addSubview:badgeLabel];
+				[badgeLabel release];
+			}
+		} else {
+			[_iconBadge removeFromSuperview];
+			[_iconBadge release];
+			_iconBadge = nil;
+		}
+	} else {
+		[_iconBadge removeFromSuperview];
 		[_iconBadge release];
 		_iconBadge = nil;
-	}
-	if (_showsBadge) {
-		SBIconBadge *badge = [_application badgeView];
-		if (badge) {	
-			_iconBadge = [[CALayer layer] retain];
-			id badgeContents = [[badge layer] contents];
-			[_iconBadge setContents:badgeContents];
-			CGRect badgeFrame = [badge frame];
-			badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
-			badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
-			[_iconBadge setFrame:badgeFrame];
-			[[self layer] addSublayer:_iconBadge];
-		}
 	}
 	
 	CGFloat alpha = _focused?1.0f:0.0f;
 	[_closeButton setAlpha:alpha];
-	[_iconBadge setOpacity:alpha];
+	[_iconBadge setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 }
@@ -240,6 +284,7 @@
 		_application.delegate = self;
 		self.userInteractionEnabled = YES;
 		self.opaque = NO;
+		isZoomed = YES;
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -368,7 +413,7 @@
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
-	[_iconBadge setOpacity:alpha];
+	[_iconBadge setAlpha:alpha];
 	if (animated) {
 		[UIView commitAnimations];
 	}
@@ -386,25 +431,41 @@
 	}
 }
 
-- (void)setZoomed:(BOOL)zoomed
+- (BOOL)isZoomed
+{
+	return isZoomed;
+}
+- (void)setZoomed:(BOOL)zoomed animated:(BOOL)animated
 {
 	if (_allowsZoom) {
-		if (!zoomed && !isZoomed)
-			return;
-		[UIView beginAnimations:nil context:NULL];
-		[UIView setAnimationDuration:0.2f];
-		isZoomed = zoomed;
-		[self _relayoutViews];
-		[UIView commitAnimations];
-	} else {
-		if (isZoomed) {
-			[UIView beginAnimations:nil context:NULL];
-			[UIView setAnimationDuration:0.2f];
-			isZoomed = NO;
-			[self _relayoutViews];
-			[UIView commitAnimations];
+		if (zoomed ^ isZoomed) {
+			if (animated) {
+				[UIView beginAnimations:nil context:NULL];
+				[UIView setAnimationDuration:0.33f];
+				isZoomed = zoomed;
+				[self _relayoutViews];
+				[UIView commitAnimations];
+			} else {
+				isZoomed = zoomed;
+				[self _relayoutViews];
+			}
 		}
 	}
+}
+- (void)setZoomed:(BOOL)zoomed
+{
+	[self setZoomed:zoomed animated:YES];
+}
+
+- (BOOL)allowsZoom
+{
+	return _allowsZoom;
+}
+- (void)setAllowsZoom:(BOOL)allowsZoom
+{
+	if (!allowsZoom)
+		[self setZoomed:YES];
+	_allowsZoom = allowsZoom;
 }
 
 #pragma mark PSWApplicationDelegate
@@ -416,6 +477,9 @@
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application
 {
+	[_iconBadge removeFromSuperview];
+	[_iconBadge release];
+	_iconBadge = nil;
 	[self _relayoutViews];
 }
 

@@ -17,7 +17,7 @@
 	BOOL _focused; 
 	BOOL _allowsZoom;
 	UIButton *_closeButton;
-	CALayer *_iconBadge;
+	UIView *_iconBadge;
 	UILabel *_titleView;
 	UIImageView *_iconView;
 	
@@ -38,7 +38,8 @@
 @property (nonatomic, assign) BOOL showsTitle;
 @property (nonatomic, assign) BOOL showsBadge;
 @property (nonatomic, assign) BOOL allowsZoom;
-- (void)setZoomed:(BOOL)zoomed;
+@property (nonatomic, assign, getter=isZoomed) BOOL zoomed;
+- (void)setZoomed:(BOOL)zoomed animated:(BOOL)animated;
 @property (nonatomic, assign) BOOL themedIcon;
 @property (nonatomic, assign) BOOL showsCloseButton;
 @property (nonatomic, assign) BOOL allowsSwipeToClose;

@@ -5,6 +5,7 @@
 #import <SpringBoard/SpringBoard.h>
 #import <QuartzCore/QuartzCore.h>
 #import <CaptainHook/CaptainHook.h>
+
 #import "SpringBoard+Backgrounder.h"
 
 #import "PSWSpringBoardApplication.h"
@@ -66,7 +67,7 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 - (void)exit
 {
-	[CHSharedInstance(SpringBoard) relaunchSpringBoard];
+	[(SpringBoard *)[UIApplication sharedApplication] relaunchSpringBoard];
 }
 
 - (void)activateWithAnimation:(BOOL)animation
@@ -75,6 +76,11 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 }
 
 - (SBIconBadge *)badgeView
+{
+	return nil;
+}
+
+- (NSString *)badgeText
 {
 	return nil;
 }
@@ -89,19 +95,23 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 #pragma mark SBUIController
 CHMethod0(void, SBUIController, finishLaunching)
 {
-	UIView *sbView = [self contentView];
-	CGRect bounds = sbView.bounds;
-	bounds.size.height -= 22.0f;
-	UIGraphicsBeginImageContext(bounds.size);
-	[[UIColor blackColor] set];
-	UIRectFill(bounds);
-	CGContextRef c = UIGraphicsGetCurrentContext();
-	CGContextTranslateCTM(c, 0.0f, -22.0f);
-	[sbView.layer renderInContext:c];
-	UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
-	springBoardSnapshot = CGImageRetain([viewImage CGImage]);
-	
+	UIImage *springBoardImage = PSWImage(@"springboardsnapshot");
+	if (springBoardImage) {
+		springBoardSnapshot = CGImageRetain([springBoardImage CGImage]);
+	} else {
+		UIView *sbView = [self contentView];
+		CGRect bounds = sbView.bounds;
+		bounds.size.height -= 22.0f;
+		UIGraphicsBeginImageContext(bounds.size);
+		[[UIColor blackColor] set];
+		UIRectFill(bounds);
+		CGContextRef c = UIGraphicsGetCurrentContext();
+		CGContextTranslateCTM(c, 0.0f, -22.0f);
+		[sbView.layer renderInContext:c];
+		UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
+		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
+	}
 	CHSuper0(SBUIController, finishLaunching);
 }
 
