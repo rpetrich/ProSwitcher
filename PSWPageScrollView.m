@@ -1,11 +1,21 @@
 #import "PSWPageScrollView.h"
+#import "PSWSnapshotPageView.h"
 
 @implementation PSWPageScrollView
-
+@synthesize pageView = _pageView;
 @synthesize doubleTapped = _doubleTapped;
 
 - (void)dealloc {
     [super dealloc];
+}
+
+- (id)initWithFrame:(CGRect)frame pageView:(PSWSnapshotPageView *)pageView
+{
+	if ((self = [super initWithFrame:frame])) {
+		_pageView = pageView;
+	}
+	
+	return self;
 }
 
 #pragma mark Touch Gestures

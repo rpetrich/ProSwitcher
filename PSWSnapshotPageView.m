@@ -31,7 +31,7 @@
 		[_pageControl setUserInteractionEnabled:NO];
 		[self addSubview:_pageControl];
 		
-		_scrollView = [[PSWPageScrollView alloc] initWithFrame:CGRectZero];
+		_scrollView = [[PSWPageScrollView alloc] initWithFrame:CGRectZero pageView:self];
 		[_scrollView setClipsToBounds:NO];
 		[_scrollView setShowsHorizontalScrollIndicator:NO];
 		[_scrollView setShowsVerticalScrollIndicator:NO];
@@ -106,10 +106,17 @@
 	if ([_applications count]) {
 		UIView *child = nil;
 		if ((child = [super hitTest:point withEvent:event]) == self)
-			return _scrollView;         
+			return _scrollView;
 		return child;
 	} else {
 		return [super hitTest:point withEvent:event];
+	}
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	if ([_applications count] == 0 && [_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)]) {
+		[_delegate snapshotPageViewShouldExit:self];	
 	}
 }
 
