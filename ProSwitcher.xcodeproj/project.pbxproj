@@ -145,9 +145,9 @@
 				942FC6C210CBA11F006F6990 /* PSWDisplayStacks.m */,
 				94EE17D210F38D96009D8678 /* PSWProSwitcherIcon.h */,
 				945C24FA10C22AFA0089A705 /* PSWProSwitcherIcon.m */,
-				7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */,
 				940D13D310FEB502003914C6 /* PSWPageScrollView.h */,
 				940D13D410FEB502003914C6 /* PSWPageScrollView.m */,
+				7D0200BE10DF52F80059F2C8 /* PSWPreferences.h */,
 			);
 			name = Code;
 			sourceTree = "<group>";
