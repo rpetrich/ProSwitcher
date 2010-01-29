@@ -1,13 +1,18 @@
 Package: com.collab.proswitcher
-Priority: optional
-Section: System
-Architecture: iphoneos-arm
-Version: 1.0.1~b4
-Description: Palm Pre-styled application switcher
-Name: ProSwitcher
-Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 0.9.1), backgrounder
+Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 1.1.0), backgrounder
 Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w
 Replaces: com.aaronash.Multifl0w
-Author: rpetrich and chpwn <proswitcher@xuzz.net>
-Depiction: http://booleanmagic.com/cydia/proswitcher/
+Name: ProSwitcher
+Version: 1.1
+Priority: optional
+Architecture: iphoneos-arm
+Description: Palm Pre-styled application switcher
+Homepage: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
+Depiction: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
+Maintainer: BigBoss <bigboss@thebigboss.org>
+Author: chpwn and rpetrich <proswitcher@xuzz.net>
+Sponsor: thebigboss.org <http://thebigboss.org>
+Section: System
+Installed-Size: 142
+dev: rpetrich

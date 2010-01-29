@@ -21,9 +21,6 @@ CHDeclareClass(SBApplication);
 static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
 
-// Fuck my life
-NSString *fuckingStringOfFuckingBadCodeFuckFuckFuckDisplayIdentifier = nil;
-
 @implementation PSWApplication
 
 @synthesize displayIdentifier = _displayIdentifier;
