@@ -43,13 +43,18 @@
 #define PSWEmptyTapClose        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       1
-#define PSWSnapshotInset        40.0f
+#define PSWSnapshotInset        (PSWPad ? 80.0f : 40.0f)
 #define PSWUnfocusedAlpha       1.0f
 #define PSWShowDefaultApps      YES
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 #define PSWShowDockApps         YES
 #define PSWShowIcon             YES
+
+#define PSWPad ([[UIScreen mainScreen] applicationFrame].size.width != 320.0f)
+#define PSWScreenHeight ([[UIScreen mainScreen] applicationFrame].size.height)
+#define PSWScreenWidth ([[UIScreen mainScreen] applicationFrame].size.width)
+#define PSWDockHeight ([[CHSharedInstance(SBIconModel) buttonBar] frame].size.height)
 
 
 __attribute__((always_inline))

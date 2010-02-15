@@ -90,8 +90,8 @@ static PSWViewController *mainController;
 	CGRect frame;
 	frame.origin.x = 0.0f;
 	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
-	frame.size.width = 320.0f;
-	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? 390.0f : 480.0f) - frame.origin.y;
+	frame.size.width = PSWScreenWidth;
+	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? PSWScreenHeight - PSWDockHeight : PSWScreenHeight) - frame.origin.y;
 	[snapshotPageView setFrame:frame];
 	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
@@ -151,7 +151,7 @@ static PSWViewController *mainController;
 	if (isActive) {
 		// Find appropriate superview and add as subview
 		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
-		if (buttonBar) {
+		if ([buttonBar window]) {
 			UIView *buttonBarParent = [buttonBar superview];
 			UIView *targetSuperview = [buttonBarParent superview];
 			if (GetPreference(PSWShowDock, BOOL))
