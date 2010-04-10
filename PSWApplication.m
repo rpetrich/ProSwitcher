@@ -1,4 +1,5 @@
 #import "PSWApplication.h"
+#import "PSWPreferences.h"
 
 #include <unistd.h>
 
@@ -193,12 +194,12 @@ static NSUInteger defaultImagePassThrough;
 
 - (UIImage *)themedIcon
 {
-	return [[self springBoardIcon] icon];
+	return (PSWPad ? [[self springBoardIcon] getIconImage:1] : [[self springBoardIcon] icon]);
 }
 
 - (UIImage *)unthemedIcon
 {
-	return [[self springBoardIcon] smallIcon];
+	return (PSWPad ? [[self springBoardIcon] getIconImage:0] : [[self springBoardIcon] smallIcon]);
 }
 
 - (BOOL)hasNativeBackgrounding
