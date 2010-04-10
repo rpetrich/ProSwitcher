@@ -499,11 +499,12 @@
 	if (_ignoredDisplayIdentifiers != ignoredDisplayIdentifiers) {
 		PSWApplicationController *ac = [PSWApplicationController sharedInstance];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
-			if (![ignoredDisplayIdentifiers containsObject:displayIdentifier])
+			if (![ignoredDisplayIdentifiers containsObject:displayIdentifier]) {
 				if ([displayIdentifier isEqualToString:@"com.apple.springboard"])
 					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier] atPosition:0];
 				else
 					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
+			}
 		[_ignoredDisplayIdentifiers release];
 		_ignoredDisplayIdentifiers = [ignoredDisplayIdentifiers copy];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)

@@ -8,6 +8,7 @@
 #import <CaptainHook/CaptainHook.h>
 
 #import "SpringBoard+Backgrounder.h"
+#import "SpringBoard+OS32.h"
 
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
@@ -194,12 +195,14 @@ static NSUInteger defaultImagePassThrough;
 
 - (UIImage *)themedIcon
 {
-	return (PSWPad ? [[self springBoardIcon] getIconImage:1] : [[self springBoardIcon] icon]);
+	SBIcon *icon = [self springBoardIcon];
+	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:1] : [icon icon];
 }
 
 - (UIImage *)unthemedIcon
 {
-	return (PSWPad ? [[self springBoardIcon] getIconImage:0] : [[self springBoardIcon] smallIcon]);
+	SBIcon *icon = [self springBoardIcon];
+	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:0] : [icon smallIcon];
 }
 
 - (BOOL)hasNativeBackgrounding

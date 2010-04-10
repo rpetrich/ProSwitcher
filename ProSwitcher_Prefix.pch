@@ -1,6 +1,0 @@
-#import <CoreFoundation/CoreFoundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-
-// Speedup compiles by precompiling common framework headers

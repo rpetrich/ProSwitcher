@@ -14,11 +14,12 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 		if (!imageCache)
 			imageCache = [[NSMutableDictionary alloc] init];
 		result = [UIImage imageWithContentsOfFile:[bundle pathForResource:name ofType:@"png"]];
-		if (result)
+		if (result) {
 			if (imageCache)
 				[imageCache setObject:result forKey:key];
 			else
 				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+		}
 	}
 	return result;
 }

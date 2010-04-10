@@ -279,7 +279,7 @@
 
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application
 {
-    if (self = [super initWithFrame:frame]) {
+    if ((self = [super initWithFrame:frame])) {
 		_application = [application retain];
 		_application.delegate = self;
 		self.userInteractionEnabled = YES;
