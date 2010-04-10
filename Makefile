@@ -8,7 +8,10 @@ else
 TWEAK_NAME = ProSwitcher
 ProSwitcher_OBJC_FILES = PSWApplication.m PSWDisplayStacks.m PSWProSwitcherIcon.m PSWSnapshotPageView.m PSWSpringBoardApplication.m PSWApplicationController.m PSWPageScrollView.m PSWResources.m PSWSnapshotView.m PSWViewController.m
 ProSwitcher_FRAMEWORKS = AudioToolbox CoreGraphics Foundation QuartzCore UIKit
+ProSwitcher_USESUBSTRATE = 0
+ifneq ($(TARGET),simulator)
 ProSwitcher_PRIVATE_FRAMEWORKS = IOSurface
+endif
 
 ADDITIONAL_CFLAGS = -std=c99 -I./Headers
 

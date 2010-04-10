@@ -5,6 +5,8 @@
 #import "PSWApplication.h"
 
 @interface PSWSpringBoardApplication : PSWApplication {
+@private
+	NSString *_displayName;
 }
 
 + (id)sharedInstance;
