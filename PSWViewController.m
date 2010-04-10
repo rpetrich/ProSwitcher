@@ -391,6 +391,14 @@ static PSWViewController *mainController;
 	[self setActive:NO animated:NO];
 }
 
+- (void)activator:(LAActivator *)activator receiveDeactivateEvent:(LAEvent *)event
+{
+	if ([self isActive]) {
+		[self setActive:NO animated:YES];
+		[event setHandled:YES];
+	}
+}
+
 #pragma mark PSWSnapshotPageView delegate
 
 - (void)snapshotPageView:(PSWSnapshotPageView *)sspv didSelectApplication:(PSWApplication *)app
@@ -664,6 +672,17 @@ CHConstructor
 		return;
 	
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
+
+	// Using late-binding until we get a simulator build for libactivator :(
+	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
+	CHLoadLateClass(LAActivator);
+	CHLoadLateClass(LAEvent);
+	LAActivator *la = CHSharedInstance(LAActivator);
+	if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)]) {
+		if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
+			[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+	}
+	[la registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
 	
 	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBApplication);
@@ -684,11 +703,7 @@ CHConstructor
 	CHHook1(SBDisplayStack, pushDisplay);
 	
 	CHLoadLateClass(SpringBoard);
-	CHHook0(SpringBoard, _handleMenuButtonEvent);
-	//CHHook0(SpringBoard, invokeProSwitcher);
-	
-	CHLoadLateClass(SBIconController);
-	CHHook2(SBIconController, scrollToIconListAtIndex, animate);
+	CHLoadLateClass(SBIconController);	
 	CHHook1(SBIconController, setIsEditing);
 	CHHook1(SBIconController, setPageControlVisible);
 	
@@ -704,15 +719,9 @@ CHConstructor
 	
 	CHLoadLateClass(SBVoiceControlAlert);
 	CHHook0(SBVoiceControlAlert, deactivate);
-
-	// Using late-binding until we get a simulator build for libactivator :(
-	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
-	CHLoadLateClass(LAActivator);
-	CHLoadLateClass(LAEvent);
-	LAActivator *la = CHSharedInstance(LAActivator);
-	if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)]) {
-		if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
-			[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+	
+	if (![la respondsToSelector:@selector(sendDeactivateEventToListeners:)]) {
+		CHHook0(SpringBoard, _handleMenuButtonEvent);		
+		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	}
-	[la registerListener:[PSWViewController sharedInstance] forName:@"com.collab.proswitcher"];
 }
