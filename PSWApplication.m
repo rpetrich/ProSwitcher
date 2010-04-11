@@ -196,13 +196,21 @@ static NSUInteger defaultImagePassThrough;
 - (UIImage *)themedIcon
 {
 	SBIcon *icon = [self springBoardIcon];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+	return [icon getIconImage:1];
+#else
 	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:1] : [icon icon];
+#endif
 }
 
 - (UIImage *)unthemedIcon
 {
 	SBIcon *icon = [self springBoardIcon];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+	return [icon getIconImage:0];
+#else
 	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:0] : [icon smallIcon];
+#endif
 }
 
 - (BOOL)hasNativeBackgrounding
