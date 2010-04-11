@@ -2,8 +2,16 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
 
-#ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
+#import <TargetConditionals.h>
+
+#if !TARGET_IPHONE_SIMULATOR
+#ifndef IOSURFACE_API_FALLBACK
+#define USE_IOSURFACE
+#endif
+#endif
+
+#ifdef USE_IOSURFACE
 typedef struct PSWCropInsets {
     size_t top, left, bottom, right;
 } PSWCropInsets;
