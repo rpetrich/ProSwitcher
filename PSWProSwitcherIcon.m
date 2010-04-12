@@ -29,7 +29,7 @@ void PSWUpdateIconVisibility()
 						[iconList placeIcon:icon atIndex:index animate:NO moveNow:YES];
 						return;
 					}
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_3_2
 				} else {
 					int x, y;
 					if ([iconList firstFreeSlotX:&x Y:&y]) {
@@ -44,7 +44,7 @@ void PSWUpdateIconVisibility()
 			if ([emptyList respondsToSelector:@selector(placeIcon:atIndex:animate:moveNow:)])
 #endif
 				[emptyList placeIcon:icon atIndex:0 animate:NO moveNow:YES];
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_3_2
 			else
 				[emptyList placeIcon:icon atX:0 Y:0 animate:NO moveNow:YES];
 #endif
