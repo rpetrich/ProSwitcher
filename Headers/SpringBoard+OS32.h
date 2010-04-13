@@ -1,4 +1,5 @@
 #import <SpringBoard/SpringBoard.h>
+#import <QuartzCore/QuartzCore.h>
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
 @interface SBIcon (OS30)

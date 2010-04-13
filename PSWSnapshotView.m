@@ -102,26 +102,16 @@
 	imageSize.height = (CGFloat)CGImageGetHeight(snapshot);
 	
 	CGRect frame = [self frame];
-	CGSize boundingSize;
-	boundingSize.width = frame.size.width - 25.0f;
-	boundingSize.height = frame.size.height - 25.0f;
+	CGSize boundingSize = frame.size;
 	
-	if (frame.size.height < 423.f) { //If there is a better way to check if the dock is on, you should change it
-		if (_allowsZoom && !isZoomed) { //If dock is on, make unactive cards smaller and keep active card at max size
-			boundingSize.width -= 10.0f;
-			boundingSize.height -= 10.0f;
-		}
+	if (!isZoomed) {
+		boundingSize.width -= 35.0f;
+		boundingSize.height -= 70.0f;
 	} else {
-		if (isZoomed) { //Make active card as big as possible if dock is off
-			boundingSize.width += 25.0f;
-			boundingSize.height += 25.0f;
-		} else {
-			boundingSize.width -= 10.0f;
-			boundingSize.height -= 10.0f;
-		}
-		if (!_allowsZoom) //Leave space between cards when zoom is off
-			boundingSize.width -= 25.0f;
+		boundingSize.height -= 35.0f;
 	}
+	if (!_allowsZoom) //Leave space between cards when zoom is off
+		boundingSize.width -= 25.0f;
 	
 	if (_showsTitle)
 		boundingSize.height -= 32.0f;
@@ -135,9 +125,6 @@
 	screenFrame.size.height = properRatio * imageSize.height;
 	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
-	
-	/*if (isZoomed)
-		screenFrame.origin.y += 8;*/
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;

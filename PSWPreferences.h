@@ -51,7 +51,7 @@
 #define PSWShowDockApps         YES
 #define PSWShowIcon             YES
 
-#define PSWPad ([[UIScreen mainScreen] applicationFrame].size.width != 320.0f)
+#define PSWPad ([[UIScreen mainScreen] applicationFrame].size.width > 480.0f)
 #define PSWScreenHeight ([[UIScreen mainScreen] applicationFrame].size.height)
 #define PSWScreenWidth ([[UIScreen mainScreen] applicationFrame].size.width)
 #define PSWDockHeight ([[CHSharedInstance(SBIconModel) buttonBar] frame].size.height)

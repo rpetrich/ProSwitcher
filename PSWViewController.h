@@ -4,7 +4,7 @@
 
 void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier);
 
-@interface PSWViewController : UIViewController<PSWSnapshotPageViewDelegate, LAListener> {
+@interface PSWViewController : UIViewController {
 @private
 	PSWSnapshotPageView *snapshotPageView;
 	PSWApplication *focusedApplication;

@@ -13,6 +13,7 @@
 #import "SpringBoard+Backgrounder.h"
 #import "SBUIController+CategoriesSB.h"
 #import "PSWProSwitcherIcon.h"
+#import "PSWResizeContainer.h"
 
 // Using late binding until we get a simulator build for libactivator :(
 CHDeclareClass(LAActivator);
@@ -51,6 +52,10 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	displayIdentifierToSuppressBackgroundingOn = [displayIdentifier copy];
 }
 
+@interface PSWViewController () <PSWSnapshotPageViewDelegate, LAListener, PSWResizeContainerDelegate>
+- (void)reparentView;
+@end
+
 static PSWViewController *mainController;
 @implementation PSWViewController
 @synthesize snapshotPageView;
@@ -87,11 +92,10 @@ static PSWViewController *mainController;
 	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 	
-	CGRect frame;
+	CGRect frame = self.view.bounds;
 	frame.origin.x = 0.0f;
 	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
-	frame.size.width = PSWScreenWidth;
-	frame.size.height = (GetPreference(PSWShowDock, BOOL) ? PSWScreenHeight - PSWDockHeight : PSWScreenHeight) - frame.origin.y;
+	frame.size.height -= (GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0) + frame.origin.y;
 	[snapshotPageView setFrame:frame];
 	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
@@ -120,6 +124,7 @@ static PSWViewController *mainController;
 			[ignored addObject:[icon displayIdentifier]];
 	}
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
+	[self reparentView];
 }
 
 - (void)_reloadPreferences
@@ -149,25 +154,31 @@ static PSWViewController *mainController;
 - (void)reparentView
 {
 	if (isActive) {
+		UIView *view = [self view];
 		// Find appropriate superview and add as subview
 		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
 		if ([buttonBar window]) {
 			UIView *buttonBarParent = [buttonBar superview];
 			UIView *targetSuperview = [buttonBarParent superview];
+			[view setFrame:[targetSuperview bounds]];
 			if (GetPreference(PSWShowDock, BOOL))
-				[targetSuperview insertSubview:self.view belowSubview:buttonBarParent];
+				[targetSuperview insertSubview:view belowSubview:buttonBarParent];
 			else
-				[targetSuperview insertSubview:self.view aboveSubview:buttonBarParent];
+				[targetSuperview insertSubview:view aboveSubview:buttonBarParent];
 		} else {
 			UIView *contentView = [CHSharedInstance(SBUIController) contentView];
-			[[contentView superview] insertSubview:self.view aboveSubview:contentView];
+			UIView *targetView = [contentView superview];
+			[view setFrame:[targetView bounds]];
+			[targetView insertSubview:view aboveSubview:contentView];
 		}
 	}
 }
 
 - (void)loadView 
 {
-	UIView *view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	PSWResizeContainer *view = [[PSWResizeContainer alloc] initWithFrame:CGRectZero];
+	[view setDelegate:self];
+	[view setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
 	
 	snapshotPageView = [[PSWSnapshotPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 	[snapshotPageView setDelegate:self];
@@ -333,6 +344,15 @@ static PSWViewController *mainController;
 {
 	[self setActive:active animated:GetPreference(PSWAnimateActive, BOOL)];
 }
+
+#pragma mark Resize container delegate
+
+- (void)shouldLayoutSubviewsForContainer:(PSWResizeContainer *)container
+{
+	[self _applyPreferences];
+	//[snapshotPageView redraw];
+}
+
 
 #pragma mark libactivator delegate
 
