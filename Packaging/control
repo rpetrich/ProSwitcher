@@ -1,8 +1,8 @@
 Package: com.collab.proswitcher
 Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 1.1.0), backgrounder
 Provides: proswitcher
-Conflicts: com.aaronash.Multifl0w
-Replaces: com.aaronash.Multifl0w
+Conflicts: com.aaronash.Multifl0w, com.beyoip.proswitcherita
+Replaces: com.aaronash.Multifl0w, com.beyoip.proswitcherita
 Name: ProSwitcher
 Version: 1.1
 Priority: optional
