@@ -96,6 +96,7 @@ static PSWViewController *mainController;
 	frame.origin.x = 0.0f;
 	frame.origin.y = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 	frame.size.height -= (GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0) + frame.origin.y;
+	
 	[snapshotPageView setFrame:frame];
 	[snapshotPageView setBackgroundColor:[UIColor clearColor]];
 	
@@ -131,6 +132,17 @@ static PSWViewController *mainController;
 {
 	PSWPreparePreferences();
 	[self _applyPreferences];
+}
+
+- (void)updateForOrientation:(UIInterfaceOrientation)orientation
+{
+	[self.view setFrame:[[UIScreen mainScreen] bounds]];
+	CGRect frame = [snapshotPageView frame];
+	frame.size = [[UIScreen mainScreen] bounds].size;
+	[snapshotPageView setFrame:frame];
+	
+	[self _applyPreferences];
+	[snapshotPageView redraw];
 }
 
 #pragma mark View Controller
@@ -498,6 +510,7 @@ CHMethod0(void, SBUIController, finishLaunching)
 	CHSuper0(SBUIController, finishLaunching);
 }
 
+
 #pragma mark SBDisplayStack
 CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 {
@@ -562,6 +575,13 @@ CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 	}
 	
 	CHSuper0(SpringBoard, _handleMenuButtonEvent);
+}
+
+CHMethod1(void, SpringBoard, noteInterfaceOrientationChanged, UIInterfaceOrientation, interfaceOrientation)
+{
+	CHSuper1(SpringBoard, noteInterfaceOrientationChanged, interfaceOrientation);
+	
+	[[PSWViewController sharedInstance] updateForOrientation:interfaceOrientation];
 }
 
 /*CHMethod0(void, SpringBoard, invokeProSwitcher)
@@ -726,6 +746,7 @@ CHConstructor
 	CHLoadLateClass(SBIconController);	
 	CHHook1(SBIconController, setIsEditing);
 	CHHook1(SBIconController, setPageControlVisible);
+	CHHook1(SpringBoard, noteInterfaceOrientationChanged);
 	
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);

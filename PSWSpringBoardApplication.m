@@ -21,7 +21,6 @@ static CGImageRef springBoardSnapshot = nil;
 static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 @implementation PSWSpringBoardApplication
-@synthesize displayName = _displayName;
 
 + (id)sharedInstance
 {
@@ -67,7 +66,7 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 - (void)exit
 {
-	[(SpringBoard *)[UIApplication sharedApplication] relaunchSpringBoard];
+	[(SpringBoard *) [UIApplication sharedApplication] relaunchSpringBoard];
 }
 
 - (void)activateWithAnimation:(BOOL)animation

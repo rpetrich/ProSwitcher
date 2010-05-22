@@ -157,18 +157,14 @@
 		[view reloadSnapshot];
 	}
 	
+	UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
+
 	if (appCount == 0 && _autoExit) {
 		if ([_delegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
 			[_delegate snapshotPageViewShouldExit:self];
 	} else if ([_emptyText length] != 0 && [_applications count] == 0) {
 		if (!_emptyLabel) {
-			UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
-			CGFloat height = [_emptyText sizeWithFont:font].height;
-			CGRect bounds = [self bounds];
-			bounds.origin.x = 0.0f;
-			bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
-			bounds.size.height = height;
-			_emptyLabel = [[UILabel alloc] initWithFrame:bounds];
+			_emptyLabel = [[UILabel alloc] init];
 			_emptyLabel.backgroundColor = [UIColor clearColor];
 			_emptyLabel.textAlignment = UITextAlignmentCenter;
 			_emptyLabel.font = font;
@@ -184,6 +180,14 @@
 		[_emptyLabel removeFromSuperview];
 		[_emptyLabel release];
 		_emptyLabel = nil;
+	}
+	
+	if (_emptyLabel != nil) {
+		CGFloat height = [_emptyText sizeWithFont:font].height;
+		CGRect bounds = [self bounds];
+		bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
+		bounds.size.height = height;
+		[_emptyLabel setFrame:bounds];
 	}
 }
 
