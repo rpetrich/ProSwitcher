@@ -486,7 +486,7 @@ CHMethod1(void, SBUIController, restoreIconList, BOOL, animated)
 
 CHMethod0(void, SBUIController, finishLaunching)
 {
-	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath] ?: [[NSMutableDictionary alloc] init];
 	if (![[plistDict objectForKey:@"PSWAlert"] boolValue]) {
 		// Tutorial
 		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Welcome to ProSwitcher" message:@"To change settings or to setup gestures, go to the Settings app.\n\n(c) 2009 Ryan Petrich and Grant Paul\nLGPL Licensed" delegate:nil cancelButtonTitle:nil otherButtonTitles:@"Continue", nil] autorelease];
