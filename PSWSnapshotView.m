@@ -1,11 +1,10 @@
-#import "PSWSnapshotView.h"
-
 #import <QuartzCore/QuartzCore.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
 #import <CaptainHook/CaptainHook.h>
 
+#import "PSWSnapshotView.h"
 #import "PSWApplication.h"
 #import "PSWResources.h"
 
@@ -77,24 +76,28 @@
 	} else {
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.33f];
+		
 		CGRect frame = [theSnapshot frame]; 
 		frame.origin.y = screenY;
 		[theSnapshot setFrame:frame];
+		
 		theSnapshot.alpha = 1.0f;
 		_closeButton.alpha = 1.0f;
 		_titleView.alpha = 1.0f;
 		_iconView.alpha = 1.0f;
 		_iconBadge.alpha = 1.0f;
+		
 		[UIView commitAnimations];
+		
 		UITouch *touch = [[event allTouches] anyObject];
-		if (!wasSwipedUp && [touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold) {
+		if (!wasSwipedUp && ([touch locationInView:[self superview]].y - touchDownPoint.y > kSwipeThreshold)) {
 			if ([_delegate respondsToSelector:@selector(snapshotViewDidSwipeOut:)])
 				[_delegate snapshotViewDidSwipeOut:self];
 		}
 	}
 }
 
-- (void)_relayoutViews
+- (void)layoutSubviews
 {
 	CGImageRef snapshot = [_application snapshot];
 	CGSize imageSize;
@@ -287,7 +290,7 @@
 		[screen addTarget:self action:@selector(snapshot:didEndDrag:) forControlEvents:UIControlEventTouchCancel | UIControlEventTouchDragExit | UIControlEventTouchUpOutside | UIControlEventTouchUpInside];
 		[self addSubview:screen];
 		
-		[self _relayoutViews];
+		[self layoutSubviews];
 	}
     return self;
 }
@@ -310,11 +313,6 @@
 
 #pragma mark Properties
 
-- (void)redraw
-{
-	[self _relayoutViews];
-}
-
 - (void)_closeButtonWasPushed
 {
 	if ([_delegate respondsToSelector:@selector(snapshotViewClosed:)])
@@ -330,7 +328,7 @@
 {
 	if (_showsCloseButton != showsCloseButton) {
 		_showsCloseButton = showsCloseButton;
-		[self _relayoutViews];
+		[self layoutSubviews];
 	}
 }
 
@@ -342,7 +340,7 @@
 - (void)setShowsTitle:(BOOL)showsTitle
 {
 	_showsTitle = showsTitle;
-	[self _relayoutViews];
+	[self layoutSubviews];
 }
 
 - (BOOL)themedIcon
@@ -360,7 +358,7 @@
 		_iconView = nil;
 	}
 	
-	[self _relayoutViews];
+	[self layoutSubviews];
 }
 
 - (BOOL)showsBadge
@@ -370,7 +368,7 @@
 - (void)setShowsBadge:(BOOL)showsBadge
 {
 	_showsBadge = showsBadge;
-	[self _relayoutViews];
+	[self layoutSubviews];
 }
   
 - (CGFloat)roundedCornerRadius
@@ -381,7 +379,7 @@
 {
 	if (_roundedCornerRadius != roundedCornerRadius) {
 		_roundedCornerRadius = roundedCornerRadius;
-		[self _relayoutViews];
+		[self layoutSubviews];
 	}
 }
 
@@ -414,7 +412,7 @@
 {
 	if (!CGRectEqualToRect([self frame], frame)) {
 		[super setFrame:frame];
-		[self _relayoutViews];
+		[self layoutSubviews];
 	}
 }
 
@@ -430,11 +428,11 @@
 				[UIView beginAnimations:nil context:NULL];
 				[UIView setAnimationDuration:0.33f];
 				isZoomed = zoomed;
-				[self _relayoutViews];
+				[self layoutSubviews];
 				[UIView commitAnimations];
 			} else {
 				isZoomed = zoomed;
-				[self _relayoutViews];
+				[self layoutSubviews];
 			}
 		}
 	}
@@ -467,7 +465,7 @@
 	[_iconBadge removeFromSuperview];
 	[_iconBadge release];
 	_iconBadge = nil;
-	[self _relayoutViews];
+	[self layoutSubviews];
 }
 
 @end

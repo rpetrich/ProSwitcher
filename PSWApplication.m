@@ -1,5 +1,3 @@
-#import "PSWApplication.h"
-#import "PSWPreferences.h"
 
 #include <unistd.h>
 
@@ -10,9 +8,11 @@
 #import "SpringBoard+Backgrounder.h"
 #import "SpringBoard+OS32.h"
 
+#import "PSWApplication.h"
+#import "PSWPreferences.h"
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
-#import "PSWViewController.h"
+#import "PSWController.h"
 
 CHDeclareClass(SBApplicationController);
 CHDeclareClass(SBApplicationIcon);

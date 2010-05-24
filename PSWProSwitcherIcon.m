@@ -1,6 +1,6 @@
 #import "PSWProSwitcherIcon.h"
 
-#import "PSWViewController.h"
+#import "PSWController.h"
 #import "PSWPreferences.h"
 
 #import "SpringBoard+OS32.h"
@@ -70,7 +70,7 @@ CHMethod2(void, SBIconModel, setVisibilityOfIconsWithVisibleTags, NSArray *, vis
 CHMethod0(void, SBApplicationIcon, launch)
 {
 	if (!isUninstalled)
-		[[PSWViewController sharedInstance] setActive:NO animated:NO];
+		[[PSWController sharedInstance] setActive:NO animated:NO];
 	CHSuper0(SBApplicationIcon, launch);
 }
 
@@ -79,7 +79,7 @@ CHMethod0(void, SBApplicationIcon, launch)
 CHMethod0(void, PSWProSwitcherIcon, launch)
 {
 	if (!isUninstalled) {
-		PSWViewController *vc = [PSWViewController sharedInstance];
+		PSWController *vc = [PSWController sharedInstance];
 		if (!vc.isAnimating)
 			vc.active = !vc.active;
 	}
@@ -88,7 +88,7 @@ CHMethod0(void, PSWProSwitcherIcon, launch)
 CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
 {
 	if (!isUninstalled) {
-		[[PSWViewController sharedInstance] setActive:NO animated:NO];
+		[[PSWController sharedInstance] setActive:NO animated:NO];
 		isUninstalled = YES;
 	}
 	CHSuper0(PSWProSwitcherIcon, completeUninstall);

@@ -12,7 +12,7 @@
 #import "PSWResources.h"
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
-#import "PSWViewController.h"
+#import "PSWController.h"
 
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBUIController);
@@ -71,7 +71,7 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 - (void)activateWithAnimation:(BOOL)animation
 {
-	[[PSWViewController sharedInstance] setActive:NO animated:animation];
+	[[PSWController sharedInstance] setActive:NO animated:animation];
 }
 
 - (SBIconBadge *)badgeView
