@@ -160,6 +160,7 @@ CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurfac
 
 #endif
 
+
 CHConstructor {
 	CHLoadLateClass(SBApplication);
 	CHHook1(SBApplication, launchSucceeded);

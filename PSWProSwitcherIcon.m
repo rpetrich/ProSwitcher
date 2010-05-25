@@ -94,6 +94,7 @@ CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
 	CHSuper0(PSWProSwitcherIcon, completeUninstall);
 }
 
+
 CHConstructor {
 	CHLoadLateClass(SBIconModel);
 	CHHook2(SBIconModel, setVisibilityOfIconsWithVisibleTags, hiddenTags);

@@ -11,25 +11,20 @@
 @synthesize tapsToActivate = _tapsToActivate;
 @synthesize doubleTapped = _doubleTapped;
 @synthesize applications = _applications;
+@synthesize containerView = _containerView;
 
 #pragma mark Public Methods
 
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 {
 	if ((self = [super initWithFrame:frame])) {
+		NSLog(@"Hello I am %@...", self);
+		
 		_unfocusedAlpha = 1.0f;
 		[self setUserInteractionEnabled:YES];
 		_applicationController = [applicationController retain];
 		[applicationController setDelegate:self];
 		_applications = [[applicationController activeApplications] mutableCopy];
-		NSUInteger numberOfPages = [_applications count];
-		
-		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectZero];
-		[_pageControl setNumberOfPages:numberOfPages];
-		[_pageControl setCurrentPage:0];
-		[_pageControl setHidesForSinglePage:YES];
-		[_pageControl setUserInteractionEnabled:NO];
-		[self addSubview:_pageControl];
 		
 		[self setClipsToBounds:NO];
 		[self setShowsHorizontalScrollIndicator:NO];
@@ -41,19 +36,22 @@
 		[self setAlwaysBounceHorizontal:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
-		for (int i = 0; i < numberOfPages; i++) {
+		for (int i = 0; i < [self.applications count]; i++) {
 			PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:CGRectZero application:[_applications objectAtIndex:i]];
 			snapshot.delegate = self;
 			[self addSubview:snapshot];
 			[_snapshotViews addObject:snapshot];
 			[snapshot release];
 		}
-		if (numberOfPages != 0)
+		
+		if ([self.applications count] != 0)
 			[[_snapshotViews objectAtIndex:0] setFocused:YES animated:NO];
 		
 		[self setBackgroundColor:[UIColor clearColor]];
 		[self setClipsToBounds:NO];
 		[self layoutSubviews];
+		
+		[self updateDisplayedApplicationCount];
 	}
 	return self;
 }
@@ -62,9 +60,6 @@
 {
 	[_applicationController setDelegate:nil];
 	[_applicationController release];
-	[_emptyText release];
-	[_emptyLabel release];
-	[_pageControl release];
 	[_snapshotViews release];
 	[_applications release];
 	[_ignoredDisplayIdentifiers release];
@@ -88,7 +83,7 @@
 - (void)zoomActiveWithAnimation:(BOOL)animated
 {
 	PSWSnapshotView *activeView;
-	NSInteger currentPage = [_pageControl currentPage];
+	NSInteger currentPage = [[self.containerView pageControl] currentPage];
 	if (_snapshotViews.count > 0 && (!self.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
@@ -105,75 +100,32 @@
 	for (PSWSnapshotView *view in _snapshotViews)
 		[view layoutSubviews];
 	
-	CGRect bounds = [self frame];
-	bounds.origin.x = 0.0f;
-	bounds.origin.y = 0.0f;
-	
-	NSUInteger appCount = [_applications count];
+
 	
 	[self.layer setTransform:CATransform3DIdentity];
 	
-	CGRect scrollViewFrame;
-	scrollViewFrame.origin.x = _snapshotInset;
-	scrollViewFrame.origin.y = 0.0;
-	scrollViewFrame.size.width = bounds.size.width - (_snapshotInset + _snapshotInset);
-	scrollViewFrame.size.height = bounds.size.height - 17.0f;
-	[self setContentSize:CGSizeMake(scrollViewFrame.size.width * appCount, scrollViewFrame.size.height)];
-	//[self setFrame:scrollViewFrame];
-	
-	[_pageControl setFrame:CGRectMake(0.0f, self.frame.size.height - 19.0f, self.frame.size.width, 19.0f)];
-	[_pageControl setNumberOfPages:[_applications count]];
-	
-	_pageControl.hidden = !_showsPageControl;
+	[self updateDisplayedApplicationCount];
 	[self zoomActiveWithAnimation:NO];
+	
 	PSWApplication *focusedApplication = [self focusedApplication];
-	scrollViewFrame.origin.x = 0;
+	
+	CGRect frame = [self bounds];
 	for (PSWSnapshotView *view in _snapshotViews) {
-		[view setFrame:scrollViewFrame];
-		scrollViewFrame.origin.x += scrollViewFrame.size.width;
+		[view setFrame:frame];
+		
 		if (focusedApplication != [view application])
 			[view setAlpha:_unfocusedAlpha];
+			
 		[view reloadSnapshot];
-	}
-	
-	UIFont *font = [UIFont boldSystemFontOfSize:16.0f];
-
-	if (appCount == 0 && _autoExit) {
-		if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
-			[_pageViewDelegate snapshotPageViewShouldExit:self];
-	} else if ([_emptyText length] != 0 && [_applications count] == 0) {
-		if (!_emptyLabel) {
-			_emptyLabel = [[UILabel alloc] init];
-			_emptyLabel.backgroundColor = [UIColor clearColor];
-			_emptyLabel.textAlignment = UITextAlignmentCenter;
-			_emptyLabel.font = font;
-			_emptyLabel.textColor = [UIColor whiteColor];
-			[self addSubview:_emptyLabel];
-		} else {
-			CGRect bounds = [_emptyLabel bounds];
-			bounds.origin.y = (NSInteger)(([self bounds].size.height - bounds.size.height) / 2.0f);
-			[_emptyLabel setBounds:bounds];
-		}
-		_emptyLabel.text = _emptyText;
-	} else {
-		[_emptyLabel removeFromSuperview];
-		[_emptyLabel release];
-		_emptyLabel = nil;
-	}
-	
-	if (_emptyLabel != nil) {
-		CGFloat height = [_emptyText sizeWithFont:font].height;
-		CGRect bounds = [self bounds];
-		bounds.origin.y = (NSInteger)((bounds.size.height - height) / 2.0f);
-		bounds.size.height = height;
-		[_emptyLabel setFrame:bounds];
+		
+		frame.origin.x += frame.size.width;
 	}
 }
 
 - (PSWSnapshotView *)focusedSnapshotView
 {
 	if ([_applications count])
-		return [_snapshotViews objectAtIndex:[_pageControl currentPage]];
+		return [_snapshotViews objectAtIndex:[[self.containerView pageControl] currentPage]];
 	return nil;
 }
 
@@ -186,8 +138,8 @@
 {
 	if (application && ![_applications containsObject:application]) {
 		[_applications insertObject:application atIndex:position];
-		CGRect frame = [self bounds];
-		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:frame application:application];
+		
+		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:[self bounds] application:application];
 		snapshot.delegate = self;
 		snapshot.showsTitle = _showsTitles;
 		snapshot.showsBadge = _showsBadges;
@@ -258,7 +210,7 @@
 - (PSWApplication *)focusedApplication
 {
 	if ([_applications count])
-		return [_applications objectAtIndex:[_pageControl currentPage]];
+		return [_applications objectAtIndex:[[self.containerView pageControl] currentPage]];
 	return nil;
 }
 
@@ -270,7 +222,7 @@
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated
 {
 	NSInteger index = [self indexOfApplication:application];
-	NSInteger oldIndex = [_pageControl currentPage];
+	NSInteger oldIndex = [[self.containerView pageControl] currentPage];
 	if (index != NSNotFound && index != oldIndex) {
 		[self setContentOffset:CGPointMake(self.bounds.size.width * index, 0.0f) animated:animated];
 		if (!animated)
@@ -364,44 +316,6 @@
 	}
 }
 
-- (BOOL)autoExit
-{
-	return _autoExit;
-}
-- (void)setAutoExit:(BOOL)autoExit
-{
-	if (_autoExit != autoExit) {
-		_autoExit = autoExit;
-		[self layoutSubviews];
-	}
-}
-
-- (BOOL)emptyTapClose
-{
-	return _emptyTapClose;
-}
-- (void)setEmptyTapClose:(BOOL)emptyTapClose
-{
-	if (_emptyTapClose != emptyTapClose) {
-		_emptyTapClose = emptyTapClose;
-	}
-}
-
-- (NSString *)emptyText
-{
-	return _emptyText;
-}
-- (void)setEmptyText:(NSString *)emptyText
-{
-	if (_emptyText != emptyText) {
-		if (![_emptyText isEqualToString:_emptyText]) {
-			[_emptyText autorelease];
-			_emptyText = [emptyText copy];
-			[self layoutSubviews];
-		}
-	}
-}
-
 - (CGFloat)roundedCornerRadius
 {
 	return _roundedCornerRadius;
@@ -448,22 +362,8 @@
 {
 	if (!CGRectEqualToRect([self frame], frame)) {
 		[super setFrame:frame];
-		frame.origin.x = 0.0f;
-		frame.origin.y = frame.size.height - 17.0f;
-		frame.size.height = 17.0f;
-		[_pageControl setFrame:frame];
 		[self layoutSubviews];
 	}
-}
-
-- (BOOL)showsPageControl
-{
-	return _showsPageControl;
-}
-- (void)setShowsPageControl:(BOOL)showsPageControl
-{
-	_showsPageControl = showsPageControl;
-	[self layoutSubviews];
 }
 
 - (NSArray *)ignoredDisplayIdentifiers
@@ -488,13 +388,14 @@
 	}
 }
 
-- (BOOL)isPagingEnabled
+- (NSInteger)currentPage
 {
-	return [self isPagingEnabled];
+	return [self.containerView pageControlPage];
 }
-- (void)setPagingEnabled:(BOOL)pagingEnabled
+
+- (void)setCurrentPage:(NSInteger)page
 {
-	[self setPagingEnabled:pagingEnabled];
+	[self.containerView setPageControlPage:page];
 }
 
 #pragma mark UIScrollViewDelegate
@@ -503,7 +404,7 @@
 {
 	CGFloat pageWidth = [scrollView bounds].size.width;
 	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
-	NSInteger oldPage = [_pageControl currentPage];
+	NSInteger oldPage = [[self.containerView pageControl] currentPage];
 	
 	NSUInteger appCount = [_applications count];
 	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
@@ -523,7 +424,7 @@
 			[UIView commitAnimations];
 		}
 		
-		[_pageControl setCurrentPage:curPage];
+		[self setCurrentPage:curPage];
 		[self zoomActiveWithAnimation:YES];
 		
 		if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageView:didFocusApplication:)])
@@ -554,8 +455,24 @@
 
 - (void)snapshotViewDidSwipeOut:(PSWSnapshotView *)snapshot
 {
-	if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
-		[_pageViewDelegate snapshotPageViewShouldExit:self];
+	[self shouldExit];
+}
+
+- (void)updateContentSize
+{
+	[self setContentSize:CGSizeMake(self.frame.size.width * [self.applications count], self.frame.size.height)];
+}
+
+- (void)shouldExit
+{
+	[_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)];
+	[_pageViewDelegate snapshotPageViewShouldExit:self];
+}
+
+- (void)updateDisplayedApplicationCount
+{
+	[self.containerView setPageControlCount:[self.applications count]];
+	[self updateContentSize];
 }
 
 #pragma mark PSWApplicationControllerDelegate
@@ -601,8 +518,8 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	
-	if ([_applications count] == 0 && [_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)]) {
-		[_pageViewDelegate snapshotPageViewShouldExit:self];	
+	if ([_applications count] == 0) {
+		[self shouldExit];	
 	}
 	
 	UITouch *touch = [touches anyObject];
@@ -663,7 +580,5 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
 	_shouldScrollOnUp = NO;
 }
-
-
 
 @end

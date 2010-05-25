@@ -6,14 +6,33 @@
 
 @interface PSWContainerView : UIView {
 	PSWPageView *_pageView;
-	CGFloat _dockHeight;
-	CGFloat _statusBarHeight;
+	UIEdgeInsets _pageViewInset;
+	
+	BOOL _isEmpty;
+	
+	BOOL _showsPageControl;
+	UIPageControl *_pageControl;
+	
+	UILabel *_emptyLabel;
+	NSString *_emptyText;
+	BOOL _autoExit;
+	BOOL _emptyTapClose;
 }
 
-- (void)layoutSubviews;
+- (void)setPageControlCount:(NSInteger)count;
 
-@property (nonatomic, assign) CGFloat statusBarHeight;
-@property (nonatomic, assign) CGFloat dockHeight;
+
+@property (nonatomic, assign) UIEdgeInsets pageViewInset;
 @property (nonatomic, retain) PSWPageView *pageView;
+
+@property (nonatomic, retain) UIPageControl *pageControl;
+@property (nonatomic, assign) BOOL showsPageControl;
+@property (nonatomic, assign) NSInteger pageControlPage;
+
+@property (nonatomic, readonly) BOOL isEmpty;
+@property (nonatomic, assign) NSString *emptyText;
+@property (nonatomic, assign) BOOL emptyTapClose;
+@property (nonatomic, assign) BOOL autoExit;
+
 
 @end

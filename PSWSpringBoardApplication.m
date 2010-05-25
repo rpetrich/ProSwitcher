@@ -111,8 +111,10 @@ CHMethod0(void, SBUIController, finishLaunching)
 		UIGraphicsEndImageContext();
 		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
 	}
+	
 	CHSuper0(SBUIController, finishLaunching);
 }
+
 
 CHConstructor {
 	CHLoadLateClass(SpringBoard);

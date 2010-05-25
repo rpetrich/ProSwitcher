@@ -90,8 +90,18 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 
 - (void)applyPreferences
 {
-	containerView.dockHeight = GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0;
-	containerView.statusBarHeight = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
+	// FIXME: refactor all this page control hiding into a new method
+	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+	
+
+	/* The container view is responsible for background, page control, and [tap|auto] exit. */
+	
+	UIEdgeInsets scrollViewInsets;
+	scrollViewInsets.top = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
+	scrollViewInsets.bottom = GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0;
+	scrollViewInsets.left = scrollViewInsets.right = GetPreference(PSWSnapshotInset, float);
+	[containerView setPageViewInset:scrollViewInsets];
 	
 	if (GetPreference(PSWDimBackground, BOOL))
 		[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
@@ -102,28 +112,26 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		[[containerView layer] setContents:(id) [PSWImage(@"Background") CGImage]];
 	else
 		[[containerView layer] setContents:nil];
+		
+	containerView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
+	containerView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
+	containerView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
+	containerView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
 	
-	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 	
-
+	/* The page view is responsible for everything else, basically. */
+	
 	snapshotPageView.backgroundColor 	 = [UIColor clearColor];
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
 	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
-	snapshotPageView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
-	snapshotPageView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
 	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
 	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
-	snapshotPageView.snapshotInset       = GetPreference(PSWSnapshotInset, float);
 	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
-	snapshotPageView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
-	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
+	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
 	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
-	
 	
 	// Load ignored display identifiers.
 	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [NSMutableArray array] : [[GetPreference(PSWDefaultApps, id) mutableCopy] autorelease];
@@ -140,7 +148,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	}
 	
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
-	
+
 	
 	[self reparentView];
 	[self resizeView];
@@ -157,20 +165,27 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	[self resizeView];
 }
 
-#pragma mark View Controller
+#pragma mark stuff
 
 - (id)init
 {
 	if ((self = [super init])) {
+		NSLog(@"Hello I am %@...", self);
 		preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
 	
 		containerView = [[PSWContainerView alloc] init];
 		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 		[snapshotPageView setPageViewDelegate:self];
 		[containerView addSubview:snapshotPageView];
+		
+		[containerView setPageView:snapshotPageView];
+		[snapshotPageView setContainerView:containerView];
 	
-		[self applyPreferences];
+		[self reloadPreferences];
+		//[self applyPreferences];
 	}
+	
+	NSLog(@"Hello I am done %@...", self);
 	
 	return self;
 }
@@ -458,7 +473,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
 	[[PSWController sharedInstance] reloadPreferences];
-	PSWUpdateIconVisibility();
+	//PSWUpdateIconVisibility();
 }
 
 #pragma mark SBUIController

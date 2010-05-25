@@ -383,6 +383,8 @@ CHMethod1(void, SBApplicationIcon, setBadge, id, value)
 	[app _badgeDidChange];
 }
 
+
+
 CHConstructor {
 	CHAutoreleasePoolForScope();
 	CHLoadLateClass(SBApplicationController);

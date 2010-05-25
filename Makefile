@@ -10,7 +10,7 @@ ProSwitcher_OBJC_FILES = PSWApplication.m PSWDisplayStacks.m PSWProSwitcherIcon.
 ProSwitcher_FRAMEWORKS = AudioToolbox CoreGraphics Foundation QuartzCore UIKit
 ProSwitcher_USESUBSTRATE = 0
 ifneq ($(TARGET),simulator)
-ProSwitcher_PRIVATE_FRAMEWORKS = IOSurface
+ProSwitcher_PRIVATE_FRAMEWORKS = #IOSurface
 endif
 
 ADDITIONAL_CFLAGS = -std=c99 -I./Headers

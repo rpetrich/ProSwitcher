@@ -465,6 +465,7 @@
 	[_iconBadge removeFromSuperview];
 	[_iconBadge release];
 	_iconBadge = nil;
+	
 	[self layoutSubviews];
 }
 
