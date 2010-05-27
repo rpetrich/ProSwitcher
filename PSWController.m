@@ -101,7 +101,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	scrollViewInsets.top = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 	scrollViewInsets.bottom = GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0;
 	scrollViewInsets.left = scrollViewInsets.right = GetPreference(PSWSnapshotInset, float);
-	[containerView setPageViewInset:scrollViewInsets];
+	[containerView setPageViewInsets:scrollViewInsets];
 	
 	if (GetPreference(PSWDimBackground, BOOL))
 		[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
@@ -170,22 +170,20 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (id)init
 {
 	if ((self = [super init])) {
-		NSLog(@"Hello I am %@...", self);
 		preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
 	
 		containerView = [[PSWContainerView alloc] init];
 		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
-		[snapshotPageView setPageViewDelegate:self];
+
 		[containerView addSubview:snapshotPageView];
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setContainerView:containerView];
+		[snapshotPageView setPageViewDelegate:self];
 	
 		[self reloadPreferences];
-		//[self applyPreferences];
+		[self applyPreferences];
 	}
-	
-	NSLog(@"Hello I am done %@...", self);
 	
 	return self;
 }
@@ -285,10 +283,10 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	CALayer *scrollLayer = [snapshotPageView layer];
 	if (animated) {
 		view.alpha = 0.0f;
-		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-			
+		
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
+		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 	}
 	
 	// Apply preferences
@@ -346,9 +344,8 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 		
 	view.alpha = 0.0f;
-	isAnimating = YES;			
+			
 	if (animated) {
-		view.alpha = 0.0f;
 		isAnimating = YES;
 		[UIView setAnimationDelegate:self];
 		[UIView setAnimationDidStopSelector:@selector(didFinishDeactivate)];

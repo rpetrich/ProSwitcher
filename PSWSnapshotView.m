@@ -121,7 +121,7 @@
 		
 	CGFloat ratioW = boundingSize.width  / imageSize.width;
 	CGFloat ratioH = boundingSize.height / imageSize.height;
-	CGFloat properRatio = (ratioW < ratioH)?ratioW:ratioH;
+	CGFloat properRatio = (ratioW < ratioH) ? ratioW : ratioH;
 	
 	CGRect screenFrame;	
 	screenFrame.size.width = properRatio * imageSize.width;
@@ -164,12 +164,14 @@
 		_closeButton = nil;
 	}
 	
-	if (_showsTitle) {
+		return;
+	
+	/*if (_showsTitle) {
 		UIFont *titleFont = [UIFont boldSystemFontOfSize:17.0f];
 		NSString *title = [_application displayName];
 		CGSize textSize = [title sizeWithFont:titleFont];
 		CGRect titleFrame;
-		titleFrame.origin.x = (NSInteger)(([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
+		titleFrame.origin.x = (NSInteger) (([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
 		titleFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 25.0f - (NSInteger)(textSize.height / 2.0f);
 		titleFrame.size.width = textSize.width;
 		titleFrame.size.height = textSize.height;
@@ -211,7 +213,7 @@
 			[_iconView release];
 			_iconView = nil;
 		}
-	}
+	}*/
 		
 	if (_showsBadge) {
 		NSString *badgeText = [_application badgeText];
@@ -260,7 +262,7 @@
 		_iconBadge = nil;
 	}
 	
-	CGFloat alpha = _focused?1.0f:0.0f;
+	CGFloat alpha = _focused ? 1.0f : 0.0f;
 	[_closeButton setAlpha:alpha];
 	[_iconBadge setAlpha:alpha];
 	[_titleView setAlpha:alpha];

@@ -28,9 +28,6 @@
 	NSInteger _tapsToActivate;
 	CGFloat _snapshotInset;
 	CGFloat _unfocusedAlpha;
-	
-	BOOL _shouldScrollOnUp;
-	BOOL _doubleTapped;
 }
 
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
@@ -54,7 +51,6 @@
 @property (nonatomic, assign) NSInteger tapsToActivate;
 @property (nonatomic, assign) CGFloat snapshotInset;
 @property (nonatomic, assign) CGFloat unfocusedAlpha;
-@property (nonatomic, readwrite) BOOL doubleTapped;
 @property (nonatomic, assign) NSInteger currentPage;
 
 
@@ -63,6 +59,11 @@
 - (void)updateDisplayedApplicationCount;
 - (void)updateContentSize;
 - (void)shouldExit;
+
+- (void)moveToStart;
+- (void)moveToEnd;
+- (void)moveNext;
+- (void)movePrevious;
 
 // Allow temporarily adding/removing views
 - (void)addViewForApplication:(PSWApplication *)application;

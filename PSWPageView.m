@@ -9,7 +9,6 @@
 @implementation PSWPageView
 @synthesize pageViewDelegate = _pageViewDelegate;
 @synthesize tapsToActivate = _tapsToActivate;
-@synthesize doubleTapped = _doubleTapped;
 @synthesize applications = _applications;
 @synthesize containerView = _containerView;
 
@@ -18,10 +17,9 @@
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 {
 	if ((self = [super initWithFrame:frame])) {
-		NSLog(@"Hello I am %@...", self);
-		
 		_unfocusedAlpha = 1.0f;
 		[self setUserInteractionEnabled:YES];
+		
 		_applicationController = [applicationController retain];
 		[applicationController setDelegate:self];
 		_applications = [[applicationController activeApplications] mutableCopy];
@@ -83,7 +81,7 @@
 - (void)zoomActiveWithAnimation:(BOOL)animated
 {
 	PSWSnapshotView *activeView;
-	NSInteger currentPage = [[self.containerView pageControl] currentPage];
+	NSInteger currentPage = [self currentPage];
 	if (_snapshotViews.count > 0 && (!self.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
@@ -100,20 +98,16 @@
 	for (PSWSnapshotView *view in _snapshotViews)
 		[view layoutSubviews];
 	
-
-	
 	[self.layer setTransform:CATransform3DIdentity];
 	
-	[self updateDisplayedApplicationCount];
 	[self zoomActiveWithAnimation:NO];
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
-	
 	CGRect frame = [self bounds];
 	for (PSWSnapshotView *view in _snapshotViews) {
 		[view setFrame:frame];
 		
-		if (focusedApplication != [view application])
+		if ([view application] != focusedApplication)
 			[view setAlpha:_unfocusedAlpha];
 			
 		[view reloadSnapshot];
@@ -125,7 +119,7 @@
 - (PSWSnapshotView *)focusedSnapshotView
 {
 	if ([_applications count])
-		return [_snapshotViews objectAtIndex:[[self.containerView pageControl] currentPage]];
+		return [_snapshotViews objectAtIndex:[self currentPage]];
 	return nil;
 }
 
@@ -169,6 +163,7 @@
 {
 	if (!application)
 		return;
+		
 	NSInteger index = [_applications indexOfObject:application];
 	if (index != NSNotFound) {
 		[_applications removeObject:application];
@@ -210,7 +205,7 @@
 - (PSWApplication *)focusedApplication
 {
 	if ([_applications count])
-		return [_applications objectAtIndex:[[self.containerView pageControl] currentPage]];
+		return [_applications objectAtIndex:[self currentPage]];
 	return nil;
 }
 
@@ -222,7 +217,7 @@
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated
 {
 	NSInteger index = [self indexOfApplication:application];
-	NSInteger oldIndex = [[self.containerView pageControl] currentPage];
+	NSInteger oldIndex = [self currentPage];
 	if (index != NSNotFound && index != oldIndex) {
 		[self setContentOffset:CGPointMake(self.bounds.size.width * index, 0.0f) animated:animated];
 		if (!animated)
@@ -284,6 +279,7 @@
 {
 	if (_allowsSwipeToClose != allowsSwipeToClose) {
 		_allowsSwipeToClose = allowsSwipeToClose;
+		
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsSwipeToClose:allowsSwipeToClose];
 	}
@@ -297,8 +293,10 @@
 {
 	if (_allowsZoom != allowsZoom) {
 		_allowsZoom = allowsZoom;
+		
 		for (PSWSnapshotView *view in _snapshotViews)
 			[view setAllowsZoom:allowsZoom];
+			
 		if (!_allowsZoom)
 			[self unZoom];
 	}
@@ -374,13 +372,15 @@
 {
 	if (_ignoredDisplayIdentifiers != ignoredDisplayIdentifiers) {
 		PSWApplicationController *ac = [PSWApplicationController sharedInstance];
-		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
+		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers) {
 			if (![ignoredDisplayIdentifiers containsObject:displayIdentifier]) {
 				if ([displayIdentifier isEqualToString:@"com.apple.springboard"])
 					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier] atPosition:0];
 				else
 					[self addViewForApplication:[ac applicationWithDisplayIdentifier:displayIdentifier]];
 			}
+		}
+		
 		[_ignoredDisplayIdentifiers release];
 		_ignoredDisplayIdentifiers = [ignoredDisplayIdentifiers copy];
 		for (NSString *displayIdentifier in _ignoredDisplayIdentifiers)
@@ -404,7 +404,7 @@
 {
 	CGFloat pageWidth = [scrollView bounds].size.width;
 	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
-	NSInteger oldPage = [[self.containerView pageControl] currentPage];
+	NSInteger oldPage = [self currentPage];
 	
 	NSUInteger appCount = [_applications count];
 	if (oldPage != curPage && curPage < appCount && curPage >= 0) {
@@ -490,18 +490,16 @@
 
 #pragma mark Touch Gestures
 
-- (void)tapPreviousAndContinue
+- (void)movePrevious
 {
 	CGPoint offset = [self contentOffset];
 	offset.x -= [self bounds].size.width;
 	if (offset.x < 0.0f)
 		offset.x = 0.0f;
 	[self setContentOffset:offset animated:YES];
-	[self performSelector:@selector(tapPreviousAndContinue) withObject:nil afterDelay:0.5f];
-	_shouldScrollOnUp = NO;
 }
 
-- (void)tapNextAndContinue
+- (void)moveNext
 {
 	CGFloat width = [self bounds].size.width;
 	CGFloat maxOffset = [self contentSize].width - width;
@@ -511,74 +509,20 @@
 		if (offset.x > maxOffset)
 			offset.x = maxOffset;
 		[self setContentOffset:offset animated:YES];
-		[self performSelector:@selector(tapNextAndContinue) withObject:nil afterDelay:0.5f];
 	}
-	_shouldScrollOnUp = NO;
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{	
-	if ([_applications count] == 0) {
-		[self shouldExit];	
-	}
+- (void)moveToStart
+{
+	[self setContentOffset:CGPointZero animated:YES];
+}
+
+- (void)moveToEnd {
+	CGSize size = [self bounds].size;
+	CGSize contentSize = [self contentSize];
 	
-	UITouch *touch = [touches anyObject];
-	CGPoint point = [touch locationInView:[self superview]];
-	CGPoint offset = [self frame].origin;
-
-	point.x -= offset.x;
-	if (point.x <= 0.0f) {
-		[self performSelector:@selector(tapPreviousAndContinue) withObject:nil afterDelay:0.1f];
-	} else if (point.x > [self bounds].size.width) {
-		[self performSelector:@selector(tapNextAndContinue) withObject:nil afterDelay:0.1f];
-	}
-	_shouldScrollOnUp = YES;
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapPreviousAndContinue) object:nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
-	_shouldScrollOnUp = NO;
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	UITouch *touch = [touches anyObject];
-	NSInteger tapCount = [touch tapCount];
-	CGPoint point = [touch locationInView:[self superview]];
-	point.x -= [self frame].origin.x;
-	_doubleTapped = NO;
-	if (tapCount == 2) {
-		_doubleTapped = YES;
-		if (point.x <= 0.0f) {
-			[self setContentOffset:CGPointZero animated:YES];
-		} else {
-			CGSize size = [self bounds].size;
-			if (point.x > size.width) {
-				CGPoint offset;
-				CGSize contentSize = [self contentSize];
-				offset.x = (size.width < contentSize.width) ? contentSize.width - size.width : 0.0f;
-				offset.y = (size.height < contentSize.height) ? contentSize.height - size.height : 0.0f;
-				[self setContentOffset:offset animated:YES];
-			}
-		}
-	} else if(_shouldScrollOnUp) {
-		if (point.x <= 0.0f) {
-			[self tapPreviousAndContinue];
-		} else if (point.x > [self bounds].size.width) {
-			[self tapNextAndContinue];
-		}
-	}
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapPreviousAndContinue) object:nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapPreviousAndContinue) object:nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tapNextAndContinue) object:nil];
-	_shouldScrollOnUp = NO;
+	CGPoint offset = CGPointMake(contentSize.width - size.width, 0);
+	[self setContentOffset:offset animated:YES];
 }
 
 @end
