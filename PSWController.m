@@ -45,6 +45,7 @@ static NSUInteger disallowRestoreIconList;
 static NSUInteger disallowIconListScroll;
 static NSUInteger modifyZoomTransformCountDown;
 static NSUInteger ignoreZoomSetAlphaCountDown;
+static BOOL hasFinishedLaunching;
 
 static NSString *displayIdentifierToSuppressBackgroundingOn;
 
@@ -65,8 +66,9 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 {
 	static PSWController *mainController = nil;
 	
-	if (mainController == nil)
+	if (mainController == nil && hasFinishedLaunching) {
 		mainController = [[PSWController alloc] init];
+	}
 		
 	return mainController;
 }
@@ -181,6 +183,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		[snapshotPageView setContainerView:containerView];
 		[snapshotPageView setPageViewDelegate:self];
 	
+		[self resizeView];
 		[self reloadPreferences];
 		[self applyPreferences];
 		
@@ -188,7 +191,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
 				[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
-		[la registerListener:[PSWController sharedInstance] forName:@"com.collab.proswitcher"];
+		[la registerListener:self forName:@"com.collab.proswitcher"];
 	}
 	
 	return self;
@@ -495,6 +498,9 @@ CHMethod1(void, SBUIController, restoreIconList, BOOL, animated)
 
 CHMethod0(void, SBUIController, finishLaunching)
 {
+	NSLog(@"Welcome to ProSwitcher.");
+	NSLog(@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra");
+	
 	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath] ?: [[NSMutableDictionary alloc] init];
 	if (![[plistDict objectForKey:@"PSWAlert"] boolValue]) {
 		// Tutorial
@@ -511,6 +517,7 @@ CHMethod0(void, SBUIController, finishLaunching)
 	}
 	[plistDict release];
 
+	hasFinishedLaunching = YES;
 	PSWController *vc = [PSWController sharedInstance];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
