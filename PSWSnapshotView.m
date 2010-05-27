@@ -166,7 +166,7 @@
 	
 		return;
 	
-	/*if (_showsTitle) {
+	if (_showsTitle) {
 		UIFont *titleFont = [UIFont boldSystemFontOfSize:17.0f];
 		NSString *title = [_application displayName];
 		CGSize textSize = [title sizeWithFont:titleFont];
@@ -190,6 +190,7 @@
 		} else {
 			[_titleView setFrame:titleFrame];
 		}
+		NSLog(@"four");
 		if (!_iconView) {
 			UIImage *smallIcon;
 			if (_themedIcon)
@@ -213,7 +214,7 @@
 			[_iconView release];
 			_iconView = nil;
 		}
-	}*/
+	}
 		
 	if (_showsBadge) {
 		NSString *badgeText = [_application badgeText];

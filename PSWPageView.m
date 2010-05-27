@@ -82,7 +82,7 @@
 {
 	PSWSnapshotView *activeView;
 	NSInteger currentPage = [self currentPage];
-	if (_snapshotViews.count > 0 && (!self.doubleTapped || currentPage == 0 || currentPage == [_applications count] - 1)) {
+	if (_snapshotViews.count > 0 && (currentPage == 0 || currentPage == [_applications count] - 1)) {
 		activeView = [_snapshotViews objectAtIndex:currentPage];
 	} else {
 		activeView = nil;

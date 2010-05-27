@@ -93,7 +93,8 @@
 - (void)setEmptyText:(NSString *)emptyText
 {
 	if (emptyText != _emptyText) {
-		_emptyText = [emptyText retain];
+		[_emptyText autorelease];
+		_emptyText = [emptyText copy];
 		[_emptyLabel setText:_emptyText];
 		[self layoutSubviews];
 	}
