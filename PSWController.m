@@ -476,7 +476,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
 	[[PSWController sharedInstance] reloadPreferences];
-	//PSWUpdateIconVisibility();
+	PSWUpdateIconVisibility();
 }
 
 #pragma mark SBUIController
