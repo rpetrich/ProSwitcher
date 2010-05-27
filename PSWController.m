@@ -183,6 +183,12 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	
 		[self reloadPreferences];
 		[self applyPreferences];
+		
+		LAActivator *la = CHSharedInstance(LAActivator);
+		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
+			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
+				[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+		[la registerListener:[PSWController sharedInstance] forName:@"com.collab.proswitcher"];
 	}
 	
 	return self;
@@ -504,11 +510,11 @@ CHMethod0(void, SBUIController, finishLaunching)
 		[[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:YES];
 	}
 	[plistDict release];
+
+	PSWController *vc = [PSWController sharedInstance];
 	
-	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled) {
-		PSWController *vc = [PSWController sharedInstance];
+	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
 		[vc setActive:YES animated:NO];
-	}
 	
 	CHSuper0(SBUIController, finishLaunching);
 }
@@ -716,17 +722,6 @@ CHConstructor
 	
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 
-	// Using late-binding until we get a simulator build for libactivator :(
-	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
-	CHLoadLateClass(LAActivator);
-	CHLoadLateClass(LAEvent);
-	LAActivator *la = CHSharedInstance(LAActivator);
-	if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)]) {
-		if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
-			[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
-	}
-	[la registerListener:[PSWController sharedInstance] forName:@"com.collab.proswitcher"];
-	
 	CHLoadLateClass(SBAwayController);
 	CHLoadLateClass(SBApplication);
 	CHLoadLateClass(SBStatusBarController);
@@ -764,7 +759,11 @@ CHConstructor
 	CHLoadLateClass(SBVoiceControlAlert);
 	CHHook0(SBVoiceControlAlert, deactivate);
 	
-	if (![la respondsToSelector:@selector(sendDeactivateEventToListeners:)]) {
+	// Using late-binding until we get a simulator build for libactivator :(
+	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
+	CHLoadLateClass(LAActivator);
+	CHLoadLateClass(LAEvent);
+	if (![CHSharedInstance(LAActivator) respondsToSelector:@selector(sendDeactivateEventToListeners:)]) {
 		CHHook0(SpringBoard, _handleMenuButtonEvent);		
 		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	}
