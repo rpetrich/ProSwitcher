@@ -5,6 +5,7 @@
 @class PSWPageView;
 
 @interface PSWContainerView : UIView {
+@private
 	PSWPageView *_pageView;
 	UIEdgeInsets _pageViewInsets;
 	
@@ -24,7 +25,6 @@
 
 - (void)setPageControlCount:(NSInteger)count;
 
-
 @property (nonatomic, assign) UIEdgeInsets pageViewInsets;
 @property (nonatomic, retain) PSWPageView *pageView;
 
@@ -38,6 +38,5 @@
 @property (nonatomic, assign) BOOL autoExit;
 
 @property (nonatomic, readwrite) BOOL doubleTapped;
-
 
 @end

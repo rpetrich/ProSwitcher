@@ -17,7 +17,6 @@
 {
 	if ((self = [super initWithFrame:frame])) {
 		_unfocusedAlpha = 1.0f;
-		[self setUserInteractionEnabled:YES];
 		
 		_applicationController = [applicationController retain];
 		[applicationController setDelegate:self];
@@ -28,11 +27,10 @@
 		[self setShowsVerticalScrollIndicator:NO];
 		[self setScrollsToTop:NO];
 		[self setDelegate:self];
-		[self setBackgroundColor:[UIColor clearColor]];
 		[self setAlwaysBounceVertical:NO];
 		[self setAlwaysBounceHorizontal:YES];
-		[self setBackgroundColor:[UIColor clearColor]];
 		[self setScrollEnabled:YES];
+		[self setUserInteractionEnabled:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
 		for (int i = 0; i < [self.applications count]; i++) {
@@ -89,8 +87,6 @@
 	for (PSWSnapshotView *view in _snapshotViews)
 		[view setZoomed:activeView == view animated:animated];
 }
-
-
 
 - (void)layoutSubviews
 {

@@ -130,7 +130,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	if ([buttonBar window]) {
 		UIView *buttonBarParent = [buttonBar superview];
 		UIView *targetSuperview = [buttonBarParent superview];
-		[view setFrame:[targetSuperview bounds]];
 		
 		if (GetPreference(PSWShowDock, BOOL))
 			[targetSuperview insertSubview:view belowSubview:buttonBarParent];
@@ -138,9 +137,8 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 			[targetSuperview insertSubview:view aboveSubview:buttonBarParent];
 	} else {
 		UIView *contentView = [CHSharedInstance(SBUIController) contentView];
-		UIView *targetView = [contentView superview];
-		[view setFrame:[targetView bounds]];
-		[targetView insertSubview:view aboveSubview:contentView];
+		UIView *targetSuperview = [contentView superview];
+		[targetSuperview insertSubview:view aboveSubview:contentView];
 	}
 }
 
@@ -186,7 +184,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	containerView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
 	
 	/* The page view is responsible for everything else, basically. */
-	
+
 	snapshotPageView.backgroundColor 	 = [UIColor clearColor];
 	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
 	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
@@ -198,7 +196,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
 	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
 	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
-	
+
 	// Load ignored display identifiers.
 	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [NSMutableArray array] : [[GetPreference(PSWDefaultApps, id) mutableCopy] autorelease];
 	
@@ -213,7 +211,8 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 			[ignored addObject:[icon displayIdentifier]];
 		}
 	}
-	
+
+	// FIXME: Crashes 3.2 (iPad)
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
 }
 
@@ -325,8 +324,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	// Save (new) focused applciation
 	[focusedApplication release];
 	focusedApplication = [[snapshotPageView focusedApplication] retain];
-		
-		
 		
 	if (animated) {
 		// Animate deactivation
@@ -506,10 +503,9 @@ CHMethod0(void, SBUIController, finishLaunching)
 	[plistDict release];
 
 	hasFinishedLaunching = YES;
-	PSWController *vc = [PSWController sharedInstance];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
-		[vc setActive:YES animated:NO];
+		[[PSWController sharedInstance] setActive:YES animated:NO];
 	
 	CHSuper0(SBUIController, finishLaunching);
 }
@@ -545,11 +541,13 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 					}
 					modifyZoomTransformCountDown = 2;
 					ignoreZoomSetAlphaCountDown = 2;
+					
 					disallowIconListScatter++;
+					
 					CHSuper1(SBDisplayStack, pushDisplay, display);
-					PSWController *vc = [PSWController sharedInstance];
-					[vc setActive:YES animated:NO];
-					[[vc snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
+					[[PSWController sharedInstance] setActive:YES animated:NO];
+					[[[PSWController sharedInstance] snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
+					
 					disallowIconListScatter--;
 					return;
 				}
@@ -566,10 +564,9 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 #pragma mark SpringBoard
 CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
 {
-	PSWController *vc = [PSWController sharedInstance];
-	if ([vc isActive]) {
+	if ([[PSWController sharedInstance] isActive]) {
 		// Deactivate and suppress SpringBoard list scrolling
-		[vc setActive:NO];
+		[[PSWController sharedInstance] setActive:NO];
 		
 		disallowIconListScroll++;
 		CHSuper0(SpringBoard, _handleMenuButtonEvent);
@@ -636,15 +633,16 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 	switch (modifyZoomTransformCountDown) {
 		case 1: {
 			modifyZoomTransformCountDown = 0;
-			PSWController *vc = [PSWController sharedInstance];
-			PSWSnapshotView *ssv = [[vc snapshotPageView] focusedSnapshotView];
-			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"])
+
+			PSWSnapshotView *ssv = [[[PSWController sharedInstance] snapshotPageView] focusedSnapshotView];
+			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
 				CHSuper1(SBZoomView, setTransform, transform);
-			else {
+			 }else {
 				UIView *screenView = [ssv screenView];
-				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[vc containerView]];
+				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[[PSWController sharedInstance] containerView]];
 				CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
 			}
+			
 			break;
 		}
 		case 0:
@@ -690,9 +688,8 @@ CHMethod0(void, SBVoiceControlAlert, deactivate)
 	CHSuper0(SBVoiceControlAlert, deactivate);
 	
 	// Fix display when coming back from VoiceControl
-	PSWController *vc = [PSWController sharedInstance];
-	if ([vc isActive])
-		[vc setActive:NO animated:NO];
+	if ([[PSWController sharedInstance] isActive])
+		[[PSWController sharedInstance] setActive:NO animated:NO];
 }
 
 #pragma mark SBIconListPageControl
@@ -706,6 +703,14 @@ CHMethod0(id, SBIconListPageControl, init)
 	
 	return self;
 }
+
+#ifdef DEBUG
+CHMethod0(void, SpringBoard, handleMenuDoubleTap)
+{
+	if (![[PSWController sharedInstance] isAnimating])
+		[[PSWController sharedInstance] setActive:[[PSWController sharedInstance] isActive]];
+}
+#endif
 
 CHConstructor
 {
@@ -762,4 +767,9 @@ CHConstructor
 		CHHook0(SpringBoard, _handleMenuButtonEvent);		
 		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	}
+	
+	#ifdef DEBUG
+	// When we have no other way to activate it, here's an easy workaround
+	CHHook0(SpringBoard, handleMenuDoubleTap);
+	#endif /* DEBUG */
 }
