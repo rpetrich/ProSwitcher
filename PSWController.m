@@ -637,7 +637,7 @@ CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
 			PSWSnapshotView *ssv = [[[PSWController sharedInstance] snapshotPageView] focusedSnapshotView];
 			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
 				CHSuper1(SBZoomView, setTransform, transform);
-			 }else {
+			} else {
 				UIView *screenView = [ssv screenView];
 				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[[PSWController sharedInstance] containerView]];
 				CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
