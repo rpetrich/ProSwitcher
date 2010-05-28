@@ -27,6 +27,8 @@
 		[_emptyLabel setFont:[UIFont boldSystemFontOfSize:16.0f]];
 		[_emptyLabel setTextColor:[UIColor whiteColor]];
 		[self addSubview:_emptyLabel];
+		
+		[self setIsEmpty:NO];
 	}
 	
 	return self;
@@ -84,6 +86,8 @@
 	
 	if ([self autoExit] && [self isEmpty])
 		[self shouldExit];
+		
+	[_emptyLabel setHidden:![self isEmpty]];
 }
 
 - (NSString *)emptyText

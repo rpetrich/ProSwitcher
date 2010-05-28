@@ -32,7 +32,7 @@
 @property (nonatomic, assign) BOOL showsPageControl;
 @property (nonatomic, assign) NSInteger pageControlPage;
 
-@property (nonatomic, readonly) BOOL isEmpty;
+@property (nonatomic, assign) BOOL isEmpty;
 @property (nonatomic, copy) NSString *emptyText;
 @property (nonatomic, assign) BOOL emptyTapClose;
 @property (nonatomic, assign) BOOL autoExit;

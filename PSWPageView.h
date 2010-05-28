@@ -9,7 +9,6 @@
 @interface PSWPageView : UIScrollView <UIScrollViewDelegate, PSWSnapshotViewDelegate, PSWApplicationControllerDelegate> {
 @private
 	PSWApplicationController *_applicationController;
-	PSWContainerView *_containerView;
 	NSMutableArray *_applications;
 	NSMutableArray *_snapshotViews;
 
@@ -26,6 +25,7 @@
 
 	CGFloat _roundedCornerRadius;
 	NSInteger _tapsToActivate;
+	NSInteger _currentPage;
 	CGFloat _snapshotInset;
 	CGFloat _unfocusedAlpha;
 }
@@ -33,7 +33,6 @@
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 
 @property (nonatomic, assign) id<PSWPageViewDelegate> pageViewDelegate;
-@property (nonatomic, assign) PSWContainerView *containerView;
 @property (nonatomic, readonly) NSArray *snapshotViews;
 @property (nonatomic, assign) PSWApplication *focusedApplication;
 - (void)setFocusedApplication:(PSWApplication *)application animated:(BOOL)animated;
@@ -56,7 +55,7 @@
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
 - (void)layoutSubviews;
-- (void)updateDisplayedApplicationCount;
+- (void)noteApplicationCountChanged;
 - (void)updateContentSize;
 - (void)shouldExit;
 

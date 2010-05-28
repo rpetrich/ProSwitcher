@@ -10,7 +10,6 @@
 @synthesize pageViewDelegate = _pageViewDelegate;
 @synthesize tapsToActivate = _tapsToActivate;
 @synthesize applications = _applications;
-@synthesize containerView = _containerView;
 
 #pragma mark Public Methods
 
@@ -32,6 +31,8 @@
 		[self setBackgroundColor:[UIColor clearColor]];
 		[self setAlwaysBounceVertical:NO];
 		[self setAlwaysBounceHorizontal:YES];
+		[self setBackgroundColor:[UIColor clearColor]];
+		[self setScrollEnabled:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
 		for (int i = 0; i < [self.applications count]; i++) {
@@ -45,11 +46,9 @@
 		if ([self.applications count] != 0)
 			[[_snapshotViews objectAtIndex:0] setFocused:YES animated:NO];
 		
-		[self setBackgroundColor:[UIColor clearColor]];
-		[self setClipsToBounds:NO];
 		[self layoutSubviews];
 		
-		[self updateDisplayedApplicationCount];
+		[self noteApplicationCountChanged];
 	}
 	return self;
 }
@@ -150,6 +149,8 @@
 		[self addSubview:snapshot];
 		[_snapshotViews insertObject:snapshot atIndex:position];
 		[snapshot release];
+		
+		[self noteApplicationCountChanged];
 		[self layoutSubviews];
 	}
 }
@@ -182,7 +183,10 @@
 		frame.origin.y -= frame.size.height;
 		snapshot.frame = frame;
 		snapshot.alpha = 0.0f;
+		
+		[self noteApplicationCountChanged];
 		[self layoutSubviews];
+		
 		PSWSnapshotView *focusedView = [self focusedSnapshotView];
 		[focusedView setFocused:YES];
 		[focusedView setAlpha:1.0f];
@@ -390,12 +394,12 @@
 
 - (NSInteger)currentPage
 {
-	return [self.containerView pageControlPage];
+	return _currentPage;
 }
 
 - (void)setCurrentPage:(NSInteger)page
 {
-	[self.containerView setPageControlPage:page];
+	_currentPage = page;
 }
 
 #pragma mark UIScrollViewDelegate
@@ -469,9 +473,9 @@
 	[_pageViewDelegate snapshotPageViewShouldExit:self];
 }
 
-- (void)updateDisplayedApplicationCount
+- (void)noteApplicationCountChanged
 {
-	[self.containerView setPageControlCount:[self.applications count]];
+	//[self.containerView setPageControlCount:[self.applications count]];
 	[self updateContentSize];
 }
 
@@ -517,7 +521,8 @@
 	[self setContentOffset:CGPointZero animated:YES];
 }
 
-- (void)moveToEnd {
+- (void)moveToEnd
+{
 	CGSize size = [self bounds].size;
 	CGSize contentSize = [self contentSize];
 	

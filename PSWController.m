@@ -57,6 +57,9 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 
 @interface PSWController () <PSWPageViewDelegate, LAListener>
 - (void)reparentView;
+- (void)resizeView;
+- (void)reloadPreferences;
+- (void)applyPreferences;
 @end
 
 @implementation PSWController
@@ -73,6 +76,74 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	return mainController;
 }
 
+#pragma mark stuff
+
+- (id)init
+{
+	if ((self = [super init])) {
+		preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+	
+		containerView = [[PSWContainerView alloc] init];
+		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
+
+		[containerView addSubview:snapshotPageView];
+		[containerView setAlpha:0.0f];
+		
+		[containerView setPageView:snapshotPageView];
+		[snapshotPageView setPageViewDelegate:self];
+	
+		[self resizeView];
+		[self reparentView];
+		[self reloadPreferences];
+		
+		LAActivator *la = CHSharedInstance(LAActivator);
+		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
+			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
+				[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+		[la registerListener:self forName:@"com.collab.proswitcher"];
+	}
+	
+	return self;
+}
+
+- (void)dealloc 
+{
+	[preferences release];
+	[focusedApplication release];
+	[snapshotPageView release];
+	[containerView release];
+	
+    [super dealloc];
+}
+
+- (void)resizeView
+{
+	[containerView setFrame:[[UIScreen mainScreen] bounds]];
+}
+
+- (void)reparentView
+{
+	UIView *view = containerView;
+		
+	// Find appropriate superview and add as subview
+	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+	if ([buttonBar window]) {
+		UIView *buttonBarParent = [buttonBar superview];
+		UIView *targetSuperview = [buttonBarParent superview];
+		[view setFrame:[targetSuperview bounds]];
+		
+		if (GetPreference(PSWShowDock, BOOL))
+			[targetSuperview insertSubview:view belowSubview:buttonBarParent];
+		else
+			[targetSuperview insertSubview:view aboveSubview:buttonBarParent];
+	} else {
+		UIView *contentView = [CHSharedInstance(SBUIController) contentView];
+		UIView *targetView = [contentView superview];
+		[view setFrame:[targetView bounds]];
+		[targetView insertSubview:view aboveSubview:contentView];
+	}
+}
+
 - (BOOL)isActive
 {
 	return isActive;
@@ -85,18 +156,12 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 
 #pragma mark Preferences
 
-- (void)resizeView
-{
-	[containerView setFrame:[[UIScreen mainScreen] bounds]];
-}
-
 - (void)applyPreferences
 {
 	// FIXME: refactor all this page control hiding into a new method
 	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 	
-
 	/* The container view is responsible for background, page control, and [tap|auto] exit. */
 	
 	UIEdgeInsets scrollViewInsets;
@@ -120,7 +185,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	containerView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
 	containerView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
 	
-	
 	/* The page view is responsible for everything else, basically. */
 	
 	snapshotPageView.backgroundColor 	 = [UIColor clearColor];
@@ -143,6 +207,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		[ignored addObject:@"com.apple.springboard"];
 	}
 	
+	// Hide dock icons if disabled
 	if (!GetPreference(PSWShowDockApps, BOOL)) {
 		for (SBIcon *icon in [[CHSharedInstance(SBIconModel) buttonBar] icons]) {
 			[ignored addObject:[icon displayIdentifier]];
@@ -150,10 +215,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	}
 	
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
-
-	
-	[self reparentView];
-	[self resizeView];
 }
 
 - (void)reloadPreferences
@@ -165,71 +226,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)updateForOrientation:(UIInterfaceOrientation)orientation
 {
 	[self resizeView];
-}
-
-#pragma mark stuff
-
-- (id)init
-{
-	if ((self = [super init])) {
-		preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
-	
-		containerView = [[PSWContainerView alloc] init];
-		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
-
-		[containerView addSubview:snapshotPageView];
-		
-		[containerView setPageView:snapshotPageView];
-		[snapshotPageView setContainerView:containerView];
-		[snapshotPageView setPageViewDelegate:self];
-	
-		[self resizeView];
-		[self reloadPreferences];
-		[self applyPreferences];
-		
-		LAActivator *la = CHSharedInstance(LAActivator);
-		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
-			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
-				[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
-		[la registerListener:self forName:@"com.collab.proswitcher"];
-	}
-	
-	return self;
-}
-
-- (void)dealloc 
-{
-	[preferences release];
-	[focusedApplication release];
-	[snapshotPageView release];
-	[containerView release];
-	
-    [super dealloc];
-}
-
-- (void)reparentView
-{
-	if (isActive) {
-		UIView *view = containerView;
-		
-		// Find appropriate superview and add as subview
-		UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
-		if ([buttonBar window]) {
-			UIView *buttonBarParent = [buttonBar superview];
-			UIView *targetSuperview = [buttonBarParent superview];
-			[view setFrame:[targetSuperview bounds]];
-			
-			if (GetPreference(PSWShowDock, BOOL))
-				[targetSuperview insertSubview:view belowSubview:buttonBarParent];
-			else
-				[targetSuperview insertSubview:view aboveSubview:buttonBarParent];
-		} else {
-			UIView *contentView = [CHSharedInstance(SBUIController) contentView];
-			UIView *targetView = [contentView superview];
-			[view setFrame:[targetView bounds]];
-			[targetView insertSubview:view aboveSubview:contentView];
-		}
-	}
 }
 
 - (void)didReceiveMemoryWarning
@@ -282,30 +278,24 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	// Setup status bar
 	[self saveStatusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-	
-	// Load View (must be done before we access snapshotPageView)
-	UIView *view = containerView;
-	
+		
 	// Restore focused application
 	[snapshotPageView setFocusedApplication:focusedApplication];
 	
-	CALayer *scrollLayer = [snapshotPageView layer];
 	if (animated) {
-		view.alpha = 0.0f;
+		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 		
+		// Animate activation
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	}
 	
-	// Apply preferences
 	if (GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
-	[self applyPreferences];
 	
 	// Show ProSwitcher
-	[scrollLayer setTransform:CATransform3DIdentity];
-	view.alpha = 1.0f;
+	[containerView setAlpha:1.0f];
 			
 	if (animated) {
 		isAnimating = YES;
@@ -332,27 +322,25 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		return;
 	isActive = NO;
 	
-	UIView *view = containerView;
-	
-	// Save focused applciation
+	// Save (new) focused applciation
 	[focusedApplication release];
-	focusedApplication = [snapshotPageView.focusedApplication retain];
+	focusedApplication = [[snapshotPageView focusedApplication] retain];
 		
-	CALayer *scrollLayer = [snapshotPageView layer];
-	[scrollLayer setTransform:CATransform3DIdentity];
+		
 		
 	if (animated) {
 		// Animate deactivation
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[scrollLayer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		
+		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 	}
 	
 	// Show SpringBoard's page control
 	if (GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
 		
-	view.alpha = 0.0f;
+	[containerView setAlpha:0.0f];
 			
 	if (animated) {
 		isAnimating = YES;

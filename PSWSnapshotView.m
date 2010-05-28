@@ -190,7 +190,6 @@
 		} else {
 			[_titleView setFrame:titleFrame];
 		}
-		NSLog(@"four");
 		if (!_iconView) {
 			UIImage *smallIcon;
 			if (_themedIcon)
