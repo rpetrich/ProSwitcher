@@ -54,7 +54,6 @@
 
 
 - (NSInteger)indexOfApplication:(PSWApplication *)application;
-- (void)layoutSubviews;
 - (void)noteApplicationCountChanged;
 - (void)updateContentSize;
 - (void)shouldExit;

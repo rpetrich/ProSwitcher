@@ -6,6 +6,10 @@
 #import "PSWSnapshotView.h"
 
 
+@interface PSWPageView ()
+- (void)layoutPages;
+@end
+
 @implementation PSWPageView
 @synthesize pageViewDelegate = _pageViewDelegate;
 @synthesize tapsToActivate = _tapsToActivate;
@@ -44,7 +48,7 @@
 		if ([self.applications count] != 0)
 			[[_snapshotViews objectAtIndex:0] setFocused:YES animated:NO];
 		
-		[self layoutSubviews];
+		[self layoutPages];
 		
 		[self noteApplicationCountChanged];
 	}
@@ -77,44 +81,36 @@
 
 - (void)zoomActiveWithAnimation:(BOOL)animated
 {
-	PSWSnapshotView *activeView;
-	NSInteger currentPage = [self currentPage];
-	if (_snapshotViews.count > 0 && (currentPage == 0 || currentPage == [_applications count] - 1)) {
-		activeView = [_snapshotViews objectAtIndex:currentPage];
-	} else {
-		activeView = nil;
-	}
+	PSWSnapshotView *activeView = [self focusedSnapshotView];
 	for (PSWSnapshotView *view in _snapshotViews)
-		[view setZoomed:activeView == view animated:animated];
+		[view setZoomed:(activeView == view) animated:animated];
 }
 
-- (void)layoutSubviews
+- (void)layoutPages
 {
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view layoutSubviews];
-	
-	[self.layer setTransform:CATransform3DIdentity];
-	
 	[self zoomActiveWithAnimation:NO];
 	
 	PSWApplication *focusedApplication = [self focusedApplication];
-	CGRect frame = [self bounds];
+	CGRect frame;
+	frame.origin.x = 0.0f;
+	frame.origin.y = 0.0f;
+	frame.size = [self bounds].size;
+	
 	for (PSWSnapshotView *view in _snapshotViews) {
 		[view setFrame:frame];
 		
 		if ([view application] != focusedApplication)
 			[view setAlpha:_unfocusedAlpha];
 			
-		[view reloadSnapshot];
-		
 		frame.origin.x += frame.size.width;
 	}
 }
 
 - (PSWSnapshotView *)focusedSnapshotView
 {
-	if ([_applications count])
-		return [_snapshotViews objectAtIndex:[self currentPage]];
+	NSUInteger currentPage = [self currentPage];
+	if ([_applications count] > currentPage)
+		return [_snapshotViews objectAtIndex:currentPage];
 	return nil;
 }
 
@@ -147,7 +143,7 @@
 		[snapshot release];
 		
 		[self noteApplicationCountChanged];
-		[self layoutSubviews];
+		[self layoutPages];
 	}
 }
 
@@ -181,7 +177,7 @@
 		snapshot.alpha = 0.0f;
 		
 		[self noteApplicationCountChanged];
-		[self layoutSubviews];
+		[self layoutPages];
 		
 		PSWSnapshotView *focusedView = [self focusedSnapshotView];
 		[focusedView setFocused:YES];
@@ -204,8 +200,9 @@
 
 - (PSWApplication *)focusedApplication
 {
-	if ([_applications count])
-		return [_applications objectAtIndex:[self currentPage]];
+	NSUInteger currentPage = [self currentPage];
+	if ([_applications count] > currentPage)
+		return [_applications objectAtIndex:currentPage];
 	return nil;
 }
 
@@ -310,7 +307,7 @@
 {
 	if (_snapshotInset != snapshotInset) {
 		_snapshotInset = snapshotInset;
-		[self layoutSubviews];
+		[self layoutPages];
 	}
 }
 
@@ -335,7 +332,7 @@
 {
 	if (_snapshotInset != snapshotInset) {
 		_snapshotInset = snapshotInset;
-		[self layoutSubviews];
+		[self layoutPages];
 	}
 }
 
@@ -347,7 +344,7 @@
 {
 	if (_unfocusedAlpha != unfocusedAlpha) {
 		_unfocusedAlpha = unfocusedAlpha;
-		[self layoutSubviews];
+		[self layoutPages];
 	}
 }
 
@@ -360,7 +357,17 @@
 {
 	if (!CGRectEqualToRect([self frame], frame)) {
 		[super setFrame:frame];
-		[self layoutSubviews];
+		[self updateContentSize];
+		[self layoutPages];
+	}
+}
+
+- (void)setBounds:(CGRect)bounds
+{
+	if (!CGRectEqualToRect([self bounds], bounds)) {
+		[super setBounds:bounds];
+		[self updateContentSize];
+		[self layoutPages];
 	}
 }
 
@@ -460,13 +467,14 @@
 
 - (void)updateContentSize
 {
-	[self setContentSize:CGSizeMake(self.frame.size.width * [self.applications count], self.frame.size.height)];
+	CGSize size = [self bounds].size;
+	[self setContentSize:CGSizeMake(size.width * [_applications count], size.height)];
 }
 
 - (void)shouldExit
 {
-	[_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)];
-	[_pageViewDelegate snapshotPageViewShouldExit:self];
+	if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageViewShouldExit:)])
+		[_pageViewDelegate snapshotPageViewShouldExit:self];
 }
 
 - (void)noteApplicationCountChanged

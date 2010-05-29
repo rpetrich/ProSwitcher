@@ -38,26 +38,18 @@
 {
 	[_emptyLabel release];
 	[_pageControl release];
+	[_pageView release];
 	
 	[super dealloc];
 }
 
 - (void)layoutSubviews
 {
-	[self.pageView setFrame:UIEdgeInsetsInsetRect([self bounds], [self pageViewInsets])];
-	
 	CGFloat height = [_emptyText sizeWithFont:_emptyLabel.font].height;
 	CGRect bounds = [self bounds];
 	bounds.origin.y = (NSInteger) ((bounds.size.height - height) / 2.0f);
 	bounds.size.height = height;
 	[_emptyLabel setFrame:bounds];
-}
-
-- (void)setFrame:(CGRect)frame
-{
-	[super setFrame:frame];
-	
-	[self layoutSubviews];
 }
 
 - (void)shouldExit
@@ -72,7 +64,17 @@
 - (void)setPageViewInsets:(UIEdgeInsets)pageViewInsets
 {
 	_pageViewInsets = pageViewInsets;
-	[self layoutSubviews];
+	[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+}
+
+- (void)setPageView:(PSWPageView *)pageView
+{
+	if (_pageView != pageView) {
+		[_pageView release];
+		_pageView = [pageView retain];
+		[_pageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+		[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+	}
 }
 
 - (BOOL)isEmpty
