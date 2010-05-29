@@ -47,8 +47,7 @@
 - (void)layoutSubviews
 {
 	[_emptyLabel setCenter:self.center];
-	CGRect pageControlFrame = UIEdgeInsetsInsetRect([self bounds], _pageViewInsets);
-	
+
 	// FIXME: Where does SpringBoard find where to position it?
 	[_pageControl setFrame:CGRectMake(0.0f, pageControlFrame.size.height + pageControlFrame.origin.y - 19.0f, self.frame.size.width, 19.0f)];
 }
