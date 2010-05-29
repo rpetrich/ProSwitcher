@@ -18,6 +18,7 @@
 	BOOL _allowsZoom;
 	UIButton *_closeButton;
 	UIView *_iconBadge;
+	UILabel *_badgeLabel;
 	UILabel *_titleView;
 	UIImageView *_iconView;
 	

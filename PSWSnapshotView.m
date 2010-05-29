@@ -9,6 +9,8 @@
 #import "PSWResources.h"
 
 #define kSwipeThreshold 40.0f
+#define kTitleFont [UIFont boldSystemFontOfSize:17.0f]
+#define kBadgeFont [UIFont boldSystemFontOfSize:16.0f]
 
 @implementation PSWSnapshotView
 
@@ -143,29 +145,54 @@
 	}
 	[screen setFrame:screenFrame];
 	
-	if (_showsCloseButton) {
-		UIImage *closeImage = PSWImage(@"closebox");
-		CGRect closeButtonFrame;
-		closeButtonFrame.size = [closeImage size];
-		closeButtonFrame.origin.x = (NSInteger)(screenFrame.origin.x - closeButtonFrame.size.width / 2.0f);
-		closeButtonFrame.origin.y = (NSInteger)(screenFrame.origin.y - closeButtonFrame.size.height / 2.0f);
-		if (_closeButton) {
-			[_closeButton setFrame:closeButtonFrame];
-		} else {
-			_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-			[_closeButton setBackgroundImage:closeImage forState:UIControlStateNormal];
-			[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
-			[_closeButton setFrame:closeButtonFrame];
-			[self addSubview:_closeButton];
+	// Reposition and resize close button
+	CGRect closeButtonFrame;
+	closeButtonFrame.size = [PSWImage(@"closebox") size];
+	closeButtonFrame.origin.x = (NSInteger)(screenFrame.origin.x - closeButtonFrame.size.width / 2.0f);
+	closeButtonFrame.origin.y = (NSInteger)(screenFrame.origin.y - closeButtonFrame.size.height / 2.0f);
+	[_closeButton setFrame:closeButtonFrame];
+	
+	// Reposition and resize title label
+	NSString *title = [_application displayName];
+	CGSize textSize = [title sizeWithFont:kTitleFont];
+	CGRect titleFrame;
+	titleFrame.origin.x = (NSInteger) (([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
+	titleFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 25.0f - (NSInteger)(textSize.height / 2.0f);
+	titleFrame.size.width = textSize.width;
+	titleFrame.size.height = textSize.height;
+	[_titleView setFrame:titleFrame];
+	
+	// Reposition and resize icon
+	CGRect iconFrame;
+	iconFrame.origin.x = titleFrame.origin.x - 36.0f;
+	iconFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 13.0f;
+	iconFrame.size.width = 24.0f;
+	iconFrame.size.height = 24.0f;
+	[_iconView setFrame:iconFrame];
+	
+	// Reposition and resize badge
+	UIImage *badgeImage = PSWImage(@"badge");
+	NSString *badgeText = [_application badgeText];
+	if (badgeImage) {
+		CGRect badgeFrame;
+		badgeFrame.size = [badgeImage size];
+		CGFloat minWidth = [badgeText sizeWithFont:kBadgeFont].width + 19.0f;
+		
+		if (badgeFrame.size.width < minWidth) {
+			badgeFrame.size.width = minWidth;
+			badgeImage = PSWScaledImage(@"badge", badgeFrame.size);
 		}
-	} else {
-		[_closeButton removeFromSuperview];
-		[_closeButton release];
-		_closeButton = nil;
+		
+		badgeFrame.origin.x = (NSInteger) (screenFrame.origin.x + screenFrame.size.width - badgeFrame.size.width + (badgeFrame.size.height / 2.0f));
+		badgeFrame.origin.y = (NSInteger) (screenFrame.origin.y - (badgeFrame.size.height / 2.0f) + 2.0f);
+		[_iconBadge setFrame:badgeFrame];
+		[[_iconBadge layer] setContents:(id)[badgeImage CGImage]];
+		badgeFrame.origin = CGPointZero;
+		badgeFrame.size.height -= 8.0f;
+		[_badgeLabel setFrame:badgeFrame];
 	}
 	
 	[self reloadSnapshot];
-
 }
 
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application
@@ -176,6 +203,7 @@
 		self.userInteractionEnabled = YES;
 		self.opaque = NO;
 		isZoomed = YES;
+		[self setThemedIcon:NO];
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -183,7 +211,7 @@
 		[screen setClipsToBounds:YES];
 		CALayer *layer = [screen layer];
 		[layer setContents:(id) snapshot];
-		screen.hidden = NO;
+		[screen setHidden:NO];
 		
 		[screen addTarget:self action:@selector(snapshot:touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
 		[screen addTarget:self action:@selector(snapshot:didStartDrag:) forControlEvents:UIControlEventTouchDown];
@@ -191,7 +219,44 @@
 		[screen addTarget:self action:@selector(snapshot:didEndDrag:) forControlEvents:UIControlEventTouchCancel | UIControlEventTouchDragExit | UIControlEventTouchUpOutside | UIControlEventTouchUpInside];
 		[self addSubview:screen];
 		
-		[self layoutSubviews];
+		// Add close button
+		_closeButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+		[_closeButton setBackgroundImage:PSWImage(@"closebox") forState:UIControlStateNormal];
+		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
+		[self addSubview:_closeButton];
+		[_closeButton setHidden:YES];
+		
+		// Add icon
+		_iconView = [[UIImageView alloc] init];
+		[self addSubview:_iconView];
+		[_iconView setHidden:YES];
+					
+		// Add title label
+		_titleView = [[UILabel alloc] init];
+		_titleView.font = kTitleFont;
+		_titleView.backgroundColor = [UIColor clearColor];
+		_titleView.textColor = [UIColor whiteColor]; 
+		_titleView.text = [_application displayName];
+		[self addSubview:_titleView];
+		[_titleView setHidden:YES];
+		
+		// Add badge
+		_iconBadge = [[UIView alloc] init];
+		[self addSubview:_iconBadge];
+		[_iconBadge setHidden:YES];
+		
+		// Add badge label
+		_badgeLabel = [[UILabel alloc] init];
+		[_badgeLabel setBackgroundColor:[UIColor clearColor]];
+		[_badgeLabel setTextColor:[UIColor whiteColor]];
+		[_badgeLabel setFont:kBadgeFont];
+		[_badgeLabel setTextAlignment:UITextAlignmentCenter];
+		[_iconBadge addSubview:_badgeLabel];
+		[_badgeLabel release];
+		
+		// Layout and draw!
+		[self setNeedsLayout];
+		[self layoutIfNeeded];
 	}
     return self;
 }
@@ -204,6 +269,7 @@
 	[_closeButton release];
 	[_iconBadge release];
 	[_application release];
+	
     [super dealloc];
 }
 
@@ -222,26 +288,25 @@
 
 - (BOOL)showsCloseButton
 {
-	return _closeButton != nil;
+	return _showsCloseButton;
 }
 
 - (void)setShowsCloseButton:(BOOL)showsCloseButton
 {
-	if (_showsCloseButton != showsCloseButton) {
-		_showsCloseButton = showsCloseButton;
-		[self layoutSubviews];
-	}
+	_showsCloseButton = showsCloseButton;
+	[_closeButton setHidden:!_showsCloseButton];
 }
 
 - (BOOL)showsTitle
 {
-	return _titleView != nil;
+	return _showsTitle;
 }
 
 - (void)setShowsTitle:(BOOL)showsTitle
 {
 	_showsTitle = showsTitle;
-	[self layoutSubviews];
+	[_titleView setHidden:!_showsTitle];
+	[_iconView setHidden:!_showsTitle];
 }
 
 - (BOOL)themedIcon
@@ -252,24 +317,25 @@
 {
 	_themedIcon = themedIcon;
 	
-	// Remove icon view so it gets re-created with the new icon
-	if (_iconView) {
-		[_iconView removeFromSuperview];
-		[_iconView release];
-		_iconView = nil;
-	}
-	
-	[self layoutSubviews];
+	UIImage *smallIcon;
+	if (_themedIcon)
+		smallIcon = [_application themedIcon];
+	else
+		smallIcon = [_application unthemedIcon];
+	[_iconView setImage:smallIcon];
 }
 
 - (BOOL)showsBadge
 {
-	return _iconBadge != nil;
+	return _showsBadge;
 }
 - (void)setShowsBadge:(BOOL)showsBadge
 {
 	_showsBadge = showsBadge;
-	[self layoutSubviews];
+	if (!_showsBadge)
+		[_iconBadge setHidden:YES];
+	else if ([[_application badgeText] length] > 0)
+		[_iconBadge setHidden:NO];
 }
   
 - (CGFloat)roundedCornerRadius
@@ -280,7 +346,8 @@
 {
 	if (_roundedCornerRadius != roundedCornerRadius) {
 		_roundedCornerRadius = roundedCornerRadius;
-		[self layoutSubviews];
+		[self setNeedsLayout];
+		[self layoutIfNeeded];
 	}
 }
 
@@ -291,15 +358,18 @@
 - (void)setFocused:(BOOL)focused animated:(BOOL)animated
 {
 	_focused = focused;
+	
 	if (animated) {
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.33f];
 	}
-	CGFloat alpha = _focused?1.0f:0.0f;
+	
+	CGFloat alpha = _focused ? 1.0f : 0.0f;
 	[_closeButton setAlpha:alpha];
 	[_titleView setAlpha:alpha];
 	[_iconView setAlpha:alpha];
 	[_iconBadge setAlpha:alpha];
+	
 	if (animated) {
 		[UIView commitAnimations];
 	}
@@ -307,14 +377,6 @@
 - (void)setFocused:(BOOL)focused
 {
 	[self setFocused:focused animated:YES];
-}
-
-- (void)setFrame:(CGRect)frame
-{
-	if (!CGRectEqualToRect([self frame], frame)) {
-		[super setFrame:frame];
-		[self layoutSubviews];
-	}
 }
 
 - (BOOL)isZoomed
@@ -363,11 +425,18 @@
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application
 {
-	[_iconBadge removeFromSuperview];
-	[_iconBadge release];
-	_iconBadge = nil;
+	NSString *badgeText = [_application badgeText];
+	if ([badgeText length]) {
+		[_badgeLabel setText:badgeText];
+		if (_showsBadge) {
+			[_iconBadge setHidden:NO];
+		}
+	} else {
+		[_iconBadge setHidden:YES];
+	}
 	
-	[self layoutSubviews];
+	[self setNeedsLayout];
+	[self layoutIfNeeded];
 }
 
 @end
