@@ -29,7 +29,9 @@
 		[self addSubview:_emptyLabel];
 		[_emptyLabel setHidden:YES];
 		
-		[self setIsEmpty:NO];
+		[self setIsEmpty:YES];
+		[self setNeedsLayout];
+		[self layoutIfNeeded];
 	}
 	
 	return self;
@@ -46,9 +48,14 @@
 
 - (void)layoutSubviews
 {
+	CGRect frame;
+	frame.origin = CGPointZero;
+	frame.size = [_emptyText sizeWithFont:_emptyLabel.font];
+	[_emptyLabel setFrame:frame];
 	[_emptyLabel setCenter:self.center];
-
+	
 	// FIXME: Where does SpringBoard find where to position it?
+	CGRect pageControlFrame = UIEdgeInsetsInsetRect([self bounds], _pageViewInsets);
 	[_pageControl setFrame:CGRectMake(0.0f, pageControlFrame.size.height + pageControlFrame.origin.y - 19.0f, self.frame.size.width, 19.0f)];
 }
 
@@ -90,8 +97,7 @@
 	if ([self autoExit] && [self isEmpty])
 		[self shouldExit];
 		
-	if ([_emptyText length] > 0)
-		[_emptyLabel setHidden:NO];
+	[_emptyLabel setHidden:!_isEmpty];
 }
 
 - (NSString *)emptyText
@@ -104,6 +110,7 @@
 		[_emptyText autorelease];
 		_emptyText = [emptyText copy];
 		[_emptyLabel setText:_emptyText];
+		
 		[self setNeedsLayout];
 	}
 }
