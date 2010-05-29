@@ -158,9 +158,14 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	/* The container view is responsible for background, page control, and [tap|auto] exit. */
 	
 	UIEdgeInsets scrollViewInsets;
+	scrollViewInsets.left = scrollViewInsets.right = GetPreference(PSWSnapshotInset, float);
 	scrollViewInsets.top = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 	scrollViewInsets.bottom = GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0;
-	scrollViewInsets.left = scrollViewInsets.right = GetPreference(PSWSnapshotInset, float);
+	if (PSWPad) {
+		// If we are on an iPad, we want slightly...smaller cards.
+		scrollViewInsets.top += 40.0f;
+		scrollViewInsets.bottom += 40.0f;
+	}
 	[containerView setPageViewInsets:scrollViewInsets];
 	
 	if (GetPreference(PSWDimBackground, BOOL))
@@ -207,7 +212,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		}
 	}
 
-	// FIXME: Crashes 3.2 (iPad)
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
 }
 
@@ -419,6 +423,16 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 }
 
 #pragma mark PSWPageView delegate
+
+- (void)snapshotPageView:(PSWPageView *)snapshotPageView didChangeToPage:(int)page
+{
+	[containerView setPageControlPage:page];
+}
+
+- (void)snapshotPageView:(PSWPageView *)snapshotPageView pageCountDidChange:(int)pageCount
+{
+	[containerView setPageControlCount:pageCount];
+}
 
 - (void)snapshotPageView:(PSWPageView *)sspv didSelectApplication:(PSWApplication *)app
 {

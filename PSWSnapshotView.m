@@ -203,7 +203,7 @@
 		self.userInteractionEnabled = YES;
 		self.opaque = NO;
 		isZoomed = YES;
-		[self setThemedIcon:NO];
+		
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -253,6 +253,12 @@
 		[_badgeLabel setTextAlignment:UITextAlignmentCenter];
 		[_iconBadge addSubview:_badgeLabel];
 		[_badgeLabel release];
+		
+		// FIXME (hack): Setup initial badge
+		[self applicationBadgeDidChange:_application];
+		
+		// Load initial icon
+		[self setThemedIcon:NO];
 		
 		// Layout and draw!
 		[self setNeedsLayout];
@@ -426,7 +432,7 @@
 - (void)applicationBadgeDidChange:(PSWApplication *)application
 {
 	NSString *badgeText = [_application badgeText];
-	if ([badgeText length]) {
+	if ([badgeText length] > 0) {
 		[_badgeLabel setText:badgeText];
 		if (_showsBadge) {
 			[_iconBadge setHidden:NO];

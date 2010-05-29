@@ -15,18 +15,19 @@
 	if ((self = [super init])) {
 		[self setUserInteractionEnabled:YES];
 		
-		_pageControl = [[UIPageControl alloc] initWithFrame:CGRectZero];
+		_pageControl = [[UIPageControl alloc] init];
 		[_pageControl setCurrentPage:0];
 		[_pageControl setHidesForSinglePage:YES];
 		[_pageControl setUserInteractionEnabled:NO];
 		[self addSubview:_pageControl];
 		
-		_emptyLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+		_emptyLabel = [[UILabel alloc] init];
 		[_emptyLabel setBackgroundColor:[UIColor clearColor]];
 		[_emptyLabel setTextAlignment:UITextAlignmentCenter];
 		[_emptyLabel setFont:[UIFont boldSystemFontOfSize:16.0f]];
 		[_emptyLabel setTextColor:[UIColor whiteColor]];
 		[self addSubview:_emptyLabel];
+		[_emptyLabel setHidden:YES];
 		
 		[self setIsEmpty:NO];
 	}
@@ -45,11 +46,11 @@
 
 - (void)layoutSubviews
 {
-	CGFloat height = [_emptyText sizeWithFont:_emptyLabel.font].height;
-	CGRect bounds = [self bounds];
-	bounds.origin.y = (NSInteger) ((bounds.size.height - height) / 2.0f);
-	bounds.size.height = height;
-	[_emptyLabel setFrame:bounds];
+	[_emptyLabel setCenter:self.center];
+	CGRect pageControlFrame = UIEdgeInsetsInsetRect([self bounds], _pageViewInsets);
+	
+	// FIXME: Where does SpringBoard find where to position it?
+	[_pageControl setFrame:CGRectMake(0.0f, pageControlFrame.size.height + pageControlFrame.origin.y - 19.0f, self.frame.size.width, 19.0f)];
 }
 
 - (void)shouldExit
@@ -61,6 +62,7 @@
 {
 	return _pageViewInsets;
 }
+
 - (void)setPageViewInsets:(UIEdgeInsets)pageViewInsets
 {
 	_pageViewInsets = pageViewInsets;
@@ -89,7 +91,8 @@
 	if ([self autoExit] && [self isEmpty])
 		[self shouldExit];
 		
-	[_emptyLabel setHidden:![self isEmpty]];
+	if ([_emptyText length] > 0)
+		[_emptyLabel setHidden:NO];
 }
 
 - (NSString *)emptyText
@@ -102,7 +105,7 @@
 		[_emptyText autorelease];
 		_emptyText = [emptyText copy];
 		[_emptyLabel setText:_emptyText];
-		[self layoutSubviews];
+		[self setNeedsLayout];
 	}
 }
 
@@ -135,6 +138,9 @@
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
+	if ([self isEmpty])
+		return self;
+	
     UIView *child = nil;
     if ((child = [super hitTest:point withEvent:event]) == self)
         child = self.pageView; 

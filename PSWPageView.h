@@ -76,5 +76,7 @@
 - (void)snapshotPageView:(PSWPageView *)snapshotPageView didSelectApplication:(PSWApplication *)application;
 - (void)snapshotPageView:(PSWPageView *)snapshotPageView didCloseApplication:(PSWApplication *)application;
 - (void)snapshotPageView:(PSWPageView *)snapshotPageView didFocusApplication:(PSWApplication *)application;
+- (void)snapshotPageView:(PSWPageView *)snapshotPageView didChangeToPage:(int)page;
+- (void)snapshotPageView:(PSWPageView *)snapshotPageView pageCountDidChange:(int)pageCount;
 - (void)snapshotPageViewShouldExit:(PSWPageView *)snapshotPageView;
 @end

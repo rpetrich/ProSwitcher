@@ -403,6 +403,9 @@
 - (void)setCurrentPage:(NSInteger)page
 {
 	_currentPage = page;
+	
+	if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageView:didChangeToPage:)])
+		[_pageViewDelegate snapshotPageView:self didChangeToPage:page];
 }
 
 #pragma mark UIScrollViewDelegate
@@ -479,8 +482,10 @@
 
 - (void)noteApplicationCountChanged
 {
-	//[self.containerView setPageControlCount:[self.applications count]];
 	[self updateContentSize];
+	
+	if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageView:pageCountDidChange:)])
+		[_pageViewDelegate snapshotPageView:self pageCountDidChange:[_applications count]];
 }
 
 #pragma mark PSWApplicationControllerDelegate

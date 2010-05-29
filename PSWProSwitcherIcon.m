@@ -14,7 +14,6 @@ CHDeclareClass(SBIconModel);
 CHDeclareClass(SBApplicationIcon);
 CHDeclareClass(PSWProSwitcherIcon);
 
-// FIXME: Crashes on 3.2 (iPad)
 void PSWUpdateIconVisibility()
 {
 	SBIconModel *iconModel = CHSharedInstance(SBIconModel);
