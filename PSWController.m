@@ -57,7 +57,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 
 @interface PSWController () <PSWPageViewDelegate, LAListener>
 - (void)reparentView;
-- (void)resizeView;
 - (void)reloadPreferences;
 - (void)applyPreferences;
 @end
@@ -92,7 +91,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
 	
-		[self resizeView];
+		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
 		[self reparentView];
 		[self reloadPreferences];
 		
@@ -116,11 +115,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
     [super dealloc];
 }
 
-- (void)resizeView
-{
-	[containerView setFrame:[[UIScreen mainScreen] bounds]];
-}
-
 - (void)reparentView
 {
 	UIView *view = containerView;
@@ -130,6 +124,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	if ([buttonBar window]) {
 		UIView *buttonBarParent = [buttonBar superview];
 		UIView *targetSuperview = [buttonBarParent superview];
+		[view setFrame:[targetSuperview bounds]];
 		
 		if (GetPreference(PSWShowDock, BOOL))
 			[targetSuperview insertSubview:view belowSubview:buttonBarParent];
@@ -220,11 +215,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 {
 	PSWPreparePreferences();
 	[self applyPreferences];
-}
-
-- (void)updateForOrientation:(UIInterfaceOrientation)orientation
-{
-	[self resizeView];
 }
 
 - (void)didReceiveMemoryWarning
@@ -582,7 +572,7 @@ CHMethod1(void, SpringBoard, noteInterfaceOrientationChanged, UIInterfaceOrienta
 {
 	CHSuper1(SpringBoard, noteInterfaceOrientationChanged, interfaceOrientation);
 	
-	[[PSWController sharedInstance] updateForOrientation:interfaceOrientation];
+	//[[PSWController sharedInstance] updateForOrientation:interfaceOrientation];
 }
 
 /*CHMethod0(void, SpringBoard, invokeProSwitcher)
