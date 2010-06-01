@@ -281,7 +281,22 @@
 
 - (void)reloadSnapshot
 {
-	[[screen layer] setContents:(id)[_application snapshot]];
+	CALayer *layer = [screen layer];
+	CGImageRef image = [_application snapshot];
+	[layer setContents:(id)image];
+#ifdef USE_IOSURFACE
+	if (image) {
+		CGFloat width = (CGFloat)CGImageGetWidth(image);
+		CGFloat height = (CGFloat)CGImageGetHeight(image);
+		PSWCropInsets cropInsets = [_application snapshotCropInsets];
+		CGRect contentsRect;
+		contentsRect.origin.x = cropInsets.left / width;
+		contentsRect.origin.y = cropInsets.top / height;
+		contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / width;
+		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / height;
+		[layer setContentsRect:contentsRect];
+	}
+#endif
 }
 
 #pragma mark Properties

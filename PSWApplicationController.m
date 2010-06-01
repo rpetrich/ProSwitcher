@@ -130,9 +130,11 @@ CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBAppli
 	currentZoomApp = nil;
 }
 
+
 #pragma mark SBZoomView
 
-CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
+// 3.0-3.1
+CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
 {
 	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
@@ -158,8 +160,38 @@ CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurfac
 	return self;
 }
 
-#endif
+// 3.2
+CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
+{
+	if ((self = CHSuper3(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
+		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+		PSWCropInsets insets;
+		insets.top = 0;
+		insets.left = 0;
+		insets.bottom = 0;
+		insets.right = 0;
+		PSWSnapshotRotation rotation;
+		switch (CHIvar(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation)) {
+			case UIInterfaceOrientationPortraitUpsideDown:
+				rotation = PSWSnapshotRotation90Left;
+				break;
+			case UIInterfaceOrientationPortrait:
+				rotation = PSWSnapshotRotation90Right;
+				break;
+			case UIInterfaceOrientationLandscapeRight:
+				rotation = PSWSnapshotRotation180;
+				break;
+			case UIInterfaceOrientationLandscapeLeft:
+			default:
+				rotation = PSWSnapshotRotationNone;
+				break;
+		}
+		[application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	}
+	return self;
+}
 
+#endif
 
 CHConstructor {
 	CHLoadLateClass(SBApplication);
@@ -172,6 +204,7 @@ CHConstructor {
 	
 	CHLoadLateClass(SBZoomView);
 	CHHook2(SBZoomView, initWithSnapshotFrame, ioSurface);
+	CHHook3(SBZoomView, initWithSnapshotFrame, ioSurface, transform);
 #endif
 }
 

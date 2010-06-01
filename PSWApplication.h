@@ -15,6 +15,12 @@
 typedef struct PSWCropInsets {
     size_t top, left, bottom, right;
 } PSWCropInsets;
+typedef enum {
+	PSWSnapshotRotationNone = UIInterfaceOrientationPortrait,
+	PSWSnapshotRotation180 = UIInterfaceOrientationPortraitUpsideDown,
+	PSWSnapshotRotation90Left = UIInterfaceOrientationLandscapeLeft,
+	PSWSnapshotRotation90Right = UIInterfaceOrientationLandscapeRight,
+} PSWSnapshotRotation;
 #endif
 
 @protocol PSWApplicationDelegate;
@@ -29,6 +35,7 @@ typedef struct PSWCropInsets {
 	NSString *_snapshotFilePath;
 	IOSurfaceRef _surface;
 	PSWCropInsets _cropInsets;
+	PSWSnapshotRotation _snapshotRotation;
 #endif
 }
 
@@ -44,15 +51,19 @@ typedef struct PSWCropInsets {
 @property (nonatomic, readonly) UIImage *themedIcon;
 @property (nonatomic, readonly) UIImage *unthemedIcon;
 @property (nonatomic, readonly) SBApplication *application;
-@property (nonatomic, readonly) CGImageRef snapshot;
 @property (nonatomic, assign) id<PSWApplicationDelegate> delegate;
 @property (nonatomic, readonly) BOOL hasNativeBackgrounding;
 @property (nonatomic, readonly) SBIconBadge *badgeView;
 @property (nonatomic, readonly) NSString *badgeText;
 
+@property (nonatomic, readonly) CGImageRef snapshot;
 #ifdef USE_IOSURFACE
+@property (nonatomic, readonly) PSWCropInsets snapshotCropInsets;
+@property (nonatomic, readonly) PSWSnapshotRotation snapshotRotation;
+
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation;
 #endif
 - (BOOL)writeSnapshotToDisk;
 - (void)exit;

@@ -27,6 +27,10 @@ static NSUInteger defaultImagePassThrough;
 @synthesize displayIdentifier = _displayIdentifier;
 @synthesize application = _application;
 @synthesize delegate = _delegate;
+#ifdef USE_IOSURFACE
+@synthesize snapshotCropInsets = _cropInsets;
+@synthesize snapshotRotation = _snapshotRotation;
+#endif
 
 + (NSString *)snapshotPath
 {
@@ -95,7 +99,7 @@ static NSUInteger defaultImagePassThrough;
 }
 
 #ifdef USE_IOSURFACE
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation
 {
 	if (surface != _surface) {
 		CGImageRelease(_snapshotImage);
@@ -106,32 +110,34 @@ static NSUInteger defaultImagePassThrough;
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
+		_snapshotImage = NULL;
+		_surface = NULL;
+		_snapshotRotation = PSWSnapshotRotationNone;
+		_cropInsets.top = 0;
+		_cropInsets.left = 0;
+		_cropInsets.bottom = 0;
+		_cropInsets.right = 0;
+		
 		if (surface) {
-			int width = IOSurfaceGetWidth(surface) - cropInsets.left - cropInsets.right;
-			int height = IOSurfaceGetHeight(surface) - cropInsets.top - cropInsets.bottom;
-			if (width > 0 && height > 0) {
-				uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
-				size_t stride = IOSurfaceGetBytesPerRow(surface);
-				baseAddress += cropInsets.left * 4 + stride * cropInsets.top;
-				CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, baseAddress, stride * (height - 1) + width * 4, NULL);
-				CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-				_snapshotImage = CGImageCreate(width, height, 8, 32, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
-				CGColorSpaceRelease(colorSpace);
-				CGDataProviderRelease(dataProvider);
-				CFRetain(surface);
-				_surface = surface;
-				_cropInsets = cropInsets;
-			} else {
-				_snapshotImage = NULL;
-				_surface = NULL;
-			}
-		} else {
-			_snapshotImage = NULL;
-			_surface = NULL;
+			uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
+			CGDataProviderRef dataProvider = CGDataProviderCreateWithData((void *)CFRetain(surface), baseAddress, IOSurfaceGetAllocSize(surface), (CGDataProviderReleaseDataCallback)CFRelease);
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+			_snapshotImage = CGImageCreate(IOSurfaceGetWidth(surface), IOSurfaceGetHeight(surface), 8, 32, IOSurfaceGetBytesPerRow(surface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
+			CGColorSpaceRelease(colorSpace);
+			CGDataProviderRelease(dataProvider);
+			CFRetain(surface);
+			_surface = surface;
+			_cropInsets = cropInsets;
+			_snapshotRotation = rotation;
 		}
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
+}
+
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
+{
+	[self loadSnapshotFromSurface:surface cropInsets:cropInsets rotation:PSWSnapshotRotationNone];
 }
 
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
@@ -141,7 +147,7 @@ static NSUInteger defaultImagePassThrough;
 	insets.left = 0;
 	insets.bottom = 0;
 	insets.right = 0;
-	[self loadSnapshotFromSurface:surface cropInsets:insets];
+	[self loadSnapshotFromSurface:surface cropInsets:insets rotation:PSWSnapshotRotationNone];
 }
 #endif
 
@@ -160,11 +166,10 @@ static NSUInteger defaultImagePassThrough;
 	CFRelease(uuidString);
 	_snapshotFilePath = [[[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName] retain];
 	// Write to file
-	int width = IOSurfaceGetWidth(_surface) - _cropInsets.left - _cropInsets.right;
-	int height = IOSurfaceGetHeight(_surface) - _cropInsets.top - _cropInsets.bottom;
+	int width = IOSurfaceGetWidth(_surface);
+	int height = IOSurfaceGetHeight(_surface);
 	uint8_t *baseAddress = IOSurfaceGetBaseAddress(_surface);
 	size_t stride = IOSurfaceGetBytesPerRow(_surface);
-	baseAddress += _cropInsets.left * 4 + stride * _cropInsets.top;
 	NSData *tempData = [[NSData alloc] initWithBytesNoCopy:baseAddress length:stride * (height - 1) + width * 4 freeWhenDone:NO];
 	[tempData writeToFile:_snapshotFilePath atomically:NO];
 	[tempData release];
