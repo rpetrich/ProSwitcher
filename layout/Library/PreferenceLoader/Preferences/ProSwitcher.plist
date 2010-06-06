@@ -391,6 +391,42 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
+		
+		<!-- Thanks to DHowett for the hack to show the text on 3.0 and 3.2! -->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>isStaticText</key>
+			<string>true</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSTitleValueCell</string>
+			<key>label</key>
+			<string>
+ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>
+ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
+		</dict>
 	</array>
 	<key>title</key>
 	<string>ProSwitcher</string>
