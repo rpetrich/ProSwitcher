@@ -101,25 +101,27 @@
 
 - (void)layoutSubviews
 {
+	UIEdgeInsets padding;
+	padding.top = 12.0f;
+	padding.bottom = 20.0f;
+	padding.left = 4.0f;
+	padding.right = 4.0f;
+	if (_showsTitle)
+		padding.bottom += 32.0f;
+	if (!isZoomed) {
+		padding.left += 6.0f;
+		padding.right += 6.0f;
+		padding.top += 12.0f;
+		padding.bottom += 10.0f;
+	}
+	
 	CGImageRef snapshot = [_application snapshot];
 	CGSize imageSize;
-	imageSize.width = (CGFloat)CGImageGetWidth(snapshot);
-	imageSize.height = (CGFloat)CGImageGetHeight(snapshot);
+	imageSize.width = (CGFloat) CGImageGetWidth(snapshot);
+	imageSize.height = (CGFloat) CGImageGetHeight(snapshot);
 	
 	CGRect frame = [self frame];
-	CGSize boundingSize = frame.size;
-	
-	if (!isZoomed) {
-		boundingSize.width -= 35.0f;
-		boundingSize.height -= 70.0f;
-	} else {
-		boundingSize.height -= 35.0f;
-	}
-	if (!_allowsZoom) //Leave space between cards when zoom is off
-		boundingSize.width -= 25.0f;
-	
-	if (_showsTitle)
-		boundingSize.height -= 32.0f;
+	CGSize boundingSize = UIEdgeInsetsInsetRect(frame, padding).size;
 		
 	CGFloat ratioW = boundingSize.width  / imageSize.width;
 	CGFloat ratioH = boundingSize.height / imageSize.height;
@@ -128,22 +130,23 @@
 	CGRect screenFrame;	
 	screenFrame.size.width = properRatio * imageSize.width;
 	screenFrame.size.height = properRatio * imageSize.height;
-	screenFrame.origin.x = (NSInteger)((frame.size.width - screenFrame.size.width) / 2.0f);
-	screenFrame.origin.y = (NSInteger)((frame.size.height - screenFrame.size.height) / 2.0f);
+	screenFrame.origin.x = (NSInteger) ((frame.size.width - screenFrame.size.width) / 2.0f);
+	screenFrame.origin.y = (NSInteger) ((frame.size.height - screenFrame.size.height) / 2.0f);
 	
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
 	
 	screenY = screenFrame.origin.y;
+	[screen setFrame:screenFrame];
+	
 	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
 	} else {
 		CALayer *layer = [CALayer layer];
-		[layer setFrame:CGRectMake(0.0f, 0.0f, screenFrame.size.width, screenFrame.size.height)];
+		[layer setFrame:[screen bounds]];
 		[layer setContents:(id) [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
-	[screen setFrame:screenFrame];
 	
 	// Reposition and resize close button
 	CGRect closeButtonFrame;
@@ -156,18 +159,17 @@
 	NSString *title = [_application displayName];
 	CGSize textSize = [title sizeWithFont:kTitleFont];
 	CGRect titleFrame;
-	titleFrame.origin.x = (NSInteger) (([self bounds].size.width - textSize.width) / 2.0f) + 18.0f;
-	titleFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 25.0f - (NSInteger)(textSize.height / 2.0f);
-	titleFrame.size.width = textSize.width;
-	titleFrame.size.height = textSize.height;
+	titleFrame.size = textSize;
+	titleFrame.origin.x = (NSInteger) ((self.frame.size.width - textSize.width) / 2 + 9.0f);
+	titleFrame.origin.y = (NSInteger) (self.frame.size.height - 20.0f - textSize.height);
 	[_titleView setFrame:titleFrame];
 	
 	// Reposition and resize icon
+	CGSize iconSize = CGSizeMake(24.0f, 24.0f);
 	CGRect iconFrame;
-	iconFrame.origin.x = titleFrame.origin.x - 36.0f;
-	iconFrame.origin.y = screenFrame.origin.y + screenFrame.size.height + 13.0f;
-	iconFrame.size.width = 24.0f;
-	iconFrame.size.height = 24.0f;
+	iconFrame.size = iconSize;
+	iconFrame.origin.x = (NSInteger) (titleFrame.origin.x - 9.0f - iconSize.width);
+	iconFrame.origin.y = (NSInteger) (self.frame.size.height - 20.0f - iconSize.height);
 	[_iconView setFrame:iconFrame];
 	
 	// Reposition and resize badge
@@ -202,8 +204,6 @@
 		_application.delegate = self;
 		self.userInteractionEnabled = YES;
 		self.opaque = NO;
-		isZoomed = YES;
-		
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -328,6 +328,8 @@
 	_showsTitle = showsTitle;
 	[_titleView setHidden:!_showsTitle];
 	[_iconView setHidden:!_showsTitle];
+	[self setNeedsLayout];
+	[self layoutIfNeeded];
 }
 
 - (BOOL)themedIcon
@@ -406,18 +408,20 @@
 }
 - (void)setZoomed:(BOOL)zoomed animated:(BOOL)animated
 {
-	if (_allowsZoom) {
-		if (zoomed ^ isZoomed) {
-			if (animated) {
-				[UIView beginAnimations:nil context:NULL];
-				[UIView setAnimationDuration:0.33f];
-				isZoomed = zoomed;
-				[self layoutSubviews];
-				[UIView commitAnimations];
-			} else {
-				isZoomed = zoomed;
-				[self layoutSubviews];
-			}
+	if (zoomed && !_allowsZoom) return;
+	
+	if (zoomed != isZoomed) {
+		if (animated) {
+			[UIView beginAnimations:nil context:NULL];
+			[UIView setAnimationDuration:0.33f];
+		}
+			
+		isZoomed = zoomed;
+		[self setNeedsLayout];
+		[self layoutIfNeeded];
+			
+		if (animated) {
+			[UIView commitAnimations];
 		}
 	}
 }
@@ -432,8 +436,6 @@
 }
 - (void)setAllowsZoom:(BOOL)allowsZoom
 {
-	if (!allowsZoom)
-		[self setZoomed:YES];
 	_allowsZoom = allowsZoom;
 }
 

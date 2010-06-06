@@ -199,6 +199,9 @@
 	UITouch *touch = [touches anyObject];
 	NSInteger tapCount = [touch tapCount];
 	CGPoint point = [touch locationInView:self];
+	CGPoint offset = [self.pageView frame].origin;
+
+	point.x -= offset.x;
 
 	_doubleTapped = NO;
 	if (tapCount == 2) {

@@ -277,8 +277,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	
 	if (animated) {
 		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
-		
-		// Animate activation
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
 		[snapshotPageView.layer setTransform:CATransform3DIdentity];
@@ -305,6 +303,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)didFinishDeactivate
 {
 	[containerView removeFromSuperview];
+	[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	isAnimating = NO;
 }
 
@@ -320,10 +319,9 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	focusedApplication = [[snapshotPageView focusedApplication] retain];
 		
 	if (animated) {
-		// Animate deactivation
+		[snapshotPageView.layer setTransform:CATransform3DIdentity];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		
 		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 	}
 	
@@ -367,7 +365,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	if (SBActive) {
 		// SpringBoard is active, just activate
 		BOOL newActive = ![self isActive];
-		[self setActive:newActive];
+		[self setActive:newActive animated:YES];
 		if (newActive)
 			[event setHandled:YES];
 	} else {
@@ -376,7 +374,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 		// Top application will be nil when app is loading; do nothing
 		if ([displayIdentifier length]) {
 			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
-			[self setActive:YES animated:NO];
 			
 			modifyZoomTransformCountDown = 2;
 			ignoreZoomSetAlphaCountDown = 2;
@@ -395,7 +392,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 			[SBWSuspendingDisplayStack pushDisplay:application];
 			
 			// Show ProSwitcher
-			[self reparentView];
+			[self setActive:YES animated:NO];
 			[snapshotPageView setFocusedApplication:activeApp animated:NO];
 			[event setHandled:YES];
 			
@@ -720,7 +717,7 @@ CHConstructor
 {
 	CHAutoreleasePoolForScope();
 	
-	// SpringBoard only!
+	// SpringBoard only.
 	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
 		return;
 	
