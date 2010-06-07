@@ -243,7 +243,7 @@ static PSWController *sharedController;
 - (void)activateWithAnimation:(BOOL)animated
 {
 	// Don't activate when in editing mode
-	SBIconController iconController = CHSharedInstance(SBIconController);
+	SBIconController *iconController = CHSharedInstance(SBIconController);
 	if ([iconController isEditing])
 		return;
 	
@@ -634,16 +634,46 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 		case 1: {
 			modifyZoomTransformCountDown = 0;
 
-			PSWSnapshotView *ssv = [[sharedController snapshotPageView] focusedSnapshotView];
-			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
-				CHSuper(1, SBZoomView, setTransform, transform);
-			} else {
+			PSWPageView *pageView = [sharedController snapshotPageView];
+			PSWSnapshotView *ssv = [pageView focusedSnapshotView];
+			if (![[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
+				[pageView layoutIfNeeded];
+				UIView *containerView = [sharedController containerView];
+				[containerView layoutIfNeeded];
 				UIView *screenView = [ssv screenView];
-				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[sharedController containerView]];
-				CHSuper(1, SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
+				CGRect translatedDestRect = [[screenView superview] convertRect:[screenView frame] toView:containerView];
+				CGRect myFrame = [self frame];
+				UIInterfaceOrientation *orientationRef = CHIvarRef(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation);
+				CGRect finalDestRect;
+				if (orientationRef) {
+					UIInterfaceOrientation orientation = *orientationRef;
+					switch (orientation) {
+						case UIInterfaceOrientationLandscapeLeft:
+							NSLog(@"ProSwitcher: Landscape Left");
+							finalDestRect = translatedDestRect;
+							break;
+						case UIInterfaceOrientationLandscapeRight:
+							NSLog(@"ProSwitcher: Landscape Right");
+							finalDestRect = translatedDestRect;
+							break;
+						case UIInterfaceOrientationPortraitUpsideDown:
+						default:
+							NSLog(@"ProSwitcher: Portrait Upside Down");
+							finalDestRect = translatedDestRect;
+							break;
+						case UIInterfaceOrientationPortrait:
+						default:
+							NSLog(@"ProSwitcher: Portrait/Default");
+							finalDestRect = translatedDestRect;
+							break;
+					}
+				} else {
+					NSLog(@"ProSwitcher: No Orientation");
+					finalDestRect = translatedDestRect;
+				}
+				NSLog(@"ProSwitcher: TransformRectToRect(%@, %@)", NSStringFromCGRect(myFrame), NSStringFromCGRect(translatedDestRect));
+				transform = TransformRectToRect(myFrame, translatedDestRect);
 			}
-			
-			break;
 		}
 		case 0:
 			CHSuper(1, SBZoomView, setTransform, transform);
