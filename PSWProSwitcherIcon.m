@@ -70,7 +70,7 @@ CHMethod2(void, SBIconModel, setVisibilityOfIconsWithVisibleTags, NSArray *, vis
 CHMethod0(void, SBApplicationIcon, launch)
 {
 	if (!isUninstalled)
-		[[PSWController sharedInstance] setActive:NO animated:NO];
+		[[PSWController sharedController] setActive:NO animated:NO];
 	CHSuper0(SBApplicationIcon, launch);
 }
 
@@ -79,7 +79,7 @@ CHMethod0(void, SBApplicationIcon, launch)
 CHMethod0(void, PSWProSwitcherIcon, launch)
 {
 	if (!isUninstalled) {
-		PSWController *vc = [PSWController sharedInstance];
+		PSWController *vc = [PSWController sharedController];
 		if (!vc.isAnimating)
 			vc.active = !vc.active;
 	}
@@ -88,7 +88,7 @@ CHMethod0(void, PSWProSwitcherIcon, launch)
 CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
 {
 	if (!isUninstalled) {
-		[[PSWController sharedInstance] setActive:NO animated:NO];
+		[[PSWController sharedController] setActive:NO animated:NO];
 		isUninstalled = YES;
 	}
 	CHSuper0(PSWProSwitcherIcon, completeUninstall);

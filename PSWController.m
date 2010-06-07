@@ -1,5 +1,3 @@
-
-
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
@@ -45,7 +43,6 @@ static NSUInteger disallowRestoreIconList;
 static NSUInteger disallowIconListScroll;
 static NSUInteger modifyZoomTransformCountDown;
 static NSUInteger ignoreZoomSetAlphaCountDown;
-static BOOL hasFinishedLaunching;
 
 static NSString *displayIdentifierToSuppressBackgroundingOn;
 
@@ -61,18 +58,14 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)applyPreferences;
 @end
 
+static PSWController *sharedController;	
+
 @implementation PSWController
 @synthesize snapshotPageView, containerView;
 
-+ (PSWController *)sharedInstance
++ (PSWController *)sharedController
 {
-	static PSWController *mainController = nil;
-	
-	if (mainController == nil && hasFinishedLaunching) {
-		mainController = [[PSWController alloc] init];
-	}
-		
-	return mainController;
+	return sharedController;
 }
 
 #pragma mark stuff
@@ -250,7 +243,8 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)activateWithAnimation:(BOOL)animated
 {
 	// Don't activate when in editing mode
-	if ([CHSharedInstance(SBIconController) isEditing])
+	SBIconController iconController = CHSharedInstance(SBIconController);
+	if ([iconController isEditing])
 		return;
 	
 	// Always reparent view
@@ -260,13 +254,15 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	if (isActive)
 		return;
 	isActive = YES;
+	
+	SBUIController *uiController = CHSharedInstance(SBUIController);
 		
 	// Deactivate CategoriesSB
-	if ([CHSharedInstance(SBUIController) respondsToSelector:@selector(categoriesSBCloseAll)])
-		[CHSharedInstance(SBUIController) categoriesSBCloseAll];
+	if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
+		[uiController categoriesSBCloseAll];
 	
 	// Deactivate Keyboard
-	[[CHSharedInstance(SBUIController) window] endEditing:YES];
+	[[uiController window] endEditing:YES];
 	
 	// Setup status bar
 	[self saveStatusBarStyle];
@@ -283,7 +279,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 	}
 	
 	if (GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+		[iconController setPageControlVisible:NO];
 	
 	// Show ProSwitcher
 	[containerView setAlpha:1.0f];
@@ -464,25 +460,43 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 #pragma mark Preference Changed Notification
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
-	[[PSWController sharedInstance] reloadPreferences];
+	[sharedController reloadPreferences];
 	PSWUpdateIconVisibility();
 }
 
 #pragma mark SBUIController
-CHMethod3(void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
+CHOptimizedMethod(3, self, void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
 	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && !disallowIconListScatter);
 }
 
-CHMethod1(void, SBUIController, restoreIconList, BOOL, animated)
+// 3.0-3.1
+CHOptimizedMethod(1, self, void, SBUIController, restoreIconList, BOOL, animated)
 {
 	if (disallowRestoreIconList == 0)
 		CHSuper1(SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
 	
-	[[PSWController sharedInstance] reparentView];
+	[sharedController reparentView];
 }
 
-CHMethod0(void, SBUIController, finishLaunching)
+// 3.2
+CHOptimizedMethod(1, self, void, SBUIController, restoreIconListAnimated, BOOL, animated)
+{
+	if (disallowRestoreIconList == 0)
+		CHSuper(1, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0);
+	
+	[sharedController reparentView];
+}
+// 3.2
+CHOptimizedMethod(2, self, void, SBUIController, restoreIconListAnimated, BOOL, animated, animateWallpaper, BOOL, animateWallpaper)
+{
+	if (disallowRestoreIconList == 0)
+		CHSuper(2, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0, animateWallpaper, animateWallpaper && disallowIconListScatter == 0);
+	
+	[sharedController reparentView];
+}
+
+CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 {
 	NSLog(@"Welcome to ProSwitcher.");
 	NSLog(@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra");
@@ -502,18 +516,18 @@ CHMethod0(void, SBUIController, finishLaunching)
 		[[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:YES];
 	}
 	[plistDict release];
+	
+	CHSuper(0, SBUIController, finishLaunching);
 
-	hasFinishedLaunching = YES;
+	sharedController = [[PSWController alloc] init];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
-		[[PSWController sharedInstance] setActive:YES animated:NO];
-	
-	CHSuper0(SBUIController, finishLaunching);
+		[sharedController setActive:YES animated:NO];
 }
 
 
 #pragma mark SBDisplayStack
-CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
+CHOptimizedMethod(1, self, void, SBDisplayStack, pushDisplay, SBDisplay *, display)
 {
 	SBApplication *application;
 	NSString *displayIdentifier;
@@ -546,8 +560,8 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 					disallowIconListScatter++;
 					
 					CHSuper1(SBDisplayStack, pushDisplay, display);
-					[[PSWController sharedInstance] setActive:YES animated:NO];
-					[[[PSWController sharedInstance] snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
+					[sharedController setActive:YES animated:NO];
+					[[sharedController snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
 					
 					disallowIconListScatter--;
 					return;
@@ -556,65 +570,50 @@ CHMethod1(void, SBDisplayStack, pushDisplay, SBDisplay*, display)
 		}
 	} else if (self == SBWPreActivateDisplayStack) {
 		if (CHIsClass(display, SBApplication)) {
-			[[PSWController sharedInstance] performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
+			[sharedController performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 		}
 	}	
-	CHSuper1(SBDisplayStack, pushDisplay, display);
+	CHSuper(1, SBDisplayStack, pushDisplay, display);
 }
 
 #pragma mark SpringBoard
-CHMethod0(void, SpringBoard, _handleMenuButtonEvent)
+CHOptimizedMethod(0, self, void, SpringBoard, _handleMenuButtonEvent)
 {
-	if ([[PSWController sharedInstance] isActive]) {
+	if ([sharedController isActive]) {
 		// Deactivate and suppress SpringBoard list scrolling
-		[[PSWController sharedInstance] setActive:NO];
+		[sharedController setActive:NO];
 		
 		disallowIconListScroll++;
-		CHSuper0(SpringBoard, _handleMenuButtonEvent);
+		CHSuper(0, SpringBoard, _handleMenuButtonEvent);
 		disallowIconListScroll--;
 		
 		return;
 	}
 	
-	CHSuper0(SpringBoard, _handleMenuButtonEvent);
+	CHSuper(0, SpringBoard, _handleMenuButtonEvent);
 }
-
-CHMethod1(void, SpringBoard, noteInterfaceOrientationChanged, UIInterfaceOrientation, interfaceOrientation)
-{
-	CHSuper1(SpringBoard, noteInterfaceOrientationChanged, interfaceOrientation);
-	
-	//[[PSWController sharedInstance] updateForOrientation:interfaceOrientation];
-}
-
-/*CHMethod0(void, SpringBoard, invokeProSwitcher)
-{
-	[[PSWController sharedInstance] activator:nil abortEvent:nil];
-}*/
 
 #pragma mark SBIconController
-CHMethod2(void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
+CHOptimizedMethod(2, self, void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
 {
 	if (disallowIconListScroll == 0)
-		CHSuper2(SBIconController, scrollToIconListAtIndex, index, animate, animate);
+		CHSuper(2, SBIconController, scrollToIconListAtIndex, index, animate, animate);
 }
 
-CHMethod1(void, SBIconController, setIsEditing, BOOL, isEditing)
+CHOptimizedMethod(1, self, void, SBIconController, setIsEditing, BOOL, isEditing)
 {
 	// Disable ProSwitcher when editing
 	if (isEditing)
-		[[PSWController sharedInstance] setActive:NO];
+		[sharedController setActive:NO];
 	
 	CHSuper1(SBIconController, setIsEditing, isEditing);
 }
 
-CHMethod1(void, SBIconController, setPageControlVisible, BOOL, visible)
+CHOptimizedMethod(1, self, void, SBIconController, setPageControlVisible, BOOL, visible)
 {
-	if ([[PSWController sharedInstance] isActive] && GetPreference(PSWShowPageControl, BOOL)) {
-		CHSuper1(SBIconController, setPageControlVisible, NO);
-		return;
-	}
-	
-	CHSuper1(SBIconController, setPageControlVisible, visible);
+	if ([sharedController isActive] && GetPreference(PSWShowPageControl, BOOL))
+		visible = NO;	
+	CHSuper(1, SBIconController, setPageControlVisible, visible);
 }
 
 #pragma mark SBZoomView
@@ -629,87 +628,87 @@ static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRec
 		targetRect.size.height / sourceRect.size.height);
 }
 
-CHMethod1(void, SBZoomView, setTransform, CGAffineTransform, transform)
+CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, transform)
 {
 	switch (modifyZoomTransformCountDown) {
 		case 1: {
 			modifyZoomTransformCountDown = 0;
 
-			PSWSnapshotView *ssv = [[[PSWController sharedInstance] snapshotPageView] focusedSnapshotView];
+			PSWSnapshotView *ssv = [[sharedController snapshotPageView] focusedSnapshotView];
 			if ([[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
-				CHSuper1(SBZoomView, setTransform, transform);
+				CHSuper(1, SBZoomView, setTransform, transform);
 			} else {
 				UIView *screenView = [ssv screenView];
-				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[[PSWController sharedInstance] containerView]];
-				CHSuper1(SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
+				CGRect translatedDestRect = [screenView convertRect:[screenView bounds] toView:[sharedController containerView]];
+				CHSuper(1, SBZoomView, setTransform, TransformRectToRect([self frame], translatedDestRect));
 			}
 			
 			break;
 		}
 		case 0:
-			CHSuper1(SBZoomView, setTransform, transform);
+			CHSuper(1, SBZoomView, setTransform, transform);
 			break;
 		default:
 			modifyZoomTransformCountDown--;
-			CHSuper1(SBZoomView, setTransform, transform);
+			CHSuper(1, SBZoomView, setTransform, transform);
 			break;
 	}
 }
 
-/*CHMethod1(void, SBZoomView, setAlpha, CGFloat, alpha)
+/*CHOptimizedMethod(1, super, void, SBZoomView, setAlpha, CGFloat, alpha)
 {
 	if (ignoreZoomSetAlphaCountDown)
 		ignoreZoomSetAlphaCountDown--;
 	else
-		CHSuper1(SBZoomView, setAlpha, alpha);
+		CHSuper(1, SBZoomView, setAlpha, alpha);
 }*/
 
 #pragma mark SBStatusBar
 
-CHMethod0(CGAffineTransform, SBStatusBar, distantStatusWindowTransform)
+CHOptimizedMethod(0, self, CGAffineTransform, SBStatusBar, distantStatusWindowTransform)
 {
 	if (disallowIconListScatter)
 		return CGAffineTransformMakeTranslation(0.0f, -[self frame].size.height);
 	else
-		return CHSuper0(SBStatusBar, distantStatusWindowTransform);
+		return CHSuper(0, SBStatusBar, distantStatusWindowTransform);
 }
 
 #pragma mark SBSearchView
 
-CHMethod2(void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
+CHOptimizedMethod(2, self, void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
 {
 	// Disable search view's keyboard when ProSwitcher is active
-	CHSuper2(SBSearchView, setShowsKeyboard, visible && ![[PSWController sharedInstance] isActive], animated, animated);
+	CHSuper(2, SBSearchView, setShowsKeyboard, visible && ![sharedController isActive], animated, animated);
 }
 
 #pragma mark SBVoiceControlAlert
 
-CHMethod0(void, SBVoiceControlAlert, deactivate)
+CHOptimizedMethod(0, super, void, SBVoiceControlAlert, deactivate)
 {
-	CHSuper0(SBVoiceControlAlert, deactivate);
+	CHSuper(0, SBVoiceControlAlert, deactivate);
 	
 	// Fix display when coming back from VoiceControl
-	if ([[PSWController sharedInstance] isActive])
-		[[PSWController sharedInstance] setActive:NO animated:NO];
+	if ([sharedController isActive])
+		[sharedController setActive:NO animated:NO];
 }
 
 #pragma mark SBIconListPageControl
 
-CHMethod0(id, SBIconListPageControl, init)
+CHOptimizedMethod(0, super, id, SBIconListPageControl, init)
 {
-	self = CHSuper0(SBIconListPageControl, init);
+	self = CHSuper(0, SBIconListPageControl, init);
 	
-	if ([[PSWController sharedInstance] isActive] && GetPreference(PSWShowPageControl, BOOL))
+	if ([sharedController isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 	
 	return self;
 }
 
-#ifdef DEBUG
-CHMethod0(void, SpringBoard, handleMenuDoubleTap)
+#ifdef SIMULATOR_DEBUG
+CHOptimizedMethod(0, self, void, SpringBoard, handleMenuDoubleTap)
 {
-	if (![[PSWController sharedInstance] isAnimating])
-		[[PSWController sharedInstance] setActive:[[PSWController sharedInstance] isActive]];
+	if (![sharedController isAnimating])
+		[sharedController setActive:[sharedController isActive]];
 }
 #endif
 
@@ -734,7 +733,9 @@ CHConstructor
 	CHHook0(SBIconListPageControl, init);
 	
 	CHLoadLateClass(SBUIController);
-	CHHook1(SBUIController, restoreIconList);
+	CHHook(1, SBUIController, restoreIconList);
+	CHHook(1, SBUIController, restoreIconListAnimated);
+	CHHook(2, SBUIController, restoreIconListAnimated, animateWallpaper);
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHHook0(SBUIController, finishLaunching);
 
@@ -745,7 +746,6 @@ CHConstructor
 	CHLoadLateClass(SBIconController);	
 	CHHook1(SBIconController, setIsEditing);
 	CHHook1(SBIconController, setPageControlVisible);
-	CHHook1(SpringBoard, noteInterfaceOrientationChanged);
 	
 	CHLoadLateClass(SBZoomView);
 	CHHook1(SBZoomView, setTransform);
@@ -768,9 +768,9 @@ CHConstructor
 		CHHook0(SpringBoard, _handleMenuButtonEvent);		
 		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
 	}
-	
-	#ifdef DEBUG
+
+#ifdef SIMULATOR_DEBUG	
 	// When we have no other way to activate it, here's an easy workaround
 	CHHook0(SpringBoard, handleMenuDoubleTap);
-	#endif /* DEBUG */
+#endif
 }

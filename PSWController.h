@@ -16,7 +16,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier);
 	UIStatusBarStyle formerStatusBarStyle;
 }
 
-+ (PSWController *)sharedInstance;
++ (PSWController *)sharedController;
 
 @property (nonatomic, assign, getter=isActive) BOOL active;
 - (void)setActive:(BOOL)active animated:(BOOL)animated;
