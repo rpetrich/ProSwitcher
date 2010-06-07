@@ -115,10 +115,7 @@
 		padding.bottom += 10.0f;
 	}
 	
-	CGImageRef snapshot = [_application snapshot];
-	CGSize imageSize;
-	imageSize.width = (CGFloat) CGImageGetWidth(snapshot);
-	imageSize.height = (CGFloat) CGImageGetHeight(snapshot);
+	CGSize imageSize = [self reloadSnapshot];
 	
 	CGRect frame = [self frame];
 	CGSize boundingSize = UIEdgeInsetsInsetRect(frame, padding).size;
@@ -192,9 +189,8 @@
 		badgeFrame.origin = CGPointZero;
 		badgeFrame.size.height -= 8.0f;
 		[_badgeLabel setFrame:badgeFrame];
-	}
+	}	
 	
-	[self reloadSnapshot];
 }
 
 - (id)initWithFrame:(CGRect)frame application:(PSWApplication *)application
@@ -207,10 +203,7 @@
 		
 		// Add Snapshot layer
 		screen = [UIButton buttonWithType:UIButtonTypeCustom];
-		CGImageRef snapshot = [application snapshot];
 		[screen setClipsToBounds:YES];
-		CALayer *layer = [screen layer];
-		[layer setContents:(id) snapshot];
 		[screen setHidden:NO];
 		
 		[screen addTarget:self action:@selector(snapshot:touchUpInside:) forControlEvents:UIControlEventTouchUpInside];
@@ -279,24 +272,34 @@
     [super dealloc];
 }
 
-- (void)reloadSnapshot
+- (CGSize)reloadSnapshot
 {
-	CALayer *layer = [screen layer];
-	CGImageRef image = [_application snapshot];
-	[layer setContents:(id)image];
+	id snapshot = [_application snapshot];
+	CGSize size;
+	CFTypeID snapshotType = CFGetTypeID(snapshot);
+	if (snapshotType == CGImageGetTypeID()) {
+		size.width = (CGFloat) CGImageGetWidth((CGImageRef)snapshot);
+		size.height = (CGFloat) CGImageGetHeight((CGImageRef)snapshot);
 #ifdef USE_IOSURFACE
-	if (image) {
-		CGFloat width = (CGFloat)CGImageGetWidth(image);
-		CGFloat height = (CGFloat)CGImageGetHeight(image);
+	} else if (snapshotType == IOSurfaceGetTypeID()) {
+		size.width = (CGFloat) IOSurfaceGetWidth((IOSurfaceRef)snapshot);
+		size.height = (CGFloat) IOSurfaceGetHeight((IOSurfaceRef)snapshot);
+#endif
+	} else {
+		size = CGSizeZero;
+	}
+	CALayer *layer = [screen layer];
+	[layer setContents:snapshot];
+	if (snapshot) {
 		PSWCropInsets cropInsets = [_application snapshotCropInsets];
 		CGRect contentsRect;
-		contentsRect.origin.x = cropInsets.left / width;
-		contentsRect.origin.y = cropInsets.top / height;
-		contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / width;
-		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / height;
+		contentsRect.origin.x = cropInsets.left / size.width;
+		contentsRect.origin.y = cropInsets.top / size.height;
+		contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / size.width;
+		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
 		[layer setContentsRect:contentsRect];
 	}
-#endif
+	return size;
 }
 
 #pragma mark Properties
@@ -443,7 +446,8 @@
 
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
 {
-	[self reloadSnapshot];
+	[self setNeedsLayout];
+	[self layoutIfNeeded];
 }
 
 - (void)applicationBadgeDidChange:(PSWApplication *)application

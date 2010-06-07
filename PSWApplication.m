@@ -86,14 +86,16 @@ static NSUInteger defaultImagePassThrough;
 	return [_application displayName];
 }
 
-- (CGImageRef)snapshot
+- (id)snapshot
 {	
 #ifdef USE_IOSURFACE
 	if (_snapshotImage)
-		return _snapshotImage;
+		return (id)_snapshotImage;
+	if (_surface)
+		return (id)_surface;
 #endif
 	defaultImagePassThrough++;
-	CGImageRef result = [[_application defaultImage:NULL] CGImage];
+	id result = (id)[[_application defaultImage:NULL] CGImage];
 	defaultImagePassThrough--;
 	return result;
 }
@@ -119,12 +121,6 @@ static NSUInteger defaultImagePassThrough;
 		_cropInsets.right = 0;
 		
 		if (surface) {
-			uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
-			CGDataProviderRef dataProvider = CGDataProviderCreateWithData((void *)CFRetain(surface), baseAddress, IOSurfaceGetAllocSize(surface), (CGDataProviderReleaseDataCallback)CFRelease);
-			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-			_snapshotImage = CGImageCreate(IOSurfaceGetWidth(surface), IOSurfaceGetHeight(surface), 8, 32, IOSurfaceGetBytesPerRow(surface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
-			CGColorSpaceRelease(colorSpace);
-			CGDataProviderRelease(dataProvider);
 			CFRetain(surface);
 			_surface = surface;
 			_cropInsets = cropInsets;
@@ -368,11 +364,20 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 	if (defaultImagePassThrough == 0) {
 		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
 		if (![app hasNativeBackgrounding]) {
-			CGImageRef cgResult = [app snapshot];
-			if (cgResult) {
-				if (something)
-					*something = YES;
-				return [UIImage imageWithCGImage:cgResult];
+			id snapshot = [app snapshot];
+			if (snapshot) {
+				CFTypeID snapshotType = CFGetTypeID(snapshot);
+				if (snapshotType == CGImageGetTypeID()) {
+					if (something)
+						*something = YES;
+					return [UIImage imageWithCGImage:(CGImageRef)snapshot];
+#ifdef USE_IOSURFACE
+				} else if (snapshotType == IOSurfaceGetTypeID()) {
+					if (something)
+						*something = YES;
+					return [[[UIImage alloc] initWithIOSurface:(IOSurfaceRef)snapshot] autorelease];
+#endif
+				}
 			}
 		}
 	}

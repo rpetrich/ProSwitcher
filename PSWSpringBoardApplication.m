@@ -34,9 +34,9 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 	return [super initWithDisplayIdentifier:@"com.apple.springboard"];
 }
 
-- (CGImageRef)snapshot
+- (id)snapshot
 {	
-	return springBoardSnapshot;
+	return (id)springBoardSnapshot;
 }
 
 - (BOOL)writeSnapshotToDisk

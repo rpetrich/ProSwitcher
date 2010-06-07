@@ -130,12 +130,41 @@ CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBAppli
 	currentZoomApp = nil;
 }
 
+static IOSurfaceAcceleratorRef accelerator;
+
+static IOSurfaceRef CreateSurfaceCopyInMainMemory(IOSurfaceRef surface)
+{
+	if (!surface)
+		return NULL;
+	// Describe new surface
+	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+		[NSNumber numberWithUnsignedInteger:IOSurfaceGetWidth(surface)], (id)kIOSurfaceWidth,
+		[NSNumber numberWithUnsignedInteger:IOSurfaceGetHeight(surface)], (id)kIOSurfaceHeight,
+		[NSNumber numberWithUnsignedInteger:(NSUInteger)'BGRA'], (id)kIOSurfacePixelFormat,
+		[NSNumber numberWithUnsignedInteger:4], (id)kIOSurfaceBytesPerElement,
+		kCFBooleanTrue, kIOSurfaceIsGlobal,
+	nil];
+	// Create accelerator
+	if (accelerator == NULL) {
+		IOSurfaceAcceleratorCreate(kCFAllocatorDefault, 2, &accelerator);
+		if (accelerator == NULL)
+			return (IOSurfaceRef)CFRetain(surface);
+	}
+	// Create new surface
+	IOSurfaceRef newSurface = IOSurfaceCreate((CFDictionaryRef)dict);
+	if (!newSurface)
+		return (IOSurfaceRef)CFRetain(surface);
+	// Transfer
+	IOSurfaceAcceleratorTransferSurface(accelerator, surface, newSurface, NULL, NULL);
+	return newSurface;
+}
 
 #pragma mark SBZoomView
 
 // 3.0-3.1
 CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
 {
+	surface = CreateSurfaceCopyInMainMemory(surface);
 	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
@@ -157,12 +186,15 @@ CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 		}
 		[application loadSnapshotFromSurface:surface cropInsets:insets];
 	}
+	if (surface)
+		CFRelease(surface);
 	return self;
 }
 
 // 3.2
 CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
 {
+	surface = CreateSurfaceCopyInMainMemory(surface);
 	if ((self = CHSuper3(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
@@ -188,6 +220,8 @@ CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 		}
 		[application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
 	}
+	if (surface)
+		CFRelease(surface);
 	return self;
 }
 

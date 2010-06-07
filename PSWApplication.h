@@ -56,7 +56,7 @@ typedef enum {
 @property (nonatomic, readonly) SBIconBadge *badgeView;
 @property (nonatomic, readonly) NSString *badgeText;
 
-@property (nonatomic, readonly) CGImageRef snapshot;
+@property (nonatomic, readonly) id snapshot;
 #ifdef USE_IOSURFACE
 @property (nonatomic, readonly) PSWCropInsets snapshotCropInsets;
 @property (nonatomic, readonly) PSWSnapshotRotation snapshotRotation;

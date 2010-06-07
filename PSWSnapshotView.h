@@ -49,7 +49,7 @@
 - (void)setFocused:(BOOL)focused animated:(BOOL)animated;
 @property (nonatomic, readonly) UIView *screenView;
 
-- (void)reloadSnapshot;
+- (CGSize)reloadSnapshot;
 - (void)layoutSubviews;
 
 @end
