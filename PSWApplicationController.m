@@ -138,10 +138,11 @@ static IOSurfaceRef CreateSurfaceCopyInMainMemory(IOSurfaceRef surface)
 		return NULL;
 	// Describe new surface
 	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-		[NSNumber numberWithUnsignedInteger:IOSurfaceGetWidth(surface)], (id)kIOSurfaceWidth,
-		[NSNumber numberWithUnsignedInteger:IOSurfaceGetHeight(surface)], (id)kIOSurfaceHeight,
-		[NSNumber numberWithUnsignedInteger:(NSUInteger)'BGRA'], (id)kIOSurfacePixelFormat,
-		[NSNumber numberWithUnsignedInteger:4], (id)kIOSurfaceBytesPerElement,
+		[NSNumber numberWithUnsignedInteger:IOSurfaceGetWidth(surface)], kIOSurfaceWidth,
+		[NSNumber numberWithUnsignedInteger:IOSurfaceGetHeight(surface)], kIOSurfaceHeight,
+		[NSNumber numberWithUnsignedInteger:(NSUInteger)'L565'], kIOSurfacePixelFormat,
+		[NSNumber numberWithUnsignedInteger:2], kIOSurfaceBytesPerElement,
+		[NSNumber numberWithUnsignedInteger:kIOMapInhibitCache], kIOSurfaceCacheMode,
 		kCFBooleanTrue, kIOSurfaceIsGlobal,
 	nil];
 	// Create accelerator
