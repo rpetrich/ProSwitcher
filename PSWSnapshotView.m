@@ -140,8 +140,12 @@
 		[[screen layer] setMask:nil];
 	} else {
 		CALayer *layer = [CALayer layer];
-		[layer setFrame:[screen bounds]];
-		[layer setContents:(id) [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
+		CGRect maskFrame;
+		maskFrame.origin.x = 0.0f;
+		maskFrame.origin.y = 0.0f;
+		maskFrame.size = screenFrame.size;
+		[layer setFrame:maskFrame];
+		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
 	
