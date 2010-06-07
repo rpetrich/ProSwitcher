@@ -204,16 +204,16 @@ CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 		insets.right = 0;
 		PSWSnapshotRotation rotation;
 		switch (CHIvar(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation)) {
-			case UIInterfaceOrientationPortraitUpsideDown:
+			case UIInterfaceOrientationPortrait:
 				rotation = PSWSnapshotRotation90Left;
 				break;
-			case UIInterfaceOrientationPortrait:
+			case UIInterfaceOrientationPortraitUpsideDown:
 				rotation = PSWSnapshotRotation90Right;
 				break;
-			case UIInterfaceOrientationLandscapeRight:
+			case UIInterfaceOrientationLandscapeLeft:
 				rotation = PSWSnapshotRotation180;
 				break;
-			case UIInterfaceOrientationLandscapeLeft:
+			case UIInterfaceOrientationLandscapeRight:
 			default:
 				rotation = PSWSnapshotRotationNone;
 				break;
