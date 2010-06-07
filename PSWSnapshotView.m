@@ -115,7 +115,27 @@
 		padding.bottom += 10.0f;
 	}
 	
-	CGSize imageSize = [self reloadSnapshot];
+	CGSize snapshotSize = [self reloadSnapshot];
+#ifdef USE_IOSURFACE
+	CGSize imageSize;
+	PSWCropInsets snapshotCropInsets = [_application snapshotCropInsets];
+	imageSize.width -= snapshotCropInsets.left + snapshotCropInsets.right;
+	imageSize.height -= snapshotCropInsets.top + snapshotCropInsets.bottom;
+	PSWSnapshotRotation snapshotRotation = [_application snapshotRotation];
+	switch (snapshotRotation) {
+		case PSWSnapshotRotation90Left:
+		case PSWSnapshotRotation90Right:
+			imageSize.width = snapshotSize.height;
+			imageSize.height = snapshotSize.width;
+			break;
+		default:
+			imageSize.width = snapshotSize.width;
+			imageSize.height = snapshotSize.height;
+			break;
+	}
+#else
+	CGSize imageSize = snapshotSize;
+#endif
 	
 	CGRect frame = [self frame];
 	CGSize boundingSize = UIEdgeInsetsInsetRect(frame, padding).size;
@@ -124,18 +144,30 @@
 	CGFloat ratioH = boundingSize.height / imageSize.height;
 	CGFloat properRatio = (ratioW < ratioH) ? ratioW : ratioH;
 	
+	CGRect screenBounds;
+	screenBounds.origin.x = 0.0f;
+	screenBounds.origin.y = 0.0f;
+	screenBounds.size.width = properRatio * snapshotSize.width;
+	screenBounds.size.height = properRatio * snapshotSize.height;
+	[screen setBounds:screenBounds];
+		
 	CGRect screenFrame;	
 	screenFrame.size.width = properRatio * imageSize.width;
 	screenFrame.size.height = properRatio * imageSize.height;
 	screenFrame.origin.x = (NSInteger) ((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger) ((frame.size.height - screenFrame.size.height) / 2.0f);
-	
+
 	if (_showsTitle)
 		screenFrame.origin.y -= 16.0f;
 	
 	screenY = screenFrame.origin.y;
-	[screen setFrame:screenFrame];
 	
+	CGPoint screenCenter;
+	screenCenter.x = screenFrame.origin.x + screenFrame.size.width * 0.5f;
+	screenCenter.y = screenFrame.origin.y + screenFrame.size.height * 0.5f;
+	[screen setCenter:screenCenter];
+	
+	// Apply/clear mask
 	if (_roundedCornerRadius == 0) {
 		[[screen layer] setMask:nil];
 	} else {
@@ -143,11 +175,31 @@
 		CGRect maskFrame;
 		maskFrame.origin.x = 0.0f;
 		maskFrame.origin.y = 0.0f;
-		maskFrame.size = screenFrame.size;
+		maskFrame.size = snapshotSize;
 		[layer setFrame:maskFrame];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage]];
+		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(snapshotSize, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
+	
+	// Apply rotation
+#ifdef USE_IOSURFACE
+	CGAffineTransform transform;
+	switch (snapshotRotation) {
+		case PSWSnapshotRotation90Left:
+			transform = CGAffineTransformMakeRotation(0.5f * M_PI);
+			break;
+		case PSWSnapshotRotation90Right:
+			transform = CGAffineTransformMakeRotation(-0.5f * M_PI);
+			break;
+		case PSWSnapshotRotation180:
+			transform = CGAffineTransformMakeRotation(M_PI);
+			break;
+		default:
+			transform = CGAffineTransformIdentity;
+			break;
+	}
+	screen.transform = transform;
+#endif
 	
 	// Reposition and resize close button
 	CGRect closeButtonFrame;
