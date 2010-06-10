@@ -88,6 +88,13 @@ static PSWController *sharedController;
 		[self reparentView];
 		[self reloadPreferences];
 		
+		if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenDisabled) {
+			isActive = YES;
+			[self setActive:NO animated:NO];
+		} else {
+			[self setActive:YES animated:NO];
+		}
+		
 		LAActivator *la = CHSharedInstance(LAActivator);
 		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
