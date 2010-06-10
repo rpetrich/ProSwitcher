@@ -346,6 +346,7 @@
 	}
 	CALayer *layer = [screen layer];
 	[layer setContents:snapshot];
+#ifdef USE_IOSURFACE
 	if (snapshot) {
 		PSWCropInsets cropInsets = [_application snapshotCropInsets];
 		CGRect contentsRect;
@@ -355,6 +356,7 @@
 		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
 		[layer setContentsRect:contentsRect];
 	}
+#endif
 	return size;
 }
 
