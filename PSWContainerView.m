@@ -49,10 +49,11 @@
 - (void)layoutSubviews
 {
 	CGRect frame;
-	frame.origin = CGPointZero;
 	frame.size = [_emptyText sizeWithFont:_emptyLabel.font];
+	CGSize size = [self bounds].size;
+	frame.origin.x = (NSInteger)(size.width - frame.size.width) / 2;
+	frame.origin.y = (NSInteger)(size.height - frame.size.height) / 2;
 	[_emptyLabel setFrame:frame];
-	[_emptyLabel setCenter:self.center];
 	
 	// FIXME: Where does SpringBoard find where to position it?
 	CGRect pageControlFrame = UIEdgeInsetsInsetRect([self bounds], _pageViewInsets);
