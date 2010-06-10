@@ -657,7 +657,6 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 							finalDestRect = translatedDestRect;
 							break;
 						case UIInterfaceOrientationPortraitUpsideDown:
-						default:
 							NSLog(@"ProSwitcher: Portrait Upside Down");
 							finalDestRect = translatedDestRect;
 							break;
