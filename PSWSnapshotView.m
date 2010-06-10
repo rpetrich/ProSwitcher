@@ -175,9 +175,9 @@
 		CGRect maskFrame;
 		maskFrame.origin.x = 0.0f;
 		maskFrame.origin.y = 0.0f;
-		maskFrame.size = snapshotSize;
+		maskFrame.size = screenBounds.size;
 		[layer setFrame:maskFrame];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(snapshotSize, _roundedCornerRadius) CGImage]];
+		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenBounds.size, _roundedCornerRadius) CGImage]];
 		[[screen layer] setMask:layer];
 	}
 	
