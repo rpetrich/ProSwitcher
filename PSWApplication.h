@@ -2,14 +2,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
 
-#import <IOSurface/IOSurface.h>
-#import <TargetConditionals.h>
-
-#if !TARGET_IPHONE_SIMULATOR
-#ifndef IOSURFACE_API_FALLBACK
-#define USE_IOSURFACE
-#endif
-#endif
+#import "PSWSurface.h"
 
 #ifdef USE_IOSURFACE
 typedef struct PSWCropInsets {

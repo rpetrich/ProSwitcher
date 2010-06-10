@@ -375,7 +375,16 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 				} else if (snapshotType == IOSurfaceGetTypeID()) {
 					if (something)
 						*something = YES;
-					return [[[UIImage alloc] initWithIOSurface:(IOSurfaceRef)snapshot] autorelease];
+					IOSurfaceRef imageSurface = PSWSurfaceCopyToMainMemory((IOSurfaceRef)snapshot, 'BGRA', 4);
+					uint8_t *baseAddress = IOSurfaceGetBaseAddress(imageSurface);
+					CGDataProviderRef dataProvider = CGDataProviderCreateWithData((void *)imageSurface, baseAddress, IOSurfaceGetAllocSize(imageSurface), (CGDataProviderReleaseDataCallback)CFRelease);
+					CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+					CGImageRef image = CGImageCreate(IOSurfaceGetWidth(imageSurface), IOSurfaceGetHeight(imageSurface), 8, 32, IOSurfaceGetBytesPerRow(imageSurface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
+					CGColorSpaceRelease(colorSpace);
+					CGDataProviderRelease(dataProvider);
+					UIImage *result = [UIImage imageWithCGImage:image];
+					CGImageRelease(image);
+					return result;
 #endif
 				}
 			}
