@@ -116,7 +116,7 @@ static PSWController *sharedController;
 }
 
 - (void)reparentView
-{
+{	
 	UIView *view = containerView;
 		
 	// Find appropriate superview and add as subview
@@ -278,7 +278,10 @@ static PSWController *sharedController;
 	// Restore focused application
 	[snapshotPageView setFocusedApplication:focusedApplication];
 	
+	[containerView setHidden:NO];
+	
 	if (animated) {
+		[containerView setAlpha:0.0f];
 		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
@@ -306,6 +309,7 @@ static PSWController *sharedController;
 - (void)didFinishDeactivate
 {
 	[containerView removeFromSuperview];
+	[containerView setHidden:YES];
 	[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	isAnimating = NO;
 }
