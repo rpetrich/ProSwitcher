@@ -643,7 +643,7 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 
 			PSWPageView *pageView = [sharedController snapshotPageView];
 			PSWSnapshotView *ssv = [pageView focusedSnapshotView];
-			if (![[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
+			if (ssv && ![[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
 				[pageView layoutIfNeeded];
 				UIView *containerView = [sharedController containerView];
 				[containerView layoutIfNeeded];
