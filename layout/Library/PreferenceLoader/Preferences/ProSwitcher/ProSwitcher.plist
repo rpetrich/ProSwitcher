@@ -21,7 +21,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>label</key>
-			<string>Activation Methods</string>
+			<string>ACTIVATION_METHODS</string>
 			<key>isController</key>
 			<true/>
 			<key>bundle</key>
@@ -41,12 +41,12 @@
 			<key>key</key>
 			<string>PSWBecomeHomeScreen</string>
 			<key>label</key>
-			<string>Become Home Screen</string>
+			<string>BECOME_HOME_SCREEN</string>
 			<key>validTitles</key>
 			<array>
-				<string>Disabled</string>
-				<string>Enabled</string>
-				<string>Background</string>
+				<string>BECOME_HOME_SCREEN_DISABLED</string>
+				<string>BECOME_HOME_SCREEN_ENABLED</string>
+				<string>BECOME_HOME_SCREEN_BACKGROUND</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -67,7 +67,7 @@
 			<key>key</key>
 			<string>PSWShowIcon</string>
 			<key>label</key>
-			<string>Show Icon</string>
+			<string>SHOW_ICON</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -75,7 +75,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Display</string>
+			<string>DISPLAY_GROUP</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -87,7 +87,7 @@
 			<key>key</key>
 			<string>PSWShowApplicationTitle</string>
 			<key>label</key>
-			<string>Application Title</string>
+			<string>SHOW_APPLICATION_TITLE</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -101,7 +101,7 @@
 			<key>key</key>
 			<string>PSWShowBadges</string>
 			<key>label</key>
-			<string>Show Badges</string>
+			<string>SHOW_BADGES</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -115,7 +115,7 @@
 			<key>key</key>
 			<string>PSWAllowsZoom</string>
 			<key>label</key>
-			<string>Zoom Active Card</string>
+			<string>ZOOM_ACTIVE_CARD</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -129,7 +129,7 @@
 			<key>key</key>
 			<string>PSWShowCloseButton</string>
 			<key>label</key>
-			<string>Close Button</string>
+			<string>SHOW_CLOSE_BUTTON</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -143,7 +143,7 @@
 			<key>key</key>
 			<string>PSWEmptyTapClose</string>
 			<key>label</key>
-			<string>Empty Tap to Close</string>
+			<string>EMPTY_TAP_TO_CLOSE</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -159,13 +159,13 @@
 			<key>key</key>
 			<string>PSWRoundedCornerRadius</string>
 			<key>label</key>
-			<string>Rounded Corners</string>
+			<string>ROUNDED_CORNERS</string>
 			<key>validTitles</key>
 			<array>
-				<string>None</string>
-				<string>Small</string>
-				<string>Medium</string>
-				<string>Large</string>
+				<string>ROUNDED_CORNERS_NONE</string>
+				<string>ROUNDED_CORNERS_SMALL</string>
+				<string>ROUNDED_CORNERS_MEDIUM</string>
+				<string>ROUNDED_CORNERS_LARGE</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -191,7 +191,7 @@
 			<key>key</key>
 			<string>PSWShowPageControl</string>
 			<key>label</key>
-			<string>Page Dots</string>
+			<string>SHOW_PAGE_CONTROL</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -205,7 +205,7 @@
 			<key>key</key>
 			<string>PSWSpringBoardCard</string>
 			<key>label</key>
-			<string>SpringBoard Card</string>
+			<string>SHOW_SPRINGBOARD_CARD</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -219,7 +219,7 @@
 			<key>key</key>
 			<string>PSWShowDefaultApps</string>
 			<key>label</key>
-			<string>Show Default Apps</string>
+			<string>SHOW_DEFAULT_APPS</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -233,7 +233,7 @@
 			<key>key</key>
 			<string>PSWSwipeToClose</string>
 			<key>label</key>
-			<string>Swipe to Close</string>
+			<string>SWIPE_TO_CLOSE</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -249,12 +249,12 @@
 			<key>key</key>
 			<string>PSWEmptyStyle</string>
 			<key>label</key>
-			<string>Empty Style</string>
+			<string>EMPTY_STYLE</string>
 			<key>validTitles</key>
 			<array>
-				<string>Text</string>
-				<string>Blank</string>
-				<string>Disabled</string>
+				<string>EMPTY_STYLE_TEXT</string>
+				<string>EMPTY_STYLE_BLANK</string>
+				<string>EMPTY_STYLE_DISABLED</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -277,11 +277,11 @@
 			<key>key</key>
 			<string>PSWSnapshotInset</string>
 			<key>label</key>
-			<string>Cards Visible</string>
+			<string>SNAPSHOT_INSET</string>
 			<key>validTitles</key>
 			<array>
-				<string>Three</string>
-				<string>One</string>
+				<string>SNAPSHOT_INSET_40</string>
+				<string>SNAPSHOT_INSET_0</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -303,11 +303,11 @@
 			<key>key</key>
 			<string>PSWTapsToActivate</string>
 			<key>label</key>
-			<string>Taps to Activate</string>
+			<string>TAPS_TO_ACTIVATE</string>
 			<key>validTitles</key>
 			<array>
-				<string>One</string>
-				<string>Two</string>
+				<string>TAPS_TO_ACTIVATE_SINGLE</string>
+				<string>TAPS_TO_ACTIVATE_DOUBLE</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -321,7 +321,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Theming</string>
+			<string>THEMING_GROUP</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -333,7 +333,7 @@
 			<key>key</key>
 			<string>PSWThemedIcons</string>
 			<key>label</key>
-			<string>Themed Icons</string>
+			<string>THEMED_ICONS</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -347,7 +347,7 @@
 			<key>key</key>
 			<string>PSWShowDock</string>
 			<key>label</key>
-			<string>Show Dock</string>
+			<string>SHOW_DOCK</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -361,7 +361,7 @@
 			<key>key</key>
 			<string>PSWDimBackground</string>
 			<key>label</key>
-			<string>Dim Background</string>
+			<string>DIM_BACKGROUND</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
@@ -377,11 +377,11 @@
 			<key>key</key>
 			<string>PSWBackgroundStyle</string>
 			<key>label</key>
-			<string>Background</string>
+			<string>BACKGROUND_STYLE</string>
 			<key>validTitles</key>
 			<array>
-				<string>Transparent</string>
-				<string>Theme</string>
+				<string>BACKGROUND_STYLE_NONE</string>
+				<string>BACKGROUND_STYLE_IMAGE</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -410,8 +410,7 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>
-ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
+			<string>ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
 			<key>requiredCapabilities</key>
 			<array>
 				<dict>
@@ -424,8 +423,7 @@ ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under th
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>
-ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
+			<string>ProSwitcher is © 2009-2010 Ryan Petrich and Grant Paul and is licensed under the GNU LGPL.</string>
 		</dict>
 	</array>
 	<key>title</key>

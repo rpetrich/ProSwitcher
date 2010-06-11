@@ -15,7 +15,11 @@ endif
 
 ADDITIONAL_CFLAGS = -std=c99 -I./Headers
 
+LOCALIZATION_PROJECT_NAME = ProSwitcher
+LOCALIZATION_DEST_PATH = /Library/PreferenceLoader/Preferences/ProSwitcher/
+
 include framework/makefiles/common.mk
 include framework/makefiles/tweak.mk
+include Localization/makefiles/common.mk
 
 endif
