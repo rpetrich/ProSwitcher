@@ -5,6 +5,7 @@
 
 static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
+static NSBundle *localizationBundle;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
@@ -121,8 +122,14 @@ void PSWClearResourceCache()
 	imageCache = nil;
 }
 
+NSString *PSWLocalize(NSString *text)
+{
+	return [localizationBundle localizedStringForKey:text value:nil table:nil];
+}
+
 CHConstructor
 {
 	CHAutoreleasePoolForScope();
 	sharedBundle = [[NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"] retain];
+	localizationBundle = [[NSBundle bundleWithPath:@"/Library/PreferenceLoader/Preferences/ProSwitcher"] retain];
 }

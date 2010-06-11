@@ -180,7 +180,7 @@ static PSWController *sharedController;
 		
 	containerView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
 	containerView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
-	containerView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? @"No Apps Running" : nil;
+	containerView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? PSWLocalize(@"NO_APPS_RUNNING") : nil;
 	containerView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
 	
 	/* The page view is responsible for everything else, basically. */
@@ -515,7 +515,7 @@ CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath] ?: [[NSMutableDictionary alloc] init];
 	if (![[plistDict objectForKey:@"PSWAlert"] boolValue]) {
 		// Tutorial
-		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Welcome to ProSwitcher" message:@"To change settings or to setup gestures, go to the Settings app.\n\n(c) 2009 Ryan Petrich and Grant Paul\nLGPL Licensed" delegate:nil cancelButtonTitle:nil otherButtonTitles:@"Continue", nil] autorelease];
+		UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:PSWLocalize(@"WELCOME_TITLE") message:PSWLocalize(@"WELCOME_MESSAGE") delegate:nil cancelButtonTitle:nil otherButtonTitles:PSWLocalize(@"WELCOME_CONTINUE_BUTTON"), nil] autorelease];
 		[alert show];
 		[plistDict setObject:[NSNumber numberWithBool:YES] forKey:@"PSWAlert"];
 		PSWWriteBinaryPropertyList(plistDict, PSWPreferencesFilePath);

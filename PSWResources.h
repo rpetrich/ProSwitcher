@@ -13,3 +13,4 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius);
 
 #define PSWGetCachedSpringBoardResource(name) PSWGetCachedImageResource(name, [NSBundle mainBundle])
 
+NSString *PSWLocalize(NSString *text);
