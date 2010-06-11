@@ -1,6 +1,10 @@
 
 #import "PSWContainerView.h"
 #import "PSWPageView.h"
+#import "PSWPreferences.h"
+
+CHDeclareClass(SBIconModel);
+CHDeclareClass(SBIconController);
 
 @implementation PSWContainerView
 
@@ -51,13 +55,15 @@
 	CGRect frame;
 	frame.size = [_emptyText sizeWithFont:_emptyLabel.font];
 	CGSize size = [self bounds].size;
-	frame.origin.x = (NSInteger)(size.width - frame.size.width) / 2;
-	frame.origin.y = (NSInteger)(size.height - frame.size.height) / 2;
+	frame.origin.x = (NSInteger) (size.width - frame.size.width) / 2;
+	frame.origin.y = (NSInteger) (size.height - frame.size.height) / 2;
 	[_emptyLabel setFrame:frame];
 	
-	// FIXME: Where does SpringBoard find where to position it?
-	CGRect pageControlFrame = UIEdgeInsetsInsetRect([self bounds], _pageViewInsets);
-	[_pageControl setFrame:CGRectMake(0.0f, pageControlFrame.size.height + pageControlFrame.origin.y - 19.0f, self.frame.size.width, 19.0f)];
+	// Fix page control positioning by retrieving it from the SpringBoard page control
+	id pc = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+	frame = [pc frame];
+	frame = [self convertRect:frame fromView:[pc superview]];
+	[_pageControl setFrame:frame];
 }
 
 - (void)shouldExit
@@ -233,3 +239,8 @@
 }
 
 @end
+
+CHConstructor {
+	CHLoadLateClass(SBIconModel);
+	CHLoadLateClass(SBIconController);
+}

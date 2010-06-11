@@ -56,6 +56,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)reparentView;
 - (void)reloadPreferences;
 - (void)applyPreferences;
+- (void)fixPageControl;
 @end
 
 static PSWController *sharedController;	
@@ -151,9 +152,7 @@ static PSWController *sharedController;
 
 - (void)applyPreferences
 {
-	// FIXME: refactor all this page control hiding into a new method
-	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+	[self fixPageControl];
 	
 	/* The container view is responsible for background, page control, and [tap|auto] exit. */
 	
@@ -213,6 +212,12 @@ static PSWController *sharedController;
 	}
 
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
+}
+
+- (void)fixPageControl
+{
+	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
+		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
 }
 
 - (void)reloadPreferences
