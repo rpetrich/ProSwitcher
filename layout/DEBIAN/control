@@ -1,7 +1,7 @@
 Package: com.collab.proswitcher
 Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 1.1.0), backgrounder
 Provides: proswitcher
-Conflicts: com.aaronash.Multifl0w
+Conflicts: com.aaronash.Multifl0w, firmware (>= 4.0)
 Replaces: com.aaronash.Multifl0w
 Name: ProSwitcher
 Version: 1.1
