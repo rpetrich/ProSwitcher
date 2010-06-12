@@ -653,9 +653,9 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 			PSWPageView *pageView = [sharedController snapshotPageView];
 			PSWSnapshotView *ssv = [pageView focusedSnapshotView];
 			if (ssv && ![[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
-				[pageView layoutIfNeeded];
 				UIView *containerView = [sharedController containerView];
 				[containerView layoutIfNeeded];
+				[pageView layoutIfNeeded];
 				UIView *screenView = [ssv screenView];
 				CGRect translatedDestRect = [[screenView superview] convertRect:[screenView frame] toView:containerView];
 				CGRect myFrame = [self frame];
