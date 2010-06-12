@@ -332,30 +332,34 @@
 {
 	id snapshot = [_application snapshot];
 	CGSize size;
-	CFTypeID snapshotType = CFGetTypeID(snapshot);
-	if (snapshotType == CGImageGetTypeID()) {
-		size.width = (CGFloat) CGImageGetWidth((CGImageRef)snapshot);
-		size.height = (CGFloat) CGImageGetHeight((CGImageRef)snapshot);
-#ifdef USE_IOSURFACE
-	} else if (snapshotType == IOSurfaceGetTypeID()) {
-		size.width = (CGFloat) IOSurfaceGetWidth((IOSurfaceRef)snapshot);
-		size.height = (CGFloat) IOSurfaceGetHeight((IOSurfaceRef)snapshot);
-#endif
-	} else {
-		size = CGSizeZero;
-	}
 	CALayer *layer = [screen layer];
 	[layer setContents:snapshot];
-#ifdef USE_IOSURFACE
 	if (snapshot) {
-		PSWCropInsets cropInsets = [_application snapshotCropInsets];
-		CGRect contentsRect;
-		contentsRect.origin.x = cropInsets.left / size.width;
-		contentsRect.origin.y = cropInsets.top / size.height;
-		contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / size.width;
-		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
-		[layer setContentsRect:contentsRect];
+		CFTypeID snapshotType = CFGetTypeID(snapshot);
+		if (snapshotType == CGImageGetTypeID()) {
+			size.width = (CGFloat) CGImageGetWidth((CGImageRef)snapshot);
+			size.height = (CGFloat) CGImageGetHeight((CGImageRef)snapshot);
+#ifdef USE_IOSURFACE
+		} else if (snapshotType == IOSurfaceGetTypeID()) {
+			size.width = (CGFloat) IOSurfaceGetWidth((IOSurfaceRef)snapshot);
+			size.height = (CGFloat) IOSurfaceGetHeight((IOSurfaceRef)snapshot);
+#endif
+		} else {
+			size.width = 320.0f;
+			size.height = 480.0f;
+		}
+	} else {
+		size.width = 320.0f;
+		size.height = 480.0f;
 	}
+#ifdef USE_IOSURFACE
+	PSWCropInsets cropInsets = [_application snapshotCropInsets];
+	CGRect contentsRect;
+	contentsRect.origin.x = cropInsets.left / size.width;
+	contentsRect.origin.y = cropInsets.top / size.height;
+	contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / size.width;
+	contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
+	[layer setContentsRect:contentsRect];
 #endif
 	return size;
 }
