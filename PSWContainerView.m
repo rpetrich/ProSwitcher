@@ -64,6 +64,10 @@ CHDeclareClass(SBIconController);
 	frame = [pc frame];
 	frame = [self convertRect:frame fromView:[pc superview]];
 	[_pageControl setFrame:frame];
+	
+	PSWApplication *focusedApplication = [_pageView focusedApplication];
+	[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+	[_pageView setFocusedApplication:focusedApplication];
 }
 
 - (void)shouldExit
@@ -87,8 +91,7 @@ CHDeclareClass(SBIconController);
 	if (_pageView != pageView) {
 		[_pageView release];
 		_pageView = [pageView retain];
-		[_pageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+		[self setNeedsLayout];
 	}
 }
 
