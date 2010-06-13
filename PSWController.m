@@ -79,7 +79,6 @@ static PSWController *sharedController;
 		containerView = [[PSWContainerView alloc] init];
 		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 
-		[containerView addSubview:snapshotPageView];
 		[containerView setAlpha:0.0f];
 		
 		[containerView setPageView:snapshotPageView];
@@ -249,7 +248,8 @@ static PSWController *sharedController;
 - (void)didFinishActivate
 {
 	isAnimating = NO;
-	[snapshotPageView layoutSubviews];
+	[containerView layoutSubviews];
+	[containerView setTransform:CGAffineTransformIdentity];
 }
 
 - (void)activateWithAnimation:(BOOL)animated
@@ -287,10 +287,10 @@ static PSWController *sharedController;
 	
 	if (animated) {
 		[containerView setAlpha:0.0f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
+		[containerView setTransform:CGAffineTransformIdentity];
 	}
 	
 	if (GetPreference(PSWShowPageControl, BOOL))
@@ -315,7 +315,7 @@ static PSWController *sharedController;
 {
 	[containerView removeFromSuperview];
 	[containerView setHidden:YES];
-	[snapshotPageView.layer setTransform:CATransform3DIdentity];
+	[containerView setTransform:CGAffineTransformIdentity];
 	isAnimating = NO;
 }
 
@@ -331,10 +331,10 @@ static PSWController *sharedController;
 	focusedApplication = [[snapshotPageView focusedApplication] retain];
 		
 	if (animated) {
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
+		[containerView setTransform:CGAffineTransformIdentity];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 	}
 	
 	// Show SpringBoard's page control

@@ -65,7 +65,10 @@ CHDeclareClass(SBIconController);
 	[_pageControl setFrame:frame];
 	
 	PSWApplication *focusedApplication = [_pageView focusedApplication];
-	[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+	frame.origin.x = 0.0f;
+	frame.origin.y = 0.0f;
+	frame.size = size;
+	[_pageView setFrame:UIEdgeInsetsInsetRect(frame, _pageViewInsets)];
 	[_pageView setFocusedApplication:focusedApplication];
 }
 
@@ -82,14 +85,16 @@ CHDeclareClass(SBIconController);
 - (void)setPageViewInsets:(UIEdgeInsets)pageViewInsets
 {
 	_pageViewInsets = pageViewInsets;
-	[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+	[self setNeedsLayout];
 }
 
 - (void)setPageView:(PSWPageView *)pageView
 {
 	if (_pageView != pageView) {
+		[_pageView removeFromSuperview];
 		[_pageView release];
 		_pageView = [pageView retain];
+		[self addSubview:_pageView];
 		[self setNeedsLayout];
 	}
 }
