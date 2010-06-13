@@ -60,9 +60,8 @@ CHDeclareClass(SBIconController);
 	[_emptyLabel setFrame:frame];
 	
 	// Fix page control positioning by retrieving it from the SpringBoard page control
-	id pc = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
-	frame = [pc frame];
-	frame = [self convertRect:frame fromView:[pc superview]];
+	SBIconListPageControl *pageControl = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+	frame = [self convertRect:[pageControl frame] fromView:[pageControl superview]];
 	[_pageControl setFrame:frame];
 	
 	PSWApplication *focusedApplication = [_pageView focusedApplication];
