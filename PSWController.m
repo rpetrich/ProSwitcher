@@ -657,37 +657,39 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 				[containerView layoutIfNeeded];
 				[pageView layoutIfNeeded];
 				UIView *screenView = [ssv screenView];
-				CGRect translatedDestRect = [[screenView superview] convertRect:[screenView frame] toView:containerView];
-				CGRect myFrame = [self frame];
+				CGRect convertedRect = [[screenView superview] convertRect:[screenView frame] toView:[containerView superview]];
+				CGRect rotatedRect;
 				UIInterfaceOrientation *orientationRef = CHIvarRef(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation);
-				CGRect finalDestRect;
 				if (orientationRef) {
 					UIInterfaceOrientation orientation = *orientationRef;
+					CGSize screenSize = [[UIScreen mainScreen] bounds].size;
 					switch (orientation) {
 						case UIInterfaceOrientationLandscapeLeft:
-							NSLog(@"ProSwitcher: Landscape Left");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = convertedRect.origin.y;
+							rotatedRect.origin.y = screenSize.height - convertedRect.origin.x - convertedRect.size.width;
+							rotatedRect.size.height = convertedRect.size.width;
+							rotatedRect.size.width = convertedRect.size.height;
 							break;
 						case UIInterfaceOrientationLandscapeRight:
-							NSLog(@"ProSwitcher: Landscape Right");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = screenSize.width - convertedRect.origin.y - convertedRect.size.height;
+							rotatedRect.origin.y = convertedRect.origin.x;
+							rotatedRect.size.height = convertedRect.size.width;
+							rotatedRect.size.width = convertedRect.size.height;
 							break;
 						case UIInterfaceOrientationPortraitUpsideDown:
-							NSLog(@"ProSwitcher: Portrait Upside Down");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = screenSize.width - convertedRect.origin.x - convertedRect.size.width;
+							rotatedRect.origin.y = screenSize.height - convertedRect.origin.y - convertedRect.size.height;
+							rotatedRect.size = convertedRect.size;
 							break;
 						case UIInterfaceOrientationPortrait:
 						default:
-							NSLog(@"ProSwitcher: Portrait/Default");
-							finalDestRect = translatedDestRect;
+							rotatedRect = convertedRect;
 							break;
 					}
 				} else {
-					NSLog(@"ProSwitcher: No Orientation");
-					finalDestRect = translatedDestRect;
+					rotatedRect = convertedRect;
 				}
-				NSLog(@"ProSwitcher: TransformRectToRect(%@, %@)", NSStringFromCGRect(myFrame), NSStringFromCGRect(translatedDestRect));
-				transform = TransformRectToRect(myFrame, translatedDestRect);
+				transform = TransformRectToRect([self frame], rotatedRect);
 			}
 		}
 		case 0:
