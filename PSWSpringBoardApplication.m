@@ -92,7 +92,7 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 @end
 
 #pragma mark SBUIController
-CHMethod0(void, SBUIController, finishLaunching)
+CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 {
 	UIImage *springBoardImage = PSWImage(@"springboardsnapshot");
 	if (springBoardImage) {
@@ -112,13 +112,12 @@ CHMethod0(void, SBUIController, finishLaunching)
 		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
 	}
 	
-	CHSuper0(SBUIController, finishLaunching);
+	CHSuper(0, SBUIController, finishLaunching);
 }
 
-
-CHConstructor {
+CHConstructor
+{
 	CHLoadLateClass(SpringBoard);
 	CHLoadLateClass(SBUIController);
-	CHHook0(SBUIController, finishLaunching);
+	CHHook(0, SBUIController, finishLaunching);
 }
-

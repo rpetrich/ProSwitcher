@@ -242,7 +242,8 @@ CHDeclareClass(SBIconController);
 
 @end
 
-CHConstructor {
+CHConstructor
+{
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBIconController);
 }

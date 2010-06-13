@@ -55,28 +55,28 @@ void PSWUpdateIconVisibility()
 }
 
 #pragma mark SBIconModel
-CHMethod2(void, SBIconModel, setVisibilityOfIconsWithVisibleTags, NSArray *, visibleTags, hiddenTags, NSArray *, hiddenTags)
+CHOptimizedMethod(2, self, void, SBIconModel, setVisibilityOfIconsWithVisibleTags, NSArray *, visibleTags, hiddenTags, NSArray *, hiddenTags)
 {
 	PSWPreparePreferences();
 	if (GetPreference(PSWShowIcon, BOOL))
 		visibleTags = [visibleTags arrayByAddingObject:@"com.collab.proswitcher"];
 	else
 		hiddenTags = [hiddenTags arrayByAddingObject:@"com.collab.proswitcher"];
-	CHSuper2(SBIconModel, setVisibilityOfIconsWithVisibleTags, visibleTags, hiddenTags, hiddenTags);
+	CHSuper(2, SBIconModel, setVisibilityOfIconsWithVisibleTags, visibleTags, hiddenTags, hiddenTags);
 }
 
 #pragma mark SBApplicationIcon
 
-CHMethod0(void, SBApplicationIcon, launch)
+CHOptimizedMethod(0, self, void, SBApplicationIcon, launch)
 {
 	if (!isUninstalled)
 		[[PSWController sharedController] setActive:NO animated:NO];
-	CHSuper0(SBApplicationIcon, launch);
+	CHSuper(0, SBApplicationIcon, launch);
 }
 
 #pragma mark PSWProSwitcherIcon
 
-CHMethod0(void, PSWProSwitcherIcon, launch)
+CHOptimizedMethod(0, super, void, PSWProSwitcherIcon, launch)
 {
 	if (!isUninstalled) {
 		PSWController *vc = [PSWController sharedController];
@@ -85,17 +85,18 @@ CHMethod0(void, PSWProSwitcherIcon, launch)
 	}
 }
 
-CHMethod0(void, PSWProSwitcherIcon, completeUninstall)
+CHOptimizedMethod(0, super, void, PSWProSwitcherIcon, completeUninstall)
 {
 	if (!isUninstalled) {
 		[[PSWController sharedController] setActive:NO animated:NO];
 		isUninstalled = YES;
 	}
-	CHSuper0(PSWProSwitcherIcon, completeUninstall);
+	CHSuper(0, PSWProSwitcherIcon, completeUninstall);
 }
 
 
-CHConstructor {
+CHConstructor
+{
 	CHLoadLateClass(SBIconModel);
 	CHHook2(SBIconModel, setVisibilityOfIconsWithVisibleTags, hiddenTags);
 	CHLoadLateClass(SBApplicationIcon);

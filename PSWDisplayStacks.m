@@ -22,13 +22,13 @@ CHOptimizedMethod(0, self, id, SBDisplayStack, init)
 CHOptimizedMethod(0, self, void, SBDisplayStack, dealloc)
 {
 	[displayStacks removeObject:self];
-	CHSuper0(SBDisplayStack, dealloc);
+	CHSuper(0, SBDisplayStack, dealloc);
 }
 
 CHConstructor
 {
 	displayStacks = (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL);
 	CHLoadLateClass(SBDisplayStack);
-	CHHook0(SBDisplayStack, init);
-	CHHook0(SBDisplayStack, dealloc);
+	CHHook(0, SBDisplayStack, init);
+	CHHook(0, SBDisplayStack, dealloc);
 }

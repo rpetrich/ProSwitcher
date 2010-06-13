@@ -337,29 +337,29 @@ static NSUInteger defaultImagePassThrough;
 
 #pragma mark SBApplication
 
-CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
+CHOptimizedMethod(1, self, void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
 {
 	// Method for 3.0.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper1(SBApplication, _relaunchAfterAbnormalExit, something);
+		CHSuper(1, SBApplication, _relaunchAfterAbnormalExit, something);
 	}
 }
 
-CHMethod0(void, SBApplication, _relaunchAfterExit)
+CHOptimizedMethod(0, self, void, SBApplication, _relaunchAfterExit)
 {
 	// Method for 3.1.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper0(SBApplication, _relaunchAfterExit);
+		CHSuper(0, SBApplication, _relaunchAfterExit);
 	}
 }
 
-CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+CHOptimizedMethod(1, self, UIImage *, SBApplication, defaultImage, BOOL *, something)
 {
 	if (defaultImagePassThrough == 0) {
 		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
@@ -390,29 +390,25 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 			}
 		}
 	}
-	return CHSuper1(SBApplication, defaultImage, something);
+	return CHSuper(1, SBApplication, defaultImage, something);
 }
 
 #pragma mark SBApplicationIcon
 
-CHMethod1(void, SBApplicationIcon, setBadge, id, value)
+CHOptimizedMethod(1, self, void, SBApplicationIcon, setBadge, id, value)
 {
-	CHSuper1(SBApplicationIcon, setBadge, value);
+	CHSuper(1, SBApplicationIcon, setBadge, value);
 	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
 	[app _badgeDidChange];
 }
 
-
-
 CHConstructor {
-	CHAutoreleasePoolForScope();
 	CHLoadLateClass(SBApplicationController);
 	CHLoadLateClass(SBIconModel);
 	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-	CHHook0(SBApplication, _relaunchAfterExit);
-	CHHook1(SBApplication, defaultImage);
+	CHHook(1, SBApplication, _relaunchAfterAbnormalExit);
+	CHHook(0, SBApplication, _relaunchAfterExit);
+	CHHook(1, SBApplication, defaultImage);
 	CHLoadLateClass(SBApplicationIcon);
-	CHHook1(SBApplicationIcon, setBadge);
+	CHHook(1, SBApplicationIcon, setBadge);
 }
-

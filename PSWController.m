@@ -483,14 +483,14 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 #pragma mark SBUIController
 CHOptimizedMethod(3, self, void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
 {
-	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && !disallowIconListScatter);
+	CHSuper(3, SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && !disallowIconListScatter);
 }
 
 // 3.0-3.1
 CHOptimizedMethod(1, self, void, SBUIController, restoreIconList, BOOL, animated)
 {
 	if (disallowRestoreIconList == 0)
-		CHSuper1(SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
+		CHSuper(1, SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
 	
 	[sharedController reparentView];
 }
@@ -575,7 +575,7 @@ CHOptimizedMethod(1, self, void, SBDisplayStack, pushDisplay, SBDisplay *, displ
 					
 					disallowIconListScatter++;
 					
-					CHSuper1(SBDisplayStack, pushDisplay, display);
+					CHSuper(1, SBDisplayStack, pushDisplay, display);
 					[sharedController setActive:YES animated:NO];
 					[[sharedController snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
 					
@@ -622,7 +622,7 @@ CHOptimizedMethod(1, self, void, SBIconController, setIsEditing, BOOL, isEditing
 	if (isEditing)
 		[sharedController setActive:NO];
 	
-	CHSuper1(SBIconController, setIsEditing, isEditing);
+	CHSuper(1, SBIconController, setIsEditing, isEditing);
 }
 
 CHOptimizedMethod(1, self, void, SBIconController, setPageControlVisible, BOOL, visible)
@@ -783,41 +783,41 @@ CHConstructor
 	CHHook(1, SBUIController, restoreIconList);
 	CHHook(1, SBUIController, restoreIconListAnimated);
 	CHHook(2, SBUIController, restoreIconListAnimated, animateWallpaper);
-	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
-	CHHook0(SBUIController, finishLaunching);
+	CHHook(3, SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
+	CHHook(0, SBUIController, finishLaunching);
 
 	CHLoadLateClass(SBDisplayStack);
-	CHHook1(SBDisplayStack, pushDisplay);
+	CHHook(1, SBDisplayStack, pushDisplay);
 	
 	CHLoadLateClass(SpringBoard);
 	CHLoadLateClass(SBIconController);	
-	CHHook1(SBIconController, setIsEditing);
-	CHHook1(SBIconController, setPageControlVisible);
+	CHHook(1, SBIconController, setIsEditing);
+	CHHook(1, SBIconController, setPageControlVisible);
 	
 	CHLoadLateClass(SBZoomView);
-	CHHook1(SBZoomView, setTransform);
-	//CHHook1(SBZoomView, setAlpha);
+	CHHook(1, SBZoomView, setTransform);
+	//CHHook(1, SBZoomView, setAlpha);
 	
 	CHLoadLateClass(SBStatusBar);
-	CHHook0(SBStatusBar, distantStatusWindowTransform);
+	CHHook(0, SBStatusBar, distantStatusWindowTransform);
 	
 	CHLoadLateClass(SBSearchView);
-	CHHook2(SBSearchView, setShowsKeyboard, animated);
+	CHHook(2, SBSearchView, setShowsKeyboard, animated);
 	
 	CHLoadLateClass(SBVoiceControlAlert);
-	CHHook0(SBVoiceControlAlert, deactivate);
+	CHHook(0, SBVoiceControlAlert, deactivate);
 	
 	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
 	CHLoadLateClass(LAActivator);
 	CHLoadLateClass(LAEvent);
 	if (![CHSharedInstance(LAActivator) respondsToSelector:@selector(sendDeactivateEventToListeners:)]) {
-		CHHook0(SpringBoard, _handleMenuButtonEvent);		
-		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
+		CHHook(0, SpringBoard, _handleMenuButtonEvent);		
+		CHHook(2, SBIconController, scrollToIconListAtIndex, animate);
 	}
 
 #ifdef SIMULATOR_DEBUG	
 	// When we have no other way to activate it, here's an easy workaround
-	CHHook0(SpringBoard, handleMenuDoubleTap);
+	CHHook(0, SpringBoard, handleMenuDoubleTap);
 #endif
 }

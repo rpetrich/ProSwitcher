@@ -103,16 +103,16 @@ static PSWApplicationController *sharedApplicationController;
 
 #pragma mark SBApplication
 
-CHMethod1(void, SBApplication, launchSucceeded, BOOL, flag)
+CHOptimizedMethod(1, self, void, SBApplication, launchSucceeded, BOOL, flag)
 {
 	[[PSWApplicationController sharedInstance] _applicationDidLaunch:self];
-    CHSuper1(SBApplication, launchSucceeded, flag);
+    CHSuper(1, SBApplication, launchSucceeded, flag);
 }
 
-CHMethod0(void, SBApplication, exitedCommon)
+CHOptimizedMethod(0, self, void, SBApplication, exitedCommon)
 {
 	[[PSWApplicationController sharedInstance] _applicationDidExit:self];
-	CHSuper0(SBApplication, exitedCommon);
+	CHSuper(0, SBApplication, exitedCommon);
 }
 
 #ifdef USE_IOSURFACE
@@ -122,11 +122,11 @@ CHMethod0(void, SBApplication, exitedCommon)
 static SBApplication *currentZoomApp;
 static UIWindow *currentZoomStatusWindow;
 
-CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, UIWindow *, statusWindow)
+CHOptimizedMethod(2, self, void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, UIWindow *, statusWindow)
 {
 	currentZoomApp = application;
 	currentZoomStatusWindow = statusWindow;
-	CHSuper2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, application, includeStatusWindow, statusWindow);
+	CHSuper(2, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, application, includeStatusWindow, statusWindow);
 	currentZoomStatusWindow = nil;
 	currentZoomApp = nil;
 }
@@ -134,10 +134,10 @@ CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBAppli
 #pragma mark SBZoomView
 
 // 3.0-3.1
-CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
+CHOptimizedMethod(2, self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
 {
 	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
+	if ((self = CHSuper(2, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
 		insets.top = 0;
@@ -164,10 +164,10 @@ CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 }
 
 // 3.2
-CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
+CHOptimizedMethod(3, self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
 {
 	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper3(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
+	if ((self = CHSuper(3, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
 		insets.top = 0;
@@ -199,19 +199,18 @@ CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 
 #endif
 
-CHConstructor {
+CHConstructor
+{
 	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, launchSucceeded);
-	CHHook0(SBApplication, exitedCommon);
+	CHHook(1, SBApplication, launchSucceeded);
+	CHHook(0, SBApplication, exitedCommon);
 	
 #ifdef USE_IOSURFACE
 	CHLoadLateClass(SBUIController);
-	CHHook2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, includeStatusWindow);
+	CHHook(2, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, includeStatusWindow);
 	
 	CHLoadLateClass(SBZoomView);
-	CHHook2(SBZoomView, initWithSnapshotFrame, ioSurface);
-	CHHook3(SBZoomView, initWithSnapshotFrame, ioSurface, transform);
+	CHHook(2, SBZoomView, initWithSnapshotFrame, ioSurface);
+	CHHook(3, SBZoomView, initWithSnapshotFrame, ioSurface, transform);
 #endif
 }
-
-
