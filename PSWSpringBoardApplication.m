@@ -14,7 +14,6 @@
 #import "PSWApplicationController.h"
 #import "PSWController.h"
 
-CHDeclareClass(SpringBoard);
 CHDeclareClass(SBUIController);
 
 static CGImageRef springBoardSnapshot = nil;
@@ -35,7 +34,25 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 }
 
 - (id)snapshot
-{	
+{
+	if (!springBoardSnapshot) {
+		UIImage *springBoardImage = PSWImage(@"springboardsnapshot");
+		if (!springBoardImage) {
+			CHLoadLateClass(SBUIController);
+			UIView *sbView = [CHSharedInstance(SBUIController) contentView];
+			CGRect bounds = sbView.bounds;
+			bounds.size.height -= 22.0f;
+			UIGraphicsBeginImageContext(bounds.size);
+			[[UIColor blackColor] set];
+			UIRectFill(bounds);
+			CGContextRef c = UIGraphicsGetCurrentContext();
+			CGContextTranslateCTM(c, 0.0f, -22.0f);
+			[sbView.layer renderInContext:c];
+			springBoardImage = UIGraphicsGetImageFromCurrentImageContext();
+			UIGraphicsEndImageContext();
+		}
+		springBoardSnapshot = CGImageRetain([springBoardImage CGImage]);
+	}
 	return (id)springBoardSnapshot;
 }
 
@@ -90,34 +107,3 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 }
 
 @end
-
-#pragma mark SBUIController
-CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
-{
-	UIImage *springBoardImage = PSWImage(@"springboardsnapshot");
-	if (springBoardImage) {
-		springBoardSnapshot = CGImageRetain([springBoardImage CGImage]);
-	} else {
-		UIView *sbView = [self contentView];
-		CGRect bounds = sbView.bounds;
-		bounds.size.height -= 22.0f;
-		UIGraphicsBeginImageContext(bounds.size);
-		[[UIColor blackColor] set];
-		UIRectFill(bounds);
-		CGContextRef c = UIGraphicsGetCurrentContext();
-		CGContextTranslateCTM(c, 0.0f, -22.0f);
-		[sbView.layer renderInContext:c];
-		UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
-	}
-	
-	CHSuper(0, SBUIController, finishLaunching);
-}
-
-CHConstructor
-{
-	CHLoadLateClass(SpringBoard);
-	CHLoadLateClass(SBUIController);
-	CHHook(0, SBUIController, finishLaunching);
-}
