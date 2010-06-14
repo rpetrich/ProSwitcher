@@ -473,6 +473,27 @@ static PSWController *sharedController;
 
 @end
 
+@interface PSWController (Beta) <UIAlertViewDelegate>
+- (void)showBetaAlert;
+@end
+
+@implementation PSWController (Beta)
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (buttonIndex != [alertView cancelButtonIndex])
+		[SBSharedInstance applicationOpenURL:[NSURL URLWithString:@"http://github.com/rpetrich/ProSwitcher/issues"]];
+}
+
+- (void)showBetaAlert
+{
+	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"ProSwitcher Alpha" message:@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra\n\nPlease help us get the bugs out :)" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:@"Report Bug", nil];
+	[av show];
+	[av release];
+}
+
+@end
+
 #pragma mark Preference Changed Notification
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
@@ -532,10 +553,11 @@ CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 		[[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:YES];
 	}
 	[plistDict release];
-	
+
 	CHSuper(0, SBUIController, finishLaunching);
 
 	sharedController = [[PSWController alloc] init];
+	[sharedController showBetaAlert];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
 		[sharedController setActive:YES animated:NO];
