@@ -1,15 +1,15 @@
 Package: com.collab.proswitcher
-Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 1.1.0), backgrounder
+Depends: mobilesubstrate (>= 0.9.3087), preferenceloader (>= 2.0.2), libactivator (>= 1.3.2), backgrounder (>= svn.r461)
 Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w, firmware (>= 4.0)
 Replaces: com.aaronash.Multifl0w
 Name: ProSwitcher
-Version: 1.1
+Version: 1.2~alpha~1
 Priority: optional
 Architecture: iphoneos-arm
-Description: Palm Pre-styled application switcher
-Homepage: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
-Depiction: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
+Description: ALPHA! GUINEA PIGS REJOICE!
+Homepage: http://rpetri.ch/cydia/proswitcher/12alpha/
+Depiction: http://rpetri.ch/cydia/proswitcher/12alpha/
 Maintainer: BigBoss <bigboss@thebigboss.org>
 Author: chpwn and rpetrich <proswitcher@xuzz.net>
 Sponsor: thebigboss.org <http://thebigboss.org>
