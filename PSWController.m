@@ -80,12 +80,12 @@ static PSWController *sharedController;
 		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 
 		[containerView setAlpha:0.0f];
+		[containerView setHidden:YES];
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
 	
 		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[self reparentView];
 		[self reloadPreferences];
 		
 		if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenDisabled) {
@@ -117,11 +117,11 @@ static PSWController *sharedController;
 
 - (void)reparentView
 {
-	if (!isActive)
-		return;
-	
 	UIView *view = containerView;
-		
+	
+	if (!isAnimating)
+		[view setHidden:!isActive];
+	
 	// Find appropriate superview and add as subview
 	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
 	if ([buttonBar window]) {
