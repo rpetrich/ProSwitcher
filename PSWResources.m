@@ -3,6 +3,9 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <CaptainHook/CaptainHook.h>
 
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
 static NSBundle *localizationBundle;
@@ -125,6 +128,28 @@ void PSWClearResourceCache()
 NSString *PSWLocalize(NSString *text)
 {
 	return [localizationBundle localizedStringForKey:text value:nil table:nil];
+}
+
+PSWHardwareType PSWGetHardwareType()
+{
+	size_t size;
+	sysctlbyname("hw.machine", NULL, &size, NULL, 0);
+	char machine[size];
+	if (strcmp(machine, "iPhone1,1") == 0)
+		return PSWHardwareTypeiPhoneOriginal;
+	if (strcmp(machine, "iPod1,1") == 0)
+		return PSWHardwareTypeiPodTouch1G;
+	if (strcmp(machine, "iPhone1,2") == 0)
+		return PSWHardwareTypeiPhone3G;
+	if (strcmp(machine, "iPod2,1") == 0)
+		return PSWHardwareTypeiPodTouch2G;
+	if (strcmp(machine, "iPhone2,1") == 0)
+		return PSWHardwareTypeiPhone3GS;
+	if (strcmp(machine, "iPod3,1") == 0)
+		return PSWHardwareTypeiPodTouch3G;
+	if (strcmp(machine, "iPad1,1") == 0)
+		return PSWHardwareTypeiPad1G;
+	return PSWHardwareTypeUnknown;
 }
 
 CHConstructor
