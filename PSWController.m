@@ -84,9 +84,10 @@ static PSWController *sharedController;
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
-	
 		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[self reloadPreferences];
+		
+		PSWPreparePreferences();
+		[self applyPreferences];
 		
 		if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenDisabled) {
 			isActive = YES;
@@ -224,6 +225,7 @@ static PSWController *sharedController;
 
 - (void)reloadPreferences
 {
+	NSLog(@"ProSwitcher: Reloading Preferences");
 	PSWPreparePreferences();
 	[self applyPreferences];
 }
