@@ -167,6 +167,8 @@ static PSWController *sharedController;
 		// If we are on an iPad, we want slightly...smaller cards.
 		scrollViewInsets.top += 40.0f;
 		scrollViewInsets.bottom += 40.0f;
+		scrollViewInsets.left *= 3.0f;
+		scrollViewInsets.right *= 3.0f;
 	}
 	[containerView setPageViewInsets:scrollViewInsets];
 	
