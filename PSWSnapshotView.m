@@ -8,7 +8,7 @@
 #import "PSWApplication.h"
 #import "PSWResources.h"
 
-#define kSwipeThreshold 40.0f
+#define kSwipeThreshold ([self bounds].size.height * (1.0f / 9.0f))
 #define kTitleFont [UIFont boldSystemFontOfSize:17.0f]
 #define kBadgeFont [UIFont boldSystemFontOfSize:16.0f]
 
