@@ -116,7 +116,10 @@ static PSWController *sharedController;
 }
 
 - (void)reparentView
-{	
+{
+	if (!isActive)
+		return;
+	
 	UIView *view = containerView;
 		
 	// Find appropriate superview and add as subview
