@@ -158,14 +158,10 @@ CHDeclareClass(SBIconController);
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-	if ([self isEmpty])
-		return self;
-	
-    UIView *child = nil;
-    if ((child = [super hitTest:point withEvent:event]) == self)
-        child = _pageView; 
-
-    return child;
+    UIView *result = [super hitTest:point withEvent:event];
+	if (![self isEmpty] && (result == self))
+		result = _pageView;
+    return result;
 }
 
 - (void)tapPreviousAndContinue
