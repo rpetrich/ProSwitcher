@@ -99,13 +99,22 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
-		CGContextRef c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+		CGContextRef c;
+		// Only iPad supports using mask images as layer masks (older models require full images, then use only the alpha channel)
+		if (PSWGetHardwareType() >= PSWHardwareTypeiPad1G)
+			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+		else {
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width * 4, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+			CGColorSpaceRelease(colorSpace);
+		}
 		CGRect rect;
 		rect.origin.x = 0.0f;
 		rect.origin.y = 0.0f;
 		rect.size = size;
 		if (cornerRadius > 0.0f)
 			ClipContextRounded(c, size, cornerRadius);
+		CGContextSetRGBFillColor(c, 1.0f, 1.0f, 1.0f, 1.0f);
 		CGContextFillRect(c, rect);
 		CGImageRef image = CGBitmapContextCreateImage(c);
 		CGContextRelease(c);
