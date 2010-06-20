@@ -168,17 +168,23 @@
 	[screen setCenter:screenCenter];
 	
 	// Apply/clear mask
+	CALayer *screenLayer = [screen layer];
 	if (_roundedCornerRadius == 0) {
-		[[screen layer] setMask:nil];
+		[screenLayer setMask:nil];
 	} else {
-		CALayer *layer = [CALayer layer];
-		CGRect maskFrame;
-		maskFrame.origin.x = 0.0f;
-		maskFrame.origin.y = 0.0f;
-		maskFrame.size = screenBounds.size;
-		[layer setFrame:maskFrame];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenBounds.size, _roundedCornerRadius) CGImage]];
-		[[screen layer] setMask:layer];
+		CGImageRef maskImage = [PSWGetCachedCornerMaskOfSize(screenFrame.size, _roundedCornerRadius) CGImage];
+		CALayer *maskLayer = [screenLayer mask];
+		if ([maskLayer contents] != (id)maskImage) {
+			if (!maskLayer)
+				maskLayer = [CALayer layer];
+			CGRect maskFrame;
+			maskFrame.origin.x = 0.0f;
+			maskFrame.origin.y = 0.0f;
+			maskFrame.size = screenFrame.size;
+			[maskLayer setFrame:maskFrame];
+			[maskLayer setContents:(id)maskImage];
+			[screenLayer setMask:maskLayer];
+		}
 	}
 	
 	// Apply rotation
