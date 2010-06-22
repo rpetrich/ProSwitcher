@@ -136,65 +136,55 @@ CHOptimizedMethod(2, self, void, SBUIController, showZoomLayerWithIOSurfaceSnaps
 // 3.0-3.1
 CHOptimizedMethod(2, self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
 {
-	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper(2, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
-		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		PSWCropInsets insets;
-		insets.top = 0;
-		insets.left = 0;
-		insets.bottom = 0;
-		insets.right = 0;
-		if (currentZoomStatusWindow) {
-			CGRect frame = [currentZoomStatusWindow frame];
-			CGSize screenSize = [[UIScreen mainScreen] bounds].size;
-			if (frame.origin.y + frame.size.height < screenSize.height / 2.0f)
-				insets.top = frame.size.height;
-			else if (frame.origin.x + frame.size.width < screenSize.width / 2.0f)
-				insets.left = frame.size.width;
-			else if (frame.size.width > frame.size.height)
-				insets.bottom = frame.size.height;
-			else
-				insets.right = frame.size.width;
-		}
-		[application loadSnapshotFromSurface:surface cropInsets:insets];
+	PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+	PSWCropInsets insets;
+	insets.top = 0;
+	insets.left = 0;
+	insets.bottom = 0;
+	insets.right = 0;
+	if (currentZoomStatusWindow) {
+		CGRect frame = [currentZoomStatusWindow frame];
+		CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+		if (frame.origin.y + frame.size.height < screenSize.height / 2.0f)
+			insets.top = frame.size.height;
+		else if (frame.origin.x + frame.size.width < screenSize.width / 2.0f)
+			insets.left = frame.size.width;
+		else if (frame.size.width > frame.size.height)
+			insets.bottom = frame.size.height;
+		else
+			insets.right = frame.size.width;
 	}
-	if (surface)
-		CFRelease(surface);
-	return self;
+	surface = [application loadSnapshotFromSurface:surface cropInsets:insets];
+	return CHSuper(2, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface);
 }
 
 // 3.2
 CHOptimizedMethod(3, self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
 {
-	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper(3, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
-		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		PSWCropInsets insets;
-		insets.top = 0;
-		insets.left = 0;
-		insets.bottom = 0;
-		insets.right = 0;
-		PSWSnapshotRotation rotation;
-		switch (CHIvar(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation)) {
-			case UIInterfaceOrientationPortrait:
-				rotation = PSWSnapshotRotation90Left;
-				break;
-			case UIInterfaceOrientationPortraitUpsideDown:
-				rotation = PSWSnapshotRotation90Right;
-				break;
-			case UIInterfaceOrientationLandscapeLeft:
-				rotation = PSWSnapshotRotation180;
-				break;
-			case UIInterfaceOrientationLandscapeRight:
-			default:
-				rotation = PSWSnapshotRotationNone;
-				break;
-		}
-		[application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+	PSWCropInsets insets;
+	insets.top = 0;
+	insets.left = 0;
+	insets.bottom = 0;
+	insets.right = 0;
+	PSWSnapshotRotation rotation;
+	switch (CHIvar(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation)) {
+		case UIInterfaceOrientationPortrait:
+			rotation = PSWSnapshotRotation90Left;
+			break;
+		case UIInterfaceOrientationPortraitUpsideDown:
+			rotation = PSWSnapshotRotation90Right;
+			break;
+		case UIInterfaceOrientationLandscapeLeft:
+			rotation = PSWSnapshotRotation180;
+			break;
+		case UIInterfaceOrientationLandscapeRight:
+		default:
+			rotation = PSWSnapshotRotationNone;
+			break;
 	}
-	if (surface)
-		CFRelease(surface);
-	return self;
+	surface = [application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	return CHSuper(3, SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform);
 }
 
 #endif

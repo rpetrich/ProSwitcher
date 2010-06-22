@@ -54,9 +54,9 @@ typedef enum {
 @property (nonatomic, readonly) PSWCropInsets snapshotCropInsets;
 @property (nonatomic, readonly) PSWSnapshotRotation snapshotRotation;
 
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation;
 #endif
 - (BOOL)writeSnapshotToDisk;
 - (void)exit;
