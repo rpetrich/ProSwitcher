@@ -4,7 +4,7 @@ Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w, firmware (>= 4.0)
 Replaces: com.aaronash.Multifl0w
 Name: ProSwitcher
-Version: 1.2~alpha~2
+Version: 1.2~alpha~3
 Priority: optional
 Architecture: iphoneos-arm
 Description: ALPHA! GUINEA PIGS REJOICE!
