@@ -3,8 +3,18 @@
 #import "PSWPageView.h"
 #import "PSWPreferences.h"
 
-CHDeclareClass(SBIconModel);
-CHDeclareClass(SBIconController);
+%class SBIconModel;
+%class SBIconController;
+
+CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
+{
+	UIEdgeInsets realInsets;
+	realInsets.top = rect.size.height * insets.top;
+	realInsets.bottom = rect.size.height * insets.bottom;
+	realInsets.left = rect.size.width * insets.left;
+	realInsets.right = rect.size.height * insets.right;
+	return UIEdgeInsetsInsetRect(rect, realInsets); 
+}
 
 @implementation PSWContainerView
 
@@ -23,6 +33,7 @@ CHDeclareClass(SBIconController);
 		[_pageControl setCurrentPage:0];
 		[_pageControl setHidesForSinglePage:YES];
 		[_pageControl setUserInteractionEnabled:NO];
+		[_pageControl setHidden:GetPreference(PSWShowPageControl, BOOL)];
 		[self addSubview:_pageControl];
 		
 		_emptyLabel = [[UILabel alloc] init];
@@ -60,7 +71,7 @@ CHDeclareClass(SBIconController);
 	[_emptyLabel setFrame:frame];
 	
 	// Fix page control positioning by retrieving it from the SpringBoard page control
-	id pc = CHIvar(CHSharedInstance(SBIconController), _pageControl, SBIconListPageControl *);
+	id pc = MSHookIvar<SBIconListPageControl *>([$SBIconController sharedInstance], "_pageControl");
 	frame = [pc frame];
 	frame = [self convertRect:frame fromView:[pc superview]];
 	[_pageControl setFrame:frame];
@@ -71,15 +82,31 @@ CHDeclareClass(SBIconController);
 	[self.pageView shouldExit];
 }
 
-- (UIEdgeInsets)pageViewInsets
+- (void)_applyInsets
+{
+	CGRect edge = UIEdgeInsetsInsetRect([self bounds], _pageViewEdgeInsets);
+	CGRect proportional = PSWProportionalInsetsInsetRect(edge, _pageViewInsets);
+	[_pageView setFrame:proportional];
+}
+
+- (UIEdgeInsets)pageViewEdgeInsets
+{
+	return _pageViewEdgeInsets;
+}
+- (void)setPageViewEdgeInsets:(UIEdgeInsets)pageViewEdgeInsets
+{
+	_pageViewEdgeInsets = pageViewEdgeInsets;
+	[self _applyInsets];
+}
+
+- (PSWProportionalInsets)pageViewInsets
 {
 	return _pageViewInsets;
 }
-
-- (void)setPageViewInsets:(UIEdgeInsets)pageViewInsets
+- (void)setPageViewInsets:(PSWProportionalInsets)pageViewInsets
 {
 	_pageViewInsets = pageViewInsets;
-	[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+	[self _applyInsets];
 }
 
 - (void)setPageView:(PSWPageView *)pageView
@@ -87,8 +114,9 @@ CHDeclareClass(SBIconController);
 	if (_pageView != pageView) {
 		[_pageView release];
 		_pageView = [pageView retain];
+		
 		[_pageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[_pageView setFrame:UIEdgeInsetsInsetRect([self bounds], _pageViewInsets)];
+		[self _applyInsets];
 	}
 }
 
@@ -120,16 +148,6 @@ CHDeclareClass(SBIconController);
 		
 		[self setNeedsLayout];
 	}
-}
-
-- (BOOL)showsPageControl
-{
-	return [self.pageControl isHidden];
-}
-
-- (void)setShowsPageControl:(BOOL)showsPageControl
-{
-	[self.pageControl setHidden:!showsPageControl];
 }
 
 - (void)setPageControlCount:(NSInteger)count
@@ -240,7 +258,3 @@ CHDeclareClass(SBIconController);
 
 @end
 
-CHConstructor {
-	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBIconController);
-}

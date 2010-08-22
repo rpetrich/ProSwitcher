@@ -57,7 +57,7 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
-		<dict>
+		<!--dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -70,7 +70,7 @@
 			<string>SHOW_ICON</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
+		</dict-->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
@@ -133,7 +133,7 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
-		<dict>
+		<!--dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
@@ -146,7 +146,7 @@
 			<string>EMPTY_TAP_TO_CLOSE</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
+		</dict-->
 		<dict>
 			<key>cell</key>
 			<string>PSLinkListCell</string>
@@ -231,6 +231,20 @@
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>key</key>
+			<string>PSWHidePhone</string>
+			<key>label</key>
+			<string>Hide Phone</string>
+			<key>PostNotification</key>
+			<string>com.collab.proswitcher.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.collab.proswitcher</string>
+			<key>key</key>
 			<string>PSWSwipeToClose</string>
 			<key>label</key>
 			<string>SWIPE_TO_CLOSE</string>
@@ -254,13 +268,13 @@
 			<array>
 				<string>EMPTY_STYLE_TEXT</string>
 				<string>EMPTY_STYLE_BLANK</string>
-				<string>EMPTY_STYLE_DISABLED</string>
+				<!--string>EMPTY_STYLE_DISABLED</string-->
 			</array>
 			<key>validValues</key>
 			<array>
 				<integer>0</integer>
 				<integer>1</integer>
-				<integer>2</integer>
+				<!--integer>2</integer-->
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
@@ -269,13 +283,13 @@
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
-			<real>40</real>
+			<real>0.18</real>
 			<key>defaults</key>
 			<string>com.collab.proswitcher</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
-			<string>PSWSnapshotInset</string>
+			<string>PSWSnapshotProportionalInset</string>
 			<key>label</key>
 			<string>SNAPSHOT_INSET</string>
 			<key>validTitles</key>
@@ -285,8 +299,8 @@
 			</array>
 			<key>validValues</key>
 			<array>
-				<real>40</real>
-				<real>0</real>
+				<real>0.18</real>
+				<real>0.0</real>
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
@@ -317,7 +331,7 @@
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
 		</dict>
-		<dict>
+		<!--<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
@@ -390,7 +404,7 @@
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
+		</dict>-->
 		
 		<!-- Thanks to DHowett for the hack to show the text on 3.0 and 3.2! -->
 		<dict>
@@ -402,6 +416,8 @@
 			<array>
 				<dict>
 					<key>wildcat</key>
+					<false/>
+					<key>voip</key>
 					<false/>
 				</dict>
 			</array>
@@ -415,6 +431,8 @@
 			<array>
 				<dict>
 					<key>wildcat</key>
+					<false/>
+					<key>voip</key>
 					<false/>
 				</dict>
 			</array>

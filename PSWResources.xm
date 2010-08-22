@@ -7,6 +7,8 @@ static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
 static NSBundle *localizationBundle;
 
+NSDictionary *preferences = nil;
+
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
 	NSString *key = [NSString stringWithFormat:@"%@#%@", [bundle bundlePath], name];

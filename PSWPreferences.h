@@ -43,18 +43,23 @@
 #define PSWEmptyTapClose        YES
 #define PSWRoundedCornerRadius  0.0f
 #define PSWTapsToActivate       1
-#define PSWSnapshotInset        (PSWPad ? 80.0f : 40.0f)
+#define PSWSnapshotInset        (PSWPad ? 80.0f : 40.0f) // Legacy
+#define PSWSnapshotProportionalInset        0.12f
 #define PSWUnfocusedAlpha       1.0f
 #define PSWShowDefaultApps      YES
 #define PSWPagingEnabled        YES
 #define PSWDefaultApps          [NSArray arrayWithObjects:@"com.apple.mobileipod-MediaPlayer", @"com.apple.mobilephone", @"com.apple.mobilemail", @"com.apple.mobilesafari", nil]
 #define PSWShowDockApps         YES
 #define PSWShowIcon             YES
+#define PSWHidePhone			YES
 
 #define PSWPad ([[UIScreen mainScreen] applicationFrame].size.width > 480.0f)
 #define PSWScreenHeight ([[UIScreen mainScreen] applicationFrame].size.height)
 #define PSWScreenWidth ([[UIScreen mainScreen] applicationFrame].size.width)
-#define PSWDockHeight ([[CHSharedInstance(SBIconModel) buttonBar] frame].size.height)
+#define PSWDockModel ([CHSharedInstance(SBIconModel) respondsToSelector:@selector(buttonBar)] ? [CHSharedInstance(SBIconModel) buttonBar] : [[CHSharedInstance(SBIconModel) rootFolder] dockModel])
+#define PSWDockView ([CHSharedInstance(SBIconModel) respondsToSelector:@selector(buttonBar)] ? [CHSharedInstance(SBIconModel) buttonBar] : [CHSharedInstance(SBIconController) dock])
+#define PSWDockHeight ([PSWDockView frame].size.height)
+#define PSWListWithIcon(icon) 
 
 
 __attribute__((always_inline))
@@ -68,7 +73,7 @@ static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *file
     CFWriteStreamClose(stream);
 }
 
-NSDictionary *preferences;
+extern NSDictionary *preferences;
 
 __attribute__((always_inline))
 static inline void PSWPreparePreferences()

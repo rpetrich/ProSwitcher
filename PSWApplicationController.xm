@@ -11,8 +11,8 @@ CHDeclareClass(SBApplication);
 
 #ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
-CHDeclareClass(SBUIController)
-CHDeclareClass(SBZoomView)
+%class SBUIController;
+%class SBZoomView;
 #endif
 
 static PSWApplicationController *sharedApplicationController;
@@ -101,43 +101,45 @@ static PSWApplicationController *sharedApplicationController;
 
 @end
 
-#pragma mark SBApplication
+%hook SBApplication
 
-CHMethod1(void, SBApplication, launchSucceeded, BOOL, flag)
+- (void)launchSucceeded:(BOOL)flag
 {
 	[[PSWApplicationController sharedInstance] _applicationDidLaunch:self];
-    CHSuper1(SBApplication, launchSucceeded, flag);
+	%orig;
 }
 
-CHMethod0(void, SBApplication, exitedCommon)
+- (void)exitedCommon
 {
 	[[PSWApplicationController sharedInstance] _applicationDidExit:self];
-	CHSuper0(SBApplication, exitedCommon);
+	%orig;
 }
 
-#ifdef USE_IOSURFACE
+%end
 
-#pragma mark SBUIController
+#ifdef USE_IOSURFACE
 
 static SBApplication *currentZoomApp;
 static UIWindow *currentZoomStatusWindow;
 
-CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, UIWindow *, statusWindow)
+%hook SBUIController
+- (void)showZoomLayerWithIOSurfaceSnapshotOfApp:(SBApplication *)application includeStatusWindow:(UIWindow *)statusWindow
 {
 	currentZoomApp = application;
 	currentZoomStatusWindow = statusWindow;
-	CHSuper2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, application, includeStatusWindow, statusWindow);
+	%orig;
 	currentZoomStatusWindow = nil;
 	currentZoomApp = nil;
 }
+%end
 
-#pragma mark SBZoomView
+%hook SBZoomView
 
 // 3.0-3.1
-CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
+- (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface
 {
 	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
+	if ((self = %orig)) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
 		insets.top = 0;
@@ -164,10 +166,10 @@ CHOptimizedMethod2(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 }
 
 // 3.2
-CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface, transform, CGAffineTransform, transform)
+- (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface transform:(CGAffineTransform)transform
 {
 	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = CHSuper3(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface, transform, transform))) {
+	if ((self = %orig)) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
 		insets.top = 0;
@@ -175,7 +177,7 @@ CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 		insets.bottom = 0;
 		insets.right = 0;
 		PSWSnapshotRotation rotation;
-		switch (CHIvar(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation)) {
+		switch (MSHookIvar<UIInterfaceOrientation>([$SBUIController sharedInstance], "_orientation")) {
 			case UIInterfaceOrientationPortrait:
 				rotation = PSWSnapshotRotation90Left;
 				break;
@@ -197,21 +199,10 @@ CHOptimizedMethod3(self, id, SBZoomView, initWithSnapshotFrame, CGRect, snapshot
 	return self;
 }
 
+%end
+
 #endif
 
-CHConstructor {
-	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, launchSucceeded);
-	CHHook0(SBApplication, exitedCommon);
-	
-#ifdef USE_IOSURFACE
-	CHLoadLateClass(SBUIController);
-	CHHook2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, includeStatusWindow);
-	
-	CHLoadLateClass(SBZoomView);
-	CHHook2(SBZoomView, initWithSnapshotFrame, ioSurface);
-	CHHook3(SBZoomView, initWithSnapshotFrame, ioSurface, transform);
-#endif
-}
+
 
 

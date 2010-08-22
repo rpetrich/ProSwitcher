@@ -9,26 +9,28 @@ SBDisplayStack *PSWGetDisplayStack(NSInteger index)
 	return [displayStacks objectAtIndex:index];
 }
 
-CHDeclareClass(SBDisplayStack);
+%class SBDisplayStack;
 
-CHOptimizedMethod(0, self, id, SBDisplayStack, init)
+%hook SBDisplayStack 
+
+- (id)init
 {
-	if ((self = CHSuper0(SBDisplayStack, init))) {
+	if ((self = %orig)) {
 		[displayStacks addObject:self];
 	}
 	return self;
 }
 
-CHOptimizedMethod(0, self, void, SBDisplayStack, dealloc)
+- (void)dealloc
 {
 	[displayStacks removeObject:self];
-	CHSuper0(SBDisplayStack, dealloc);
+	%orig;
 }
 
-CHConstructor
+%end
+
+__attribute__((constructor)) static void displaystack_init()
 {
 	displayStacks = (NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL);
-	CHLoadLateClass(SBDisplayStack);
-	CHHook0(SBDisplayStack, init);
-	CHHook0(SBDisplayStack, dealloc);
+	%init;
 }

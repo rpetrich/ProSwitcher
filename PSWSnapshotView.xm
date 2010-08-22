@@ -7,6 +7,7 @@
 #import "PSWSnapshotView.h"
 #import "PSWApplication.h"
 #import "PSWResources.h"
+#import "PSWPreferences.h"
 
 #define kSwipeThreshold 40.0f
 #define kTitleFont [UIFont boldSystemFontOfSize:17.0f]
@@ -16,7 +17,6 @@
 
 @synthesize application = _application;
 @synthesize delegate = _delegate;
-@synthesize allowsSwipeToClose = _allowsSwipeToClose;
 @synthesize screenView = screen;
 
 - (void)snapshot:(UIButton *)snapshot touchUpInside:(UIEvent *)event
@@ -38,7 +38,7 @@
 
 - (void)snapshot:(UIButton *)theSnapshot didDrag:(UIEvent *)event
 {
-	if (_allowsSwipeToClose) {
+	if (GetPreference(PSWSwipeToClose, BOOL)) {
 		UITouch *touch = [[event allTouches] anyObject];
 		CGRect frame = [theSnapshot frame];
 		
@@ -106,7 +106,7 @@
 	padding.bottom = 20.0f;
 	padding.left = 4.0f;
 	padding.right = 4.0f;
-	if (_showsTitle)
+	if (GetPreference(PSWShowApplicationTitle, BOOL))
 		padding.bottom += 32.0f;
 	if (!isZoomed) {
 		padding.left += 6.0f;
@@ -157,7 +157,7 @@
 	screenFrame.origin.x = (NSInteger) ((frame.size.width - screenFrame.size.width) / 2.0f);
 	screenFrame.origin.y = (NSInteger) ((frame.size.height - screenFrame.size.height) / 2.0f);
 
-	if (_showsTitle)
+	if (GetPreference(PSWShowApplicationTitle, BOOL))
 		screenFrame.origin.y -= 16.0f;
 	
 	screenY = screenFrame.origin.y;
@@ -168,7 +168,7 @@
 	[screen setCenter:screenCenter];
 	
 	// Apply/clear mask
-	if (_roundedCornerRadius == 0) {
+	if (GetPreference(PSWRoundedCornerRadius, float) == 0) {
 		[[screen layer] setMask:nil];
 	} else {
 		CALayer *layer = [CALayer layer];
@@ -177,7 +177,7 @@
 		maskFrame.origin.y = 0.0f;
 		maskFrame.size = screenBounds.size;
 		[layer setFrame:maskFrame];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenBounds.size, _roundedCornerRadius) CGImage]];
+		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenBounds.size, GetPreference(PSWRoundedCornerRadius, float)) CGImage]];
 		[[screen layer] setMask:layer];
 	}
 	
@@ -214,7 +214,7 @@
 	CGRect titleFrame;
 	titleFrame.size = textSize;
 	titleFrame.origin.x = (NSInteger) ((self.frame.size.width - textSize.width) / 2 + 9.0f);
-	titleFrame.origin.y = (NSInteger) (self.frame.size.height - 20.0f - textSize.height);
+	titleFrame.origin.y = (NSInteger) (self.frame.size.height - 25.0f - textSize.height);
 	[_titleView setFrame:titleFrame];
 	
 	// Reposition and resize icon
@@ -222,7 +222,7 @@
 	CGRect iconFrame;
 	iconFrame.size = iconSize;
 	iconFrame.origin.x = (NSInteger) (titleFrame.origin.x - 9.0f - iconSize.width);
-	iconFrame.origin.y = (NSInteger) (self.frame.size.height - 20.0f - iconSize.height);
+	iconFrame.origin.y = (NSInteger) (self.frame.size.height - 23.0f - iconSize.height);
 	[_iconView setFrame:iconFrame];
 	
 	// Reposition and resize badge
@@ -273,13 +273,14 @@
 		[_closeButton setBackgroundImage:PSWImage(@"closebox") forState:UIControlStateNormal];
 		[_closeButton addTarget:self action:@selector(_closeButtonWasPushed) forControlEvents:UIControlEventTouchUpInside];
 		[self addSubview:_closeButton];
-		[_closeButton setHidden:YES];
+		[_closeButton setHidden:!GetPreference(PSWShowCloseButton, BOOL)];
 		
 		// Add icon
 		_iconView = [[UIImageView alloc] init];
+		[_iconView setImage:[_application themedIcon]];
 		[self addSubview:_iconView];
-		[_iconView setHidden:YES];
-					
+		[_iconView setHidden:!(GetPreference(PSWShowIcon, BOOL) && GetPreference(PSWShowApplicationTitle, BOOL))];
+		
 		// Add title label
 		_titleView = [[UILabel alloc] init];
 		_titleView.font = kTitleFont;
@@ -287,12 +288,12 @@
 		_titleView.textColor = [UIColor whiteColor]; 
 		_titleView.text = [_application displayName];
 		[self addSubview:_titleView];
-		[_titleView setHidden:YES];
+		[_titleView setHidden:!GetPreference(PSWShowApplicationTitle, BOOL)];
 		
 		// Add badge
 		_iconBadge = [[UIView alloc] init];
 		[self addSubview:_iconBadge];
-		[_iconBadge setHidden:YES];
+		[_iconBadge setHidden:!GetPreference(PSWShowBadges, BOOL)];
 		
 		// Add badge label
 		_badgeLabel = [[UILabel alloc] init];
@@ -303,12 +304,10 @@
 		[_iconBadge addSubview:_badgeLabel];
 		[_badgeLabel release];
 		
-		// FIXME (hack): Setup initial badge
+		// Setup initial badge
+		// XXX: this is a hack
 		[self applicationBadgeDidChange:_application];
-		
-		// Load initial icon
-		[self setThemedIcon:NO];
-		
+				
 		// Layout and draw!
 		[self setNeedsLayout];
 		[self layoutIfNeeded];
@@ -368,73 +367,6 @@
 		[_delegate snapshotViewClosed:self];
 }
 
-- (BOOL)showsCloseButton
-{
-	return _showsCloseButton;
-}
-
-- (void)setShowsCloseButton:(BOOL)showsCloseButton
-{
-	_showsCloseButton = showsCloseButton;
-	[_closeButton setHidden:!_showsCloseButton];
-}
-
-- (BOOL)showsTitle
-{
-	return _showsTitle;
-}
-
-- (void)setShowsTitle:(BOOL)showsTitle
-{
-	_showsTitle = showsTitle;
-	[_titleView setHidden:!_showsTitle];
-	[_iconView setHidden:!_showsTitle];
-	[self setNeedsLayout];
-	[self layoutIfNeeded];
-}
-
-- (BOOL)themedIcon
-{
-	return _themedIcon;
-}
-- (void)setThemedIcon:(BOOL)themedIcon
-{
-	_themedIcon = themedIcon;
-	
-	UIImage *smallIcon;
-	if (_themedIcon)
-		smallIcon = [_application themedIcon];
-	else
-		smallIcon = [_application unthemedIcon];
-	[_iconView setImage:smallIcon];
-}
-
-- (BOOL)showsBadge
-{
-	return _showsBadge;
-}
-- (void)setShowsBadge:(BOOL)showsBadge
-{
-	_showsBadge = showsBadge;
-	if (!_showsBadge)
-		[_iconBadge setHidden:YES];
-	else if ([[_application badgeText] length] > 0)
-		[_iconBadge setHidden:NO];
-}
-  
-- (CGFloat)roundedCornerRadius
-{
-	return _roundedCornerRadius;
-}
-- (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
-{
-	if (_roundedCornerRadius != roundedCornerRadius) {
-		_roundedCornerRadius = roundedCornerRadius;
-		[self setNeedsLayout];
-		[self layoutIfNeeded];
-	}
-}
-
 - (BOOL)focused
 {
 	return _focused;
@@ -469,7 +401,7 @@
 }
 - (void)setZoomed:(BOOL)zoomed animated:(BOOL)animated
 {
-	if (zoomed && !_allowsZoom) return;
+	if (zoomed && !GetPreference(PSWAllowsZoom, BOOL)) return;
 	
 	if (zoomed != isZoomed) {
 		if (animated) {
@@ -491,15 +423,6 @@
 	[self setZoomed:zoomed animated:YES];
 }
 
-- (BOOL)allowsZoom
-{
-	return _allowsZoom;
-}
-- (void)setAllowsZoom:(BOOL)allowsZoom
-{
-	_allowsZoom = allowsZoom;
-}
-
 #pragma mark PSWApplicationDelegate
 
 - (void)applicationSnapshotDidChange:(PSWApplication *)application
@@ -513,7 +436,7 @@
 	NSString *badgeText = [_application badgeText];
 	if ([badgeText length] > 0) {
 		[_badgeLabel setText:badgeText];
-		if (_showsBadge) {
+		if (GetPreference(PSWShowBadges, BOOL)) {
 			[_iconBadge setHidden:NO];
 		}
 	} else {

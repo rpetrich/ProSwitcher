@@ -3,21 +3,20 @@
 
 #import <SpringBoard/SpringBoard.h>
 #import <QuartzCore/QuartzCore.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "SpringBoard+Backgrounder.h"
 #import "SpringBoard+OS32.h"
 
 #import "PSWApplication.h"
-#import "PSWPreferences.h"
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
 #import "PSWController.h"
 
-CHDeclareClass(SBApplicationController);
-CHDeclareClass(SBApplicationIcon);
-CHDeclareClass(SBIconModel);
-CHDeclareClass(SBApplication);
+
+%class SBApplicationController;
+%class SBApplicationIcon;
+%class SBIconModel;
+%class SBApplication;
 
 static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
@@ -49,8 +48,8 @@ static NSUInteger defaultImagePassThrough;
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier
 {
 	if ((self = [super init])) {
-		_application = [[CHSharedInstance(SBApplicationController) applicationWithDisplayIdentifier:displayIdentifier] retain];
-		_displayIdentifier = [displayIdentifier copy];
+		_application = [[[$SBApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier] retain];
+		[self setDisplayIdentifier:displayIdentifier];
 	}
 	return self;
 }
@@ -59,9 +58,13 @@ static NSUInteger defaultImagePassThrough;
 {
 	if ((self = [super init])) {
 		_application = [application retain];
-		_displayIdentifier = [[application displayIdentifier] copy];
+		[self setDisplayIdentifier:[application displayIdentifier]];
 	}
 	return self;
+}
+
+- (void)setDisplayIdentifier:(NSString *)identifier {
+	_displayIdentifier = [identifier copy];
 }
 
 - (void)dealloc
@@ -164,7 +167,7 @@ static NSUInteger defaultImagePassThrough;
 	// Write to file
 	int width = IOSurfaceGetWidth(_surface);
 	int height = IOSurfaceGetHeight(_surface);
-	uint8_t *baseAddress = IOSurfaceGetBaseAddress(_surface);
+	uint8_t *baseAddress = (uint8_t *) IOSurfaceGetBaseAddress(_surface);
 	size_t stride = IOSurfaceGetBytesPerRow(_surface);
 	NSData *tempData = [[NSData alloc] initWithBytesNoCopy:baseAddress length:stride * (height - 1) + width * 4 freeWhenDone:NO];
 	[tempData writeToFile:_snapshotFilePath atomically:NO];
@@ -191,7 +194,13 @@ static NSUInteger defaultImagePassThrough;
 
 - (SBApplicationIcon *)springBoardIcon
 {
-	return (SBApplicationIcon *)[CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
+	SBApplicationIcon *icon = nil;
+	SBIconModel *iconModel = [$SBIconModel sharedInstance];
+	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
+		icon = [iconModel leafIconForIdentifier:[self displayIdentifier]];
+	else
+		icon = [iconModel iconForDisplayIdentifier:[self displayIdentifier]];
+	return icon;
 }
 
 - (UIImage *)themedIcon
@@ -309,14 +318,14 @@ static NSUInteger defaultImagePassThrough;
 - (SBIconBadge *)badgeView
 {
 	SBIcon *icon = [self springBoardIcon];
-	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
+	return (icon)?MSHookIvar<SBIconBadge *>(icon, "_badge"):nil;
 }
 
 - (NSString *)badgeText
 {
 	SBIcon *icon = [self springBoardIcon];
 	if (icon) {
-		id result = CHIvar(icon, _badgeNumberOrString, id);
+		id result = MSHookIvar<id>(icon, "_badgeNumberOrString");
 		if ([result isKindOfClass:[NSNumber class]]) {
 			NSInteger value = [result integerValue];
 			if (value != 0)
@@ -335,31 +344,42 @@ static NSUInteger defaultImagePassThrough;
 
 @end
 
-#pragma mark SBApplication
+%hook SBApplication
 
-CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
+- (void)_relaunchAfterAbnormalExit:(BOOL)something
 {
 	// Method for 3.0.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper1(SBApplication, _relaunchAfterAbnormalExit, something);
+		%orig;
 	}
 }
 
-CHMethod0(void, SBApplication, _relaunchAfterExit)
+- (void)_relaunchAfterExitIfNecessary
+{
+	// Method for 4.0.x
+	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
+		[ignoredRelaunchDisplayIdentifier release];
+		ignoredRelaunchDisplayIdentifier = nil;
+	} else {
+		%orig;
+	}
+}
+
+- (void)_relaunchAfterExit 
 {
 	// Method for 3.1.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper0(SBApplication, _relaunchAfterExit);
+		%orig;
 	}
 }
 
-CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+- (UIImage *)defaultImage:(BOOL *)something
 {
 	if (defaultImagePassThrough == 0) {
 		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
@@ -376,7 +396,7 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 					if (something)
 						*something = YES;
 					IOSurfaceRef imageSurface = PSWSurfaceCopyToMainMemory((IOSurfaceRef)snapshot, 'BGRA', 4);
-					uint8_t *baseAddress = IOSurfaceGetBaseAddress(imageSurface);
+					uint8_t *baseAddress = (uint8_t *) IOSurfaceGetBaseAddress(imageSurface);
 					CGDataProviderRef dataProvider = CGDataProviderCreateWithData((void *)imageSurface, baseAddress, IOSurfaceGetAllocSize(imageSurface), (CGDataProviderReleaseDataCallback)CFRelease);
 					CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 					CGImageRef image = CGImageCreate(IOSurfaceGetWidth(imageSurface), IOSurfaceGetHeight(imageSurface), 8, 32, IOSurfaceGetBytesPerRow(imageSurface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
@@ -390,29 +410,18 @@ CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
 			}
 		}
 	}
-	return CHSuper1(SBApplication, defaultImage, something);
+	return %orig;
 }
 
-#pragma mark SBApplicationIcon
+%end
 
-CHMethod1(void, SBApplicationIcon, setBadge, id, value)
+%hook SBApplicationIcon
+
+- (void)setBadge:(id)value
 {
-	CHSuper1(SBApplicationIcon, setBadge, value);
-	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+	%orig;
+	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[[self application] displayIdentifier]];
 	[app _badgeDidChange];
 }
 
-
-
-CHConstructor {
-	CHAutoreleasePoolForScope();
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-	CHHook0(SBApplication, _relaunchAfterExit);
-	CHHook1(SBApplication, defaultImage);
-	CHLoadLateClass(SBApplicationIcon);
-	CHHook1(SBApplicationIcon, setBadge);
-}
-
+%end

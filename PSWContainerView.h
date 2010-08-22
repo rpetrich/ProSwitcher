@@ -4,10 +4,17 @@
 
 @class PSWPageView;
 
+typedef struct {
+	CGFloat top, left, right, bottom;
+} PSWProportionalInsets;
+
+CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets);
+
 @interface PSWContainerView : UIView {
 @private
 	PSWPageView *_pageView;
-	UIEdgeInsets _pageViewInsets;
+	PSWProportionalInsets _pageViewInsets;
+	UIEdgeInsets _pageViewEdgeInsets;
 	
 	BOOL _isEmpty;
 	
@@ -25,7 +32,8 @@
 
 - (void)setPageControlCount:(NSInteger)count;
 
-@property (nonatomic, assign) UIEdgeInsets pageViewInsets;
+@property (nonatomic, assign) PSWProportionalInsets pageViewInsets;
+@property (nonatomic, assign) UIEdgeInsets pageViewEdgeInsets;
 @property (nonatomic, retain) PSWPageView *pageView;
 
 @property (nonatomic, retain) UIPageControl *pageControl;

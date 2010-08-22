@@ -12,16 +12,13 @@
 
 @implementation PSWPageView
 @synthesize pageViewDelegate = _pageViewDelegate;
-@synthesize tapsToActivate = _tapsToActivate;
 @synthesize applications = _applications;
 
 #pragma mark Public Methods
 
 - (id)initWithFrame:(CGRect)frame applicationController:(PSWApplicationController *)applicationController;
 {
-	if ((self = [super initWithFrame:frame])) {
-		_unfocusedAlpha = 1.0f;
-		
+	if ((self = [super initWithFrame:frame])) {		
 		_applicationController = [applicationController retain];
 		[applicationController setDelegate:self];
 		_applications = [[applicationController activeApplications] mutableCopy];
@@ -35,6 +32,7 @@
 		[self setAlwaysBounceHorizontal:YES];
 		[self setScrollEnabled:YES];
 		[self setUserInteractionEnabled:YES];
+		[self setPagingEnabled:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
 		for (int i = 0; i < [self.applications count]; i++) {
@@ -100,7 +98,7 @@
 		[view setFrame:frame];
 		
 		if ([view application] != focusedApplication)
-			[view setAlpha:_unfocusedAlpha];
+			[view setAlpha:GetPreference(PSWUnfocusedAlpha, BOOL)];
 			
 		frame.origin.x += frame.size.width;
 	}
@@ -126,17 +124,11 @@
 		
 		PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:[self bounds] application:application];
 		snapshot.delegate = self;
-		snapshot.showsTitle = _showsTitles;
-		snapshot.showsBadge = _showsBadges;
-		snapshot.allowsZoom = _allowsZoom;
-		snapshot.showsCloseButton = _showsCloseButtons;
-		snapshot.allowsSwipeToClose = _allowsSwipeToClose;
-		snapshot.roundedCornerRadius = _roundedCornerRadius;
 		
 		if ([_snapshotViews count] == 0)
 			[snapshot setFocused:YES animated:NO];
 		else
-			[snapshot setAlpha:_unfocusedAlpha];
+			[snapshot setAlpha:GetPreference(PSWUnfocusedAlpha, BOOL)];
 		
 		[self addSubview:snapshot];
 		[_snapshotViews insertObject:snapshot atIndex:position];
@@ -222,134 +214,6 @@
 	}
 }
 
-- (BOOL)showsTitles
-{
-	return _showsTitles;
-}
-- (void)setShowsTitles:(BOOL)showsTitles
-{
-	if (_showsTitles != showsTitles) {
-		_showsTitles = showsTitles;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setShowsTitle:showsTitles];
-	}
-}
-
-- (BOOL)themedIcons
-{
-	return _themedIcons;
-}
-- (void)setThemedIcons:(BOOL)themedIcons
-{
-	_themedIcons = themedIcons;
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view setThemedIcon:themedIcons];
-}
-
-- (BOOL)showsCloseButtons
-{
-	return _showsCloseButtons;
-}
-- (void)setShowsCloseButtons:(BOOL)showsCloseButtons
-{
-	_showsCloseButtons = showsCloseButtons;
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view setShowsCloseButton:_showsCloseButtons];
-}
-
-- (BOOL)showsBadges
-{
-	return _showsBadges;
-}
-- (void)setShowsBadges:(BOOL)showsBadges
-{
-	_showsBadges = showsBadges;
-	for (PSWSnapshotView *view in _snapshotViews)
-		[view setShowsBadge:showsBadges];
-}
-
-- (BOOL)allowsSwipeToClose
-{
-	return _allowsSwipeToClose;
-}
-- (void)setAllowsSwipeToClose:(BOOL)allowsSwipeToClose
-{
-	if (_allowsSwipeToClose != allowsSwipeToClose) {
-		_allowsSwipeToClose = allowsSwipeToClose;
-		
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setAllowsSwipeToClose:allowsSwipeToClose];
-	}
-}
-
-- (BOOL)allowsZoom
-{
-	return _allowsZoom;
-}
-- (void)setAllowsZoom:(BOOL)allowsZoom
-{
-	if (_allowsZoom != allowsZoom) {
-		_allowsZoom = allowsZoom;
-		
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setAllowsZoom:allowsZoom];
-			
-		if (!_allowsZoom)
-			[self unZoom];
-		else
-			[self zoomActiveWithAnimation:NO];
-	}
-}
-
-- (CGFloat)snapshotPageInset
-{
-	return _snapshotInset;
-}
-- (void)setSnapshotPageInset:(CGFloat)snapshotInset
-{
-	if (_snapshotInset != snapshotInset) {
-		_snapshotInset = snapshotInset;
-		[self layoutPages];
-	}
-}
-
-- (CGFloat)roundedCornerRadius
-{
-	return _roundedCornerRadius;
-}
-- (void)setRoundedCornerRadius:(CGFloat)roundedCornerRadius
-{
-	if (_roundedCornerRadius != roundedCornerRadius) {
-		_roundedCornerRadius = roundedCornerRadius;
-		for (PSWSnapshotView *view in _snapshotViews)
-			[view setRoundedCornerRadius:_roundedCornerRadius];
-	}
-}
-
-- (CGFloat)snapshotInset
-{
-	return _snapshotInset;
-}
-- (void)setSnapshotInset:(CGFloat)snapshotInset
-{
-	if (_snapshotInset != snapshotInset) {
-		_snapshotInset = snapshotInset;
-		[self layoutPages];
-	}
-}
-
-- (CGFloat)unfocusedAlpha
-{
-	return _unfocusedAlpha;
-}
-- (void)setUnfocusedAlpha:(CGFloat)unfocusedAlpha
-{
-	if (_unfocusedAlpha != unfocusedAlpha) {
-		_unfocusedAlpha = unfocusedAlpha;
-		[self layoutPages];
-	}
-}
-
 - (NSInteger)indexOfApplication:(PSWApplication *)application
 {
 	return [_applications indexOfObject:application];
@@ -426,11 +290,11 @@
 		[oldView setFocused:NO ];
 		[newView setFocused:YES];
 		
-		if (_unfocusedAlpha != 1.0f) {
+		if (GetPreference(PSWUnfocusedAlpha, BOOL) != 1.0f) {
 			[UIView beginAnimations:nil context:NULL];
 			[UIView setAnimationDuration:0.33f];
 			
-			[oldView setAlpha:_unfocusedAlpha];
+			[oldView setAlpha:GetPreference(PSWUnfocusedAlpha, BOOL)];
 			[newView setAlpha:1.0f           ];
 			
 			[UIView commitAnimations];
@@ -456,7 +320,7 @@
 {
 	PSWApplication *tappedApp = [snapshot application];
 	if (tappedApp == [self focusedApplication]) {
-		if (tapCount == _tapsToActivate) {
+		if (tapCount == GetPreference(PSWTapsToActivate, NSInteger)) {
 			if ([_pageViewDelegate respondsToSelector:@selector(snapshotPageView:didSelectApplication:)])
 				[_pageViewDelegate snapshotPageView:self didSelectApplication:[self focusedApplication]];	
 		}
@@ -473,7 +337,7 @@
 - (void)updateContentSize
 {
 	CGSize size = [self bounds].size;
-	[self setContentSize:CGSizeMake(size.width * [_applications count], size.height)];
+	[self setContentSize:CGSizeMake(size.width * [_applications count], size.height - 1.0f)];
 }
 
 - (void)shouldExit

@@ -74,13 +74,14 @@ static PSWController *sharedController;
 - (id)init
 {
 	if ((self = [super init])) {
-		preferences = [[NSDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath];
+		PSWPreparePreferences();
 	
 		containerView = [[PSWContainerView alloc] init];
 		snapshotPageView = [[PSWPageView alloc] initWithFrame:CGRectZero applicationController:[PSWApplicationController sharedInstance]];
 
 		[containerView addSubview:snapshotPageView];
 		[containerView setAlpha:0.0f];
+		[containerView setHidden:YES];
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
@@ -121,7 +122,7 @@ static PSWController *sharedController;
 	UIView *view = containerView;
 		
 	// Find appropriate superview and add as subview
-	UIView *buttonBar = [CHSharedInstance(SBIconModel) buttonBar];
+	UIView *buttonBar = PSWDockView;
 	if ([buttonBar window]) {
 		UIView *buttonBarParent = [buttonBar superview];
 		UIView *targetSuperview = [buttonBarParent superview];
@@ -157,57 +158,41 @@ static PSWController *sharedController;
 	/* The container view is responsible for background, page control, and [tap|auto] exit. */
 	
 	UIEdgeInsets scrollViewInsets;
-	scrollViewInsets.left = scrollViewInsets.right = GetPreference(PSWSnapshotInset, float);
+	scrollViewInsets.left = scrollViewInsets.right = 0;
 	scrollViewInsets.top = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
-	scrollViewInsets.bottom = GetPreference(PSWShowDock, BOOL) ? PSWDockHeight : 0;
-	if (PSWPad) {
-		// If we are on an iPad, we want slightly...smaller cards.
-		scrollViewInsets.top += 40.0f;
-		scrollViewInsets.bottom += 40.0f;
-	}
-	[containerView setPageViewInsets:scrollViewInsets];
+	scrollViewInsets.bottom = PSWDockHeight;
+	[containerView setPageViewEdgeInsets:scrollViewInsets];
 	
-	if (GetPreference(PSWDimBackground, BOOL))
-		[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
-	else
-		[containerView setBackgroundColor:[UIColor clearColor]];
+	PSWProportionalInsets cardInsets;
+	cardInsets.left = cardInsets.right = PSWSnapshotProportionalInset;
+	cardInsets.top = 0.0f;
+	cardInsets.bottom = 0.025f;
+	[containerView setPageViewInsets:cardInsets];
 	
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
-		[[containerView layer] setContents:(id) [PSWImage(@"Background") CGImage]];
-	else
-		[[containerView layer] setContents:nil];
+	[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
+	[[containerView layer] setContents:nil];
 		
-	containerView.showsPageControl    = GetPreference(PSWShowPageControl, BOOL);
-	containerView.emptyTapClose       = GetPreference(PSWEmptyTapClose, BOOL);
-	containerView.emptyText           = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleText ? PSWLocalize(@"NO_APPS_RUNNING") : nil;
-	containerView.autoExit            = GetPreference(PSWEmptyStyle, NSInteger) == PSWEmptyStyleExit ? YES : NO;
+	containerView.emptyTapClose       = YES; 
+	containerView.emptyText           = @"No Apps Running";
+	containerView.autoExit            = NO;
 	
-	/* The page view is responsible for everything else, basically. */
-
-	snapshotPageView.backgroundColor 	 = [UIColor clearColor];
-	snapshotPageView.allowsSwipeToClose  = GetPreference(PSWSwipeToClose, BOOL);
-	snapshotPageView.showsTitles         = GetPreference(PSWShowApplicationTitle, BOOL);
-	snapshotPageView.showsCloseButtons   = GetPreference(PSWShowCloseButton, BOOL);
-	snapshotPageView.roundedCornerRadius = GetPreference(PSWRoundedCornerRadius, float);
-	snapshotPageView.tapsToActivate      = GetPreference(PSWTapsToActivate, NSInteger);
-	snapshotPageView.unfocusedAlpha      = GetPreference(PSWUnfocusedAlpha, float);
-	snapshotPageView.pagingEnabled       = GetPreference(PSWPagingEnabled, BOOL);
-	snapshotPageView.showsBadges         = GetPreference(PSWShowBadges, BOOL);
-	snapshotPageView.themedIcons         = GetPreference(PSWThemedIcons, BOOL);
-	snapshotPageView.allowsZoom          = GetPreference(PSWAllowsZoom, BOOL);
-
-	// Load ignored display identifiers.
-	NSMutableArray *ignored = GetPreference(PSWShowDefaultApps, BOOL) ? [NSMutableArray array] : [[GetPreference(PSWDefaultApps, id) mutableCopy] autorelease];
+	NSMutableArray *ignored = [NSMutableArray array];
 	
 	// Hide SpringBoard card if disabled.
 	if (!GetPreference(PSWSpringBoardCard, BOOL)) {
 		[ignored addObject:@"com.apple.springboard"];
 	}
 	
+	// Hide Phone card if disabled.
+	if (!GetPreference(PSWHidePhone, BOOL)) {
+		[ignored addObject:@"com.apple.mobilephone"];
+	}
+	
 	// Hide dock icons if disabled
 	if (!GetPreference(PSWShowDockApps, BOOL)) {
-		for (SBIcon *icon in [[CHSharedInstance(SBIconModel) buttonBar] icons]) {
-			[ignored addObject:[icon displayIdentifier]];
+		for (SBIcon *icon in [PSWDockModel icons]) {
+			[ignored addObject:[icon respondsToSelector:@selector(displayIdentifier)] ? [icon displayIdentifier]:
+							   [icon respondsToSelector:@selector(application)] ? [[icon application] displayIdentifier] : nil];
 		}
 	}
 
@@ -272,13 +257,17 @@ static PSWController *sharedController;
 	// Deactivate CategoriesSB
 	if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
 		[uiController categoriesSBCloseAll];
+		
+	// Close folders
+	if ([iconController respondsToSelector:@selector(closeFolderAnimated:)])
+		[iconController closeFolderAnimated:NO];
 	
 	// Deactivate Keyboard
 	[[uiController window] endEditing:YES];
 	
 	// Setup status bar
 	[self saveStatusBarStyle];
-	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+	// [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
 		
 	// Restore focused application
 	[snapshotPageView setFocusedApplication:focusedApplication];
@@ -476,8 +465,7 @@ static PSWController *sharedController;
 #pragma mark Preference Changed Notification
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
-	[sharedController reloadPreferences];
-	PSWUpdateIconVisibility();
+	[(SpringBoard *) [UIApplication sharedApplication] relaunchSpringBoard];
 }
 
 #pragma mark SBUIController
@@ -512,6 +500,15 @@ CHOptimizedMethod(2, self, void, SBUIController, restoreIconListAnimated, BOOL, 
 	[sharedController reparentView];
 }
 
+// 4.0
+CHOptimizedMethod(3, self, void, SBUIController, restoreIconListAnimated, BOOL, animated, animateWallpaper, BOOL, animateWallpaper, keepSwitcher, BOOL, switcher)
+{
+	if (disallowRestoreIconList == 0)
+		CHSuper(3, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0, animateWallpaper, animateWallpaper && disallowIconListScatter == 0, keepSwitcher, switcher);
+	
+	[sharedController reparentView];
+}
+
 CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 {
 	NSLog(@"Welcome to ProSwitcher.");
@@ -524,12 +521,6 @@ CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 		[alert show];
 		[plistDict setObject:[NSNumber numberWithBool:YES] forKey:@"PSWAlert"];
 		PSWWriteBinaryPropertyList(plistDict, PSWPreferencesFilePath);
-		
-		// Analytics
-		NSURL *analyticsURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://xuzz.net/cydia/proswitcherstats.php?udid=%@", [[UIDevice currentDevice] uniqueIdentifier]]];
-		NSURLRequest *request = [NSURLRequest requestWithURL:analyticsURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-		// Fire off a request to the server, yes this leaks but whatever its just one object for the entire lifetime of ProSwitcher
-		[[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:YES];
 	}
 	[plistDict release];
 	
@@ -633,7 +624,6 @@ CHOptimizedMethod(1, self, void, SBIconController, setPageControlVisible, BOOL, 
 }
 
 #pragma mark SBZoomView
-__attribute__((always_inline))
 static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRect)
 {
 	return CGAffineTransformScale(
@@ -781,6 +771,7 @@ CHConstructor
 	CHHook(1, SBUIController, restoreIconList);
 	CHHook(1, SBUIController, restoreIconListAnimated);
 	CHHook(2, SBUIController, restoreIconListAnimated, animateWallpaper);
+	CHHook(3, SBUIController, restoreIconListAnimated, animateWallpaper, keepSwitcher);
 	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
 	CHHook0(SBUIController, finishLaunching);
 
