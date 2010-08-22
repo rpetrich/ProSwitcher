@@ -22,17 +22,11 @@ CHDeclareClass(PSWProSwitcherIcon);
 
 %end
 
-#pragma mark PSWProSwitcherIcon
-
-CHMethod0(void, PSWProSwitcherIcon, launch)
+%subclass PSWProSwitcherIcon : SBApplicationIcon
+- (void)launch
 {
 	PSWController *vc = [PSWController sharedController];
 	if (!vc.isAnimating)
 		vc.active = !vc.active;
 }
-
-__attribute__((constructor)) static void icon_init {
-	CHRegisterClass(PSWProSwitcherIcon, SBApplicationIcon) {
-		CHHook0(PSWProSwitcherIcon, launch);
-	}
-}
+%end
