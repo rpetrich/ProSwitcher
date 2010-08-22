@@ -1,7 +1,6 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
-#import <CaptainHook/CaptainHook.h>
 
 static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
@@ -129,9 +128,12 @@ NSString *PSWLocalize(NSString *text)
 	return [localizationBundle localizedStringForKey:text value:nil table:nil];
 }
 
-CHConstructor
+__attribute__((constructor)) static void resources_init()
 {
-	CHAutoreleasePoolForScope();
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];	
+	
 	sharedBundle = [[NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"] retain];
 	localizationBundle = [[NSBundle bundleWithPath:@"/Library/PreferenceLoader/Preferences/ProSwitcher"] retain];
+	
+	[pool release];
 }
