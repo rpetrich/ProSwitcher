@@ -5,6 +5,9 @@
 
 static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
+static NSBundle *localizationBundle;
+
+NSDictionary *preferences = nil;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
@@ -14,11 +17,12 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 		if (!imageCache)
 			imageCache = [[NSMutableDictionary alloc] init];
 		result = [UIImage imageWithContentsOfFile:[bundle pathForResource:name ofType:@"png"]];
-		if (result)
+		if (result) {
 			if (imageCache)
 				[imageCache setObject:result forKey:key];
 			else
 				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+		}
 	}
 	return result;
 }
@@ -76,8 +80,8 @@ UIImage *PSWScaledImage(NSString *name, CGSize size)
 static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius)
 {
 	CGSize half;
-	half.width = size.width / 2.0f;
-	half.height = size.height / 2.0f;
+	half.width = size.width * 0.5f;
+	half.height = size.height * 0.5f;
 	CGContextMoveToPoint(c, size.width, half.height);
 	CGContextAddArcToPoint(c, size.width, size.height, half.width, size.height, cornerRadius);
 	CGContextAddArcToPoint(c, 0.0f, size.height, 0.0f, half.height, cornerRadius);
@@ -94,21 +98,22 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
-		UIGraphicsBeginImageContext(size);
-		CGContextRef c = UIGraphicsGetCurrentContext();
-		// TODO: figure out why sometimes this fails so hard
-		if (!c)
-			return nil;
-		if (cornerRadius != 0.0f)
+		CGContextRef c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+		CGRect rect;
+		rect.origin.x = 0.0f;
+		rect.origin.y = 0.0f;
+		rect.size = size;
+		if (cornerRadius > 0.0f)
 			ClipContextRounded(c, size, cornerRadius);
-		[[UIColor whiteColor] set];
-		UIRectFill(CGRectMake(0.0f, 0.0f, size.width, size.height));
-		result = UIGraphicsGetImageFromCurrentImageContext();
+		CGContextFillRect(c, rect);
+		CGImageRef image = CGBitmapContextCreateImage(c);
+		CGContextRelease(c);
+		result = [UIImage imageWithCGImage:image];
+		CGImageRelease(image);
 		if (imageCache)
 			[imageCache setObject:result forKey:key];
 		else
 			imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
-		UIGraphicsEndImageContext();
 	}
 	return result;
 }
@@ -119,8 +124,14 @@ void PSWClearResourceCache()
 	imageCache = nil;
 }
 
+NSString *PSWLocalize(NSString *text)
+{
+	return [localizationBundle localizedStringForKey:text value:nil table:nil];
+}
+
 CHConstructor
 {
 	CHAutoreleasePoolForScope();
 	sharedBundle = [[NSBundle bundleWithPath:@"/Applications/ProSwitcher.app"] retain];
+	localizationBundle = [[NSBundle bundleWithPath:@"/Library/PreferenceLoader/Preferences/ProSwitcher"] retain];
 }

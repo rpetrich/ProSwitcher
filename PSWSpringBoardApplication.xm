@@ -12,7 +12,7 @@
 #import "PSWResources.h"
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
-#import "PSWViewController.h"
+#import "PSWController.h"
 
 CHDeclareClass(SpringBoard);
 CHDeclareClass(SBUIController);
@@ -21,7 +21,6 @@ static CGImageRef springBoardSnapshot = nil;
 static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 @implementation PSWSpringBoardApplication
-@synthesize displayName = _displayName;
 
 + (id)sharedInstance
 {
@@ -35,9 +34,9 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 	return [super initWithDisplayIdentifier:@"com.apple.springboard"];
 }
 
-- (CGImageRef)snapshot
+- (id)snapshot
 {	
-	return springBoardSnapshot;
+	return (id)springBoardSnapshot;
 }
 
 - (BOOL)writeSnapshotToDisk
@@ -67,12 +66,12 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 - (void)exit
 {
-	[(SpringBoard *)[UIApplication sharedApplication] relaunchSpringBoard];
+	[(SpringBoard *) [UIApplication sharedApplication] relaunchSpringBoard];
 }
 
 - (void)activateWithAnimation:(BOOL)animation
 {
-	[[PSWViewController sharedInstance] setActive:NO animated:animation];
+	[[PSWController sharedController] setActive:NO animated:animation];
 }
 
 - (SBIconBadge *)badgeView
@@ -112,8 +111,10 @@ CHMethod0(void, SBUIController, finishLaunching)
 		UIGraphicsEndImageContext();
 		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
 	}
+	
 	CHSuper0(SBUIController, finishLaunching);
 }
+
 
 CHConstructor {
 	CHLoadLateClass(SpringBoard);

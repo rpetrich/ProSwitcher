@@ -1,22 +1,28 @@
 #import <UIKit/UIKit.h>
 #import "libactivator.h"
-#import "PSWSnapshotPageView.h"
 
 void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier);
 
-@interface PSWViewController : UIViewController<PSWSnapshotPageViewDelegate, LAListener> {
+@class PSWPageView, PSWContainerView, PSWApplication;
+
+@interface PSWController : NSObject {
 @private
-	PSWSnapshotPageView *snapshotPageView;
+	PSWPageView *snapshotPageView;
+	PSWContainerView *containerView;
+	
 	PSWApplication *focusedApplication;
 	BOOL isActive;
 	BOOL isAnimating;
 	UIStatusBarStyle formerStatusBarStyle;
 }
-+ (PSWViewController *)sharedInstance;
+
++ (PSWController *)sharedController;
 
 @property (nonatomic, assign, getter=isActive) BOOL active;
 - (void)setActive:(BOOL)active animated:(BOOL)animated;
+
 @property (nonatomic, readonly) BOOL isAnimating;
-@property (nonatomic, readonly) PSWSnapshotPageView *snapshotPageView;
+@property (nonatomic, readonly) PSWPageView *snapshotPageView;
+@property (nonatomic, readonly) PSWContainerView *containerView;
 
 @end

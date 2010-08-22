@@ -1,22 +1,22 @@
-#import "PSWApplication.h"
-#import "PSWPreferences.h"
 
 #include <unistd.h>
 
 #import <SpringBoard/SpringBoard.h>
 #import <QuartzCore/QuartzCore.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "SpringBoard+Backgrounder.h"
+#import "SpringBoard+OS32.h"
 
+#import "PSWApplication.h"
 #import "PSWDisplayStacks.h"
 #import "PSWApplicationController.h"
-#import "PSWViewController.h"
+#import "PSWController.h"
 
-CHDeclareClass(SBApplicationController);
-CHDeclareClass(SBApplicationIcon);
-CHDeclareClass(SBIconModel);
-CHDeclareClass(SBApplication);
+
+%class SBApplicationController;
+%class SBApplicationIcon;
+%class SBIconModel;
+%class SBApplication;
 
 static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
@@ -26,6 +26,10 @@ static NSUInteger defaultImagePassThrough;
 @synthesize displayIdentifier = _displayIdentifier;
 @synthesize application = _application;
 @synthesize delegate = _delegate;
+#ifdef USE_IOSURFACE
+@synthesize snapshotCropInsets = _cropInsets;
+@synthesize snapshotRotation = _snapshotRotation;
+#endif
 
 + (NSString *)snapshotPath
 {
@@ -44,8 +48,8 @@ static NSUInteger defaultImagePassThrough;
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier
 {
 	if ((self = [super init])) {
-		_application = [[CHSharedInstance(SBApplicationController) applicationWithDisplayIdentifier:displayIdentifier] retain];
-		_displayIdentifier = [displayIdentifier copy];
+		_application = [[[$SBApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier] retain];
+		[self setDisplayIdentifier:displayIdentifier];
 	}
 	return self;
 }
@@ -54,9 +58,13 @@ static NSUInteger defaultImagePassThrough;
 {
 	if ((self = [super init])) {
 		_application = [application retain];
-		_displayIdentifier = [[application displayIdentifier] copy];
+		[self setDisplayIdentifier:[application displayIdentifier]];
 	}
 	return self;
+}
+
+- (void)setDisplayIdentifier:(NSString *)identifier {
+	_displayIdentifier = [identifier copy];
 }
 
 - (void)dealloc
@@ -81,20 +89,22 @@ static NSUInteger defaultImagePassThrough;
 	return [_application displayName];
 }
 
-- (CGImageRef)snapshot
+- (id)snapshot
 {	
 #ifdef USE_IOSURFACE
 	if (_snapshotImage)
-		return _snapshotImage;
+		return (id)_snapshotImage;
+	if (_surface)
+		return (id)_surface;
 #endif
 	defaultImagePassThrough++;
-	CGImageRef result = [[_application defaultImage:NULL] CGImage];
+	id result = (id)[[_application defaultImage:NULL] CGImage];
 	defaultImagePassThrough--;
 	return result;
 }
 
 #ifdef USE_IOSURFACE
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation
 {
 	if (surface != _surface) {
 		CGImageRelease(_snapshotImage);
@@ -105,32 +115,28 @@ static NSUInteger defaultImagePassThrough;
 			[_snapshotFilePath release];
 			_snapshotFilePath = nil;
 		}
+		_snapshotImage = NULL;
+		_surface = NULL;
+		_snapshotRotation = PSWSnapshotRotationNone;
+		_cropInsets.top = 0;
+		_cropInsets.left = 0;
+		_cropInsets.bottom = 0;
+		_cropInsets.right = 0;
+		
 		if (surface) {
-			int width = IOSurfaceGetWidth(surface) - cropInsets.left - cropInsets.right;
-			int height = IOSurfaceGetHeight(surface) - cropInsets.top - cropInsets.bottom;
-			if (width > 0 && height > 0) {
-				uint8_t *baseAddress = IOSurfaceGetBaseAddress(surface);
-				size_t stride = IOSurfaceGetBytesPerRow(surface);
-				baseAddress += cropInsets.left * 4 + stride * cropInsets.top;
-				CGDataProviderRef dataProvider = CGDataProviderCreateWithData(NULL, baseAddress, stride * (height - 1) + width * 4, NULL);
-				CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-				_snapshotImage = CGImageCreate(width, height, 8, 32, stride, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
-				CGColorSpaceRelease(colorSpace);
-				CGDataProviderRelease(dataProvider);
-				CFRetain(surface);
-				_surface = surface;
-				_cropInsets = cropInsets;
-			} else {
-				_snapshotImage = NULL;
-				_surface = NULL;
-			}
-		} else {
-			_snapshotImage = NULL;
-			_surface = NULL;
+			CFRetain(surface);
+			_surface = surface;
+			_cropInsets = cropInsets;
+			_snapshotRotation = rotation;
 		}
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
+}
+
+- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
+{
+	[self loadSnapshotFromSurface:surface cropInsets:cropInsets rotation:PSWSnapshotRotationNone];
 }
 
 - (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
@@ -140,7 +146,7 @@ static NSUInteger defaultImagePassThrough;
 	insets.left = 0;
 	insets.bottom = 0;
 	insets.right = 0;
-	[self loadSnapshotFromSurface:surface cropInsets:insets];
+	[self loadSnapshotFromSurface:surface cropInsets:insets rotation:PSWSnapshotRotationNone];
 }
 #endif
 
@@ -159,11 +165,10 @@ static NSUInteger defaultImagePassThrough;
 	CFRelease(uuidString);
 	_snapshotFilePath = [[[PSWApplication snapshotPath] stringByAppendingPathComponent:fileName] retain];
 	// Write to file
-	int width = IOSurfaceGetWidth(_surface) - _cropInsets.left - _cropInsets.right;
-	int height = IOSurfaceGetHeight(_surface) - _cropInsets.top - _cropInsets.bottom;
-	uint8_t *baseAddress = IOSurfaceGetBaseAddress(_surface);
+	int width = IOSurfaceGetWidth(_surface);
+	int height = IOSurfaceGetHeight(_surface);
+	uint8_t *baseAddress = (uint8_t *) IOSurfaceGetBaseAddress(_surface);
 	size_t stride = IOSurfaceGetBytesPerRow(_surface);
-	baseAddress += _cropInsets.left * 4 + stride * _cropInsets.top;
 	NSData *tempData = [[NSData alloc] initWithBytesNoCopy:baseAddress length:stride * (height - 1) + width * 4 freeWhenDone:NO];
 	[tempData writeToFile:_snapshotFilePath atomically:NO];
 	[tempData release];
@@ -189,17 +194,33 @@ static NSUInteger defaultImagePassThrough;
 
 - (SBApplicationIcon *)springBoardIcon
 {
-	return (SBApplicationIcon *)[CHSharedInstance(SBIconModel) iconForDisplayIdentifier:_displayIdentifier];
+	SBApplicationIcon *icon = nil;
+	SBIconModel *iconModel = [$SBIconModel sharedInstance];
+	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
+		icon = [iconModel leafIconForIdentifier:[self displayIdentifier]];
+	else
+		icon = [iconModel iconForDisplayIdentifier:[self displayIdentifier]];
+	return icon;
 }
 
 - (UIImage *)themedIcon
 {
-	return (PSWPad ? [[self springBoardIcon] getIconImage:1] : [[self springBoardIcon] icon]);
+	SBIcon *icon = [self springBoardIcon];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+	return [icon getIconImage:1];
+#else
+	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:1] : [icon icon];
+#endif
 }
 
 - (UIImage *)unthemedIcon
 {
-	return (PSWPad ? [[self springBoardIcon] getIconImage:0] : [[self springBoardIcon] smallIcon]);
+	SBIcon *icon = [self springBoardIcon];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_2
+	return [icon getIconImage:0];
+#else
+	return [icon respondsToSelector:@selector(getIconImage:)] ? [icon getIconImage:0] : [icon smallIcon];
+#endif
 }
 
 - (BOOL)hasNativeBackgrounding
@@ -297,14 +318,14 @@ static NSUInteger defaultImagePassThrough;
 - (SBIconBadge *)badgeView
 {
 	SBIcon *icon = [self springBoardIcon];
-	return (icon)?CHIvar(icon, _badge, SBIconBadge *):nil;
+	return (icon)?MSHookIvar<SBIconBadge *>(icon, "_badge"):nil;
 }
 
 - (NSString *)badgeText
 {
 	SBIcon *icon = [self springBoardIcon];
 	if (icon) {
-		id result = CHIvar(icon, _badgeNumberOrString, id);
+		id result = MSHookIvar<id>(icon, "_badgeNumberOrString");
 		if ([result isKindOfClass:[NSNumber class]]) {
 			NSInteger value = [result integerValue];
 			if (value != 0)
@@ -323,64 +344,84 @@ static NSUInteger defaultImagePassThrough;
 
 @end
 
-#pragma mark SBApplication
+%hook SBApplication
 
-CHMethod1(void, SBApplication, _relaunchAfterAbnormalExit, BOOL, something)
+- (void)_relaunchAfterAbnormalExit:(BOOL)something
 {
 	// Method for 3.0.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper1(SBApplication, _relaunchAfterAbnormalExit, something);
+		%orig;
 	}
 }
 
-CHMethod0(void, SBApplication, _relaunchAfterExit)
+- (void)_relaunchAfterExitIfNecessary
+{
+	// Method for 4.0.x
+	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
+		[ignoredRelaunchDisplayIdentifier release];
+		ignoredRelaunchDisplayIdentifier = nil;
+	} else {
+		%orig;
+	}
+}
+
+- (void)_relaunchAfterExit 
 {
 	// Method for 3.1.x
 	if ([[self displayIdentifier] isEqualToString:ignoredRelaunchDisplayIdentifier]) {
 		[ignoredRelaunchDisplayIdentifier release];
 		ignoredRelaunchDisplayIdentifier = nil;
 	} else {
-		CHSuper0(SBApplication, _relaunchAfterExit);
+		%orig;
 	}
 }
 
-CHMethod1(UIImage *, SBApplication, defaultImage, BOOL *, something)
+- (UIImage *)defaultImage:(BOOL *)something
 {
 	if (defaultImagePassThrough == 0) {
 		PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
 		if (![app hasNativeBackgrounding]) {
-			CGImageRef cgResult = [app snapshot];
-			if (cgResult) {
-				if (something)
-					*something = YES;
-				return [UIImage imageWithCGImage:cgResult];
+			id snapshot = [app snapshot];
+			if (snapshot) {
+				CFTypeID snapshotType = CFGetTypeID(snapshot);
+				if (snapshotType == CGImageGetTypeID()) {
+					if (something)
+						*something = YES;
+					return [UIImage imageWithCGImage:(CGImageRef)snapshot];
+#ifdef USE_IOSURFACE
+				} else if (snapshotType == IOSurfaceGetTypeID()) {
+					if (something)
+						*something = YES;
+					IOSurfaceRef imageSurface = PSWSurfaceCopyToMainMemory((IOSurfaceRef)snapshot, 'BGRA', 4);
+					uint8_t *baseAddress = (uint8_t *) IOSurfaceGetBaseAddress(imageSurface);
+					CGDataProviderRef dataProvider = CGDataProviderCreateWithData((void *)imageSurface, baseAddress, IOSurfaceGetAllocSize(imageSurface), (CGDataProviderReleaseDataCallback)CFRelease);
+					CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+					CGImageRef image = CGImageCreate(IOSurfaceGetWidth(imageSurface), IOSurfaceGetHeight(imageSurface), 8, 32, IOSurfaceGetBytesPerRow(imageSurface), colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little, dataProvider, NULL, false, kCGRenderingIntentDefault);
+					CGColorSpaceRelease(colorSpace);
+					CGDataProviderRelease(dataProvider);
+					UIImage *result = [UIImage imageWithCGImage:image];
+					CGImageRelease(image);
+					return result;
+#endif
+				}
 			}
 		}
 	}
-	return CHSuper1(SBApplication, defaultImage, something);
+	return %orig;
 }
 
-#pragma mark SBApplicationIcon
+%end
 
-CHMethod1(void, SBApplicationIcon, setBadge, id, value)
+%hook SBApplicationIcon
+
+- (void)setBadge:(id)value
 {
-	CHSuper1(SBApplicationIcon, setBadge, value);
-	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[self displayIdentifier]];
+	%orig;
+	PSWApplication *app = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[[self application] displayIdentifier]];
 	[app _badgeDidChange];
 }
 
-CHConstructor {
-	CHAutoreleasePoolForScope();
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, _relaunchAfterAbnormalExit);
-	CHHook0(SBApplication, _relaunchAfterExit);
-	CHHook1(SBApplication, defaultImage);
-	CHLoadLateClass(SBApplicationIcon);
-	CHHook1(SBApplicationIcon, setBadge);
-}
-
+%end

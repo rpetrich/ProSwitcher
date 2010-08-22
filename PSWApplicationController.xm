@@ -5,13 +5,14 @@
 
 #import "PSWApplication.h"
 #import "PSWSpringBoardApplication.h"
+#import "PSWSurface.h"
 
 CHDeclareClass(SBApplication);
 
 #ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
-CHDeclareClass(SBUIController)
-CHDeclareClass(SBZoomView)
+%class SBUIController;
+%class SBZoomView;
 #endif
 
 static PSWApplicationController *sharedApplicationController;
@@ -100,41 +101,45 @@ static PSWApplicationController *sharedApplicationController;
 
 @end
 
-#pragma mark SBApplication
+%hook SBApplication
 
-CHMethod1(void, SBApplication, launchSucceeded, BOOL, flag)
+- (void)launchSucceeded:(BOOL)flag
 {
 	[[PSWApplicationController sharedInstance] _applicationDidLaunch:self];
-    CHSuper1(SBApplication, launchSucceeded, flag);
+	%orig;
 }
 
-CHMethod0(void, SBApplication, exitedCommon)
+- (void)exitedCommon
 {
 	[[PSWApplicationController sharedInstance] _applicationDidExit:self];
-	CHSuper0(SBApplication, exitedCommon);
+	%orig;
 }
 
-#ifdef USE_IOSURFACE
+%end
 
-#pragma mark SBUIController
+#ifdef USE_IOSURFACE
 
 static SBApplication *currentZoomApp;
 static UIWindow *currentZoomStatusWindow;
 
-CHMethod2(void, SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, SBApplication *, application, includeStatusWindow, UIWindow *, statusWindow)
+%hook SBUIController
+- (void)showZoomLayerWithIOSurfaceSnapshotOfApp:(SBApplication *)application includeStatusWindow:(UIWindow *)statusWindow
 {
 	currentZoomApp = application;
 	currentZoomStatusWindow = statusWindow;
-	CHSuper2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, application, includeStatusWindow, statusWindow);
+	%orig;
 	currentZoomStatusWindow = nil;
 	currentZoomApp = nil;
 }
+%end
 
-#pragma mark SBZoomView
+%hook SBZoomView
 
-CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurface, IOSurfaceRef, surface)
+// 3.0-3.1
+- (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface
 {
-	if ((self = CHSuper2(SBZoomView, initWithSnapshotFrame, snapshotFrame, ioSurface, surface))) {
+	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
+	if ((self = %orig)) {
 		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
 		PSWCropInsets insets;
 		insets.top = 0;
@@ -155,23 +160,49 @@ CHMethod2(id, SBZoomView, initWithSnapshotFrame, CGRect, snapshotFrame, ioSurfac
 		}
 		[application loadSnapshotFromSurface:surface cropInsets:insets];
 	}
+	if (surface)
+		CFRelease(surface);
 	return self;
 }
 
+// 3.2
+- (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface transform:(CGAffineTransform)transform
+{
+	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
+	if ((self = %orig)) {
+		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+		PSWCropInsets insets;
+		insets.top = 0;
+		insets.left = 0;
+		insets.bottom = 0;
+		insets.right = 0;
+		PSWSnapshotRotation rotation;
+		switch (MSHookIvar<UIInterfaceOrientation>([$SBUIController sharedInstance], "_orientation")) {
+			case UIInterfaceOrientationPortrait:
+				rotation = PSWSnapshotRotation90Left;
+				break;
+			case UIInterfaceOrientationPortraitUpsideDown:
+				rotation = PSWSnapshotRotation90Right;
+				break;
+			case UIInterfaceOrientationLandscapeLeft:
+				rotation = PSWSnapshotRotation180;
+				break;
+			case UIInterfaceOrientationLandscapeRight:
+			default:
+				rotation = PSWSnapshotRotationNone;
+				break;
+		}
+		[application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	}
+	if (surface)
+		CFRelease(surface);
+	return self;
+}
+
+%end
+
 #endif
 
-CHConstructor {
-	CHLoadLateClass(SBApplication);
-	CHHook1(SBApplication, launchSucceeded);
-	CHHook0(SBApplication, exitedCommon);
-	
-#ifdef USE_IOSURFACE
-	CHLoadLateClass(SBUIController);
-	CHHook2(SBUIController, showZoomLayerWithIOSurfaceSnapshotOfApp, includeStatusWindow);
-	
-	CHLoadLateClass(SBZoomView);
-	CHHook2(SBZoomView, initWithSnapshotFrame, ioSurface);
-#endif
-}
+
 
 
