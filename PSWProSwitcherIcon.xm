@@ -8,17 +8,19 @@
 #import <SpringBoard/SpringBoard.h>
 #import <CaptainHook/CaptainHook.h>
 
-CHDeclareClass(SBIconModel);
-CHDeclareClass(SBApplicationIcon);
+%class SBIconModel;
+%class SBApplicationIcon;
 CHDeclareClass(PSWProSwitcherIcon);
 
-#pragma mark SBApplicationIcon
+%hook SBApplicationIcon
 
-CHMethod0(void, SBApplicationIcon, launch)
+- (void)launch
 {
 	[[PSWController sharedController] setActive:NO animated:NO];
-	CHSuper0(SBApplicationIcon, launch);
+	%orig;
 }
+
+%end
 
 #pragma mark PSWProSwitcherIcon
 
@@ -29,10 +31,7 @@ CHMethod0(void, PSWProSwitcherIcon, launch)
 		vc.active = !vc.active;
 }
 
-CHConstructor {
-	CHLoadLateClass(SBIconModel);
-	CHLoadLateClass(SBApplicationIcon);
-	CHHook0(SBApplicationIcon, launch);
+__attribute__((constructor)) static void icon_init {
 	CHRegisterClass(PSWProSwitcherIcon, SBApplicationIcon) {
 		CHHook0(PSWProSwitcherIcon, launch);
 	}

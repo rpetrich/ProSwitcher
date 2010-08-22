@@ -14,8 +14,8 @@
 #import "PSWApplicationController.h"
 #import "PSWController.h"
 
-CHDeclareClass(SpringBoard);
-CHDeclareClass(SBUIController);
+%class SpringBoard;
+%class SBUIController;
 
 static CGImageRef springBoardSnapshot = nil;
 static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
@@ -91,8 +91,8 @@ static PSWSpringBoardApplication *sharedSpringBoardApplication = nil;
 
 @end
 
-#pragma mark SBUIController
-CHMethod0(void, SBUIController, finishLaunching)
+%hook SBUIController
+- (void)finishLaunching
 {
 	UIImage *springBoardImage = PSWImage(@"springboardsnapshot");
 	if (springBoardImage) {
@@ -112,13 +112,7 @@ CHMethod0(void, SBUIController, finishLaunching)
 		springBoardSnapshot = CGImageRetain([viewImage CGImage]);
 	}
 	
-	CHSuper0(SBUIController, finishLaunching);
+	%orig;
 }
-
-
-CHConstructor {
-	CHLoadLateClass(SpringBoard);
-	CHLoadLateClass(SBUIController);
-	CHHook0(SBUIController, finishLaunching);
-}
+%end
 

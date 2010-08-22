@@ -4,10 +4,10 @@ Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w, com.beyoip.proswitcherita
 Replaces: com.aaronash.Multifl0w, com.beyoip.proswitcherita
 Name: ProSwitcher
-Version: 1.1
+Version: 1.5
 Priority: optional
 Architecture: iphoneos-arm
-Description: Palm Pre-styled application switcher
+Description: Free visual multitasking switcher.
 Homepage: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
 Depiction: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=proswitcherData
 Maintainer: BigBoss <bigboss@thebigboss.org>
