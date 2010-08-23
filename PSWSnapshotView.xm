@@ -9,7 +9,7 @@
 #import "PSWResources.h"
 #import "PSWPreferences.h"
 
-#define kSwipeThreshold 40.0f
+#define kSwipeThreshold ([self bounds].size.height * (1.0f / 9.0f))
 #define kTitleFont [UIFont boldSystemFontOfSize:17.0f]
 #define kBadgeFont [UIFont boldSystemFontOfSize:16.0f]
 
@@ -168,17 +168,23 @@
 	[screen setCenter:screenCenter];
 	
 	// Apply/clear mask
-	if (GetPreference(PSWRoundedCornerRadius, float) == 0) {
-		[[screen layer] setMask:nil];
+	CALayer *screenLayer = [screen layer];
+	if (GetPreference(PSWRoundedCornerRadius, float) == 0.0f) {
+		[screenLayer setMask:nil];
 	} else {
-		CALayer *layer = [CALayer layer];
-		CGRect maskFrame;
-		maskFrame.origin.x = 0.0f;
-		maskFrame.origin.y = 0.0f;
-		maskFrame.size = screenBounds.size;
-		[layer setFrame:maskFrame];
-		[layer setContents:(id)[PSWGetCachedCornerMaskOfSize(screenBounds.size, GetPreference(PSWRoundedCornerRadius, float)) CGImage]];
-		[[screen layer] setMask:layer];
+		CGImageRef maskImage = [PSWGetCachedCornerMaskOfSize(screenFrame.size, GetPreference(PSWRoundedCornerRadius, float)) CGImage];
+		CALayer *maskLayer = [screenLayer mask];
+		if ([maskLayer contents] != (id)maskImage) {
+			if (!maskLayer)
+				maskLayer = [CALayer layer];
+			CGRect maskFrame;
+			maskFrame.origin.x = 0.0f;
+			maskFrame.origin.y = 0.0f;
+			maskFrame.size = screenFrame.size;
+			[maskLayer setFrame:maskFrame];
+			[maskLayer setContents:(id)maskImage];
+			[screenLayer setMask:maskLayer];
+		}
 	}
 	
 	// Apply rotation
@@ -331,30 +337,34 @@
 {
 	id snapshot = [_application snapshot];
 	CGSize size;
-	CFTypeID snapshotType = CFGetTypeID(snapshot);
-	if (snapshotType == CGImageGetTypeID()) {
-		size.width = (CGFloat) CGImageGetWidth((CGImageRef)snapshot);
-		size.height = (CGFloat) CGImageGetHeight((CGImageRef)snapshot);
-#ifdef USE_IOSURFACE
-	} else if (snapshotType == IOSurfaceGetTypeID()) {
-		size.width = (CGFloat) IOSurfaceGetWidth((IOSurfaceRef)snapshot);
-		size.height = (CGFloat) IOSurfaceGetHeight((IOSurfaceRef)snapshot);
-#endif
-	} else {
-		size = CGSizeZero;
-	}
 	CALayer *layer = [screen layer];
 	[layer setContents:snapshot];
-#ifdef USE_IOSURFACE
 	if (snapshot) {
-		PSWCropInsets cropInsets = [_application snapshotCropInsets];
-		CGRect contentsRect;
-		contentsRect.origin.x = cropInsets.left / size.width;
-		contentsRect.origin.y = cropInsets.top / size.height;
-		contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / size.width;
-		contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
-		[layer setContentsRect:contentsRect];
+		CFTypeID snapshotType = CFGetTypeID(snapshot);
+		if (snapshotType == CGImageGetTypeID()) {
+			size.width = (CGFloat) CGImageGetWidth((CGImageRef)snapshot);
+			size.height = (CGFloat) CGImageGetHeight((CGImageRef)snapshot);
+#ifdef USE_IOSURFACE
+		} else if (snapshotType == IOSurfaceGetTypeID()) {
+			size.width = (CGFloat) IOSurfaceGetWidth((IOSurfaceRef)snapshot);
+			size.height = (CGFloat) IOSurfaceGetHeight((IOSurfaceRef)snapshot);
+#endif
+		} else {
+			size.width = 320.0f;
+			size.height = 480.0f;
+		}
+	} else {
+		size.width = 320.0f;
+		size.height = 480.0f;
 	}
+#ifdef USE_IOSURFACE
+	PSWCropInsets cropInsets = [_application snapshotCropInsets];
+	CGRect contentsRect;
+	contentsRect.origin.x = cropInsets.left / size.width;
+	contentsRect.origin.y = cropInsets.top / size.height;
+	contentsRect.size.width = 1.0f - contentsRect.origin.x - cropInsets.right / size.width;
+	contentsRect.size.height = 1.0f - contentsRect.origin.y - cropInsets.bottom / size.height;
+	[layer setContentsRect:contentsRect];
 #endif
 	return size;
 }

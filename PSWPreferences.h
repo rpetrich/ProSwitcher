@@ -56,8 +56,8 @@
 #define PSWPad ([[UIScreen mainScreen] applicationFrame].size.width > 480.0f)
 #define PSWScreenHeight ([[UIScreen mainScreen] applicationFrame].size.height)
 #define PSWScreenWidth ([[UIScreen mainScreen] applicationFrame].size.width)
-#define PSWDockModel ([CHSharedInstance(SBIconModel) respondsToSelector:@selector(buttonBar)] ? [CHSharedInstance(SBIconModel) buttonBar] : [[CHSharedInstance(SBIconModel) rootFolder] dockModel])
-#define PSWDockView ([CHSharedInstance(SBIconModel) respondsToSelector:@selector(buttonBar)] ? [CHSharedInstance(SBIconModel) buttonBar] : [CHSharedInstance(SBIconController) dock])
+#define PSWDockModel ([[$SBIconModel sharedInstance] respondsToSelector:@selector(buttonBar)] ? [[$SBIconModel sharedInstance] buttonBar] : [[[$SBIconModel sharedInstance] rootFolder] dockModel])
+#define PSWDockView ([[$SBIconModel sharedInstance] respondsToSelector:@selector(buttonBar)] ? [[$SBIconModel sharedInstance] buttonBar] : [[$SBIconController sharedInstance] dock])
 #define PSWDockHeight ([PSWDockView frame].size.height)
 #define PSWListWithIcon(icon) 
 

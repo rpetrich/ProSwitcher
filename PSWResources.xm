@@ -1,12 +1,14 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
+#import <CaptainHook/CaptainHook.h>
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
 static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
 static NSBundle *localizationBundle;
-
-NSDictionary *preferences = nil;
 
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
@@ -97,13 +99,22 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	NSString *key = [NSString stringWithFormat:@"%fx%f-%f", size.width, size.height, cornerRadius];
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
-		CGContextRef c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+		CGContextRef c;
+		// Only iPad supports using mask images as layer masks (older models require full images, then use only the alpha channel)
+		if (PSWGetHardwareType() >= PSWHardwareTypeiPad1G)
+			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+		else {
+			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width * 4, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+			CGColorSpaceRelease(colorSpace);
+		}
 		CGRect rect;
 		rect.origin.x = 0.0f;
 		rect.origin.y = 0.0f;
 		rect.size = size;
 		if (cornerRadius > 0.0f)
 			ClipContextRounded(c, size, cornerRadius);
+		CGContextSetRGBFillColor(c, 1.0f, 1.0f, 1.0f, 1.0f);
 		CGContextFillRect(c, rect);
 		CGImageRef image = CGBitmapContextCreateImage(c);
 		CGContextRelease(c);
@@ -126,6 +137,28 @@ void PSWClearResourceCache()
 NSString *PSWLocalize(NSString *text)
 {
 	return [localizationBundle localizedStringForKey:text value:nil table:nil];
+}
+
+PSWHardwareType PSWGetHardwareType()
+{
+	size_t size;
+	sysctlbyname("hw.machine", NULL, &size, NULL, 0);
+	char machine[size];
+	if (strcmp(machine, "iPhone1,1") == 0)
+		return PSWHardwareTypeiPhoneOriginal;
+	if (strcmp(machine, "iPod1,1") == 0)
+		return PSWHardwareTypeiPodTouch1G;
+	if (strcmp(machine, "iPhone1,2") == 0)
+		return PSWHardwareTypeiPhone3G;
+	if (strcmp(machine, "iPod2,1") == 0)
+		return PSWHardwareTypeiPodTouch2G;
+	if (strcmp(machine, "iPhone2,1") == 0)
+		return PSWHardwareTypeiPhone3GS;
+	if (strcmp(machine, "iPod3,1") == 0)
+		return PSWHardwareTypeiPodTouch3G;
+	if (strcmp(machine, "iPad1,1") == 0)
+		return PSWHardwareTypeiPad1G;
+	return PSWHardwareTypeUnknown;
 }
 
 __attribute__((constructor)) static void resources_init()

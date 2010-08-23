@@ -9,5 +9,6 @@
 #endif
 
 #ifdef USE_IOSURFACE
+BOOL PSWSurfaceAcceleratorIsAvailable();
 IOSurfaceRef PSWSurfaceCopyToMainMemory(IOSurfaceRef surface, OSType pixelFormat, NSUInteger bytesPerElement);
 #endif

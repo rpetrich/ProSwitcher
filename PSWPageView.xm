@@ -160,7 +160,7 @@
 			[UIView beginAnimations:nil context:snapshot];
 			[UIView setAnimationDuration:0.33f];
 			[UIView setAnimationDelegate:self];
-			[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshot:finished:context:)];
+			[UIView setAnimationDidStopSelector:@selector(didRemoveSnapshotView:finished:context:)];
 		}
 		
 		CGRect frame = snapshot.frame;

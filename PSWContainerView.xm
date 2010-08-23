@@ -71,10 +71,16 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 	[_emptyLabel setFrame:frame];
 	
 	// Fix page control positioning by retrieving it from the SpringBoard page control
-	id pc = MSHookIvar<SBIconListPageControl *>([$SBIconController sharedInstance], "_pageControl");
-	frame = [pc frame];
-	frame = [self convertRect:frame fromView:[pc superview]];
+	SBIconListPageControl *pageControl = MSHookIvar<SBIconListPageControl *>([$SBIconController sharedInstance], "_pageControl");
+	frame = [self convertRect:[pageControl frame] fromView:[pageControl superview]];
 	[_pageControl setFrame:frame];
+	
+	PSWApplication *focusedApplication = [_pageView focusedApplication];
+	frame.origin.x = 0.0f;
+	frame.origin.y = 0.0f;
+	frame.size = size;
+	[_pageView setFrame:UIEdgeInsetsInsetRect(frame, _pageViewEdgeInsets)];
+	[_pageView setFocusedApplication:focusedApplication];
 }
 
 - (void)shouldExit
@@ -115,8 +121,7 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 		[_pageView release];
 		_pageView = [pageView retain];
 		
-		[_pageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[self _applyInsets];
+		[self setNeedsLayout];
 	}
 }
 
@@ -169,14 +174,10 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-	if ([self isEmpty])
-		return self;
-	
-    UIView *child = nil;
-    if ((child = [super hitTest:point withEvent:event]) == self)
-        child = self.pageView; 
-
-    return child;
+	UIView *result = [super hitTest:point withEvent:event];
+	if (![self isEmpty] && (result == self))
+		result = _pageView;
+	return result;
 }
 
 - (void)tapPreviousAndContinue

@@ -15,25 +15,26 @@
 #import "PSWContainerView.h"
 #import "PSWPageView.h"
 
-// Using late binding until we get a simulator build for libactivator :(
-CHDeclareClass(LAActivator);
-CHDeclareClass(LAEvent);
+%class SBAwayController;
+%class SBStatusBarController;
+%class SBApplication;
+%class SBDisplayStack;
+%class SpringBoard;
+%class SBIconListPageControl;
+%class SBUIController;
+%class SBApplicationController;
+%class SBIconModel;
+%class SBIconController;
+%class SBZoomView;
+%class SBStatusBar;
+%class SBSearchView;
+%class SBVoiceControlAlert;
+%class SBApplicationIcon;
 
-CHDeclareClass(SBAwayController);
-CHDeclareClass(SBStatusBarController);
-CHDeclareClass(SBApplication);
-CHDeclareClass(SBDisplayStack);
-CHDeclareClass(SpringBoard);
-CHDeclareClass(SBIconListPageControl);
-CHDeclareClass(SBUIController);
-CHDeclareClass(SBApplicationController);
-CHDeclareClass(SBIconModel);
-CHDeclareClass(SBIconController);
-CHDeclareClass(SBZoomView);
-CHDeclareClass(SBStatusBar);
-CHDeclareClass(SBSearchView);
-CHDeclareClass(SBVoiceControlAlert);
-CHDeclareClass(SBApplicationIcon);
+static Class $LAActivator;
+static Class $LAEvent;
+
+NSDictionary *preferences;
 
 #define SBActive ([SBWActiveDisplayStack topApplication] == nil)
 #define SBSharedInstance ((SpringBoard *) [UIApplication sharedApplication])
@@ -87,20 +88,11 @@ static PSWController *sharedController;
 		[snapshotPageView setPageViewDelegate:self];
 	
 		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-		[self reparentView];
-		[self reloadPreferences];
-		
-		if (GetPreference(PSWBecomeHomeScreen, NSInteger) == PSWBecomeHomeScreenDisabled) {
-			isActive = YES;
-			[self setActive:NO animated:NO];
-		} else {
-			[self setActive:YES animated:NO];
-		}
-		
-		LAActivator *la = CHSharedInstance(LAActivator);
+				
+		LAActivator *la = [$LAActivator sharedInstance];
 		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
-				[la assignEvent:[CHClass(LAEvent) eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
+				[la assignEvent:[$LAEvent eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
 		[la registerListener:self forName:@"com.collab.proswitcher"];
 	}
 	
@@ -118,8 +110,11 @@ static PSWController *sharedController;
 }
 
 - (void)reparentView
-{	
+{		
 	UIView *view = containerView;
+	
+	if (!isAnimating)
+	 	[view setHidden:!isActive];
 		
 	// Find appropriate superview and add as subview
 	UIView *buttonBar = PSWDockView;
@@ -133,7 +128,7 @@ static PSWController *sharedController;
 		else
 			[targetSuperview insertSubview:view aboveSubview:buttonBarParent];
 	} else {
-		UIView *contentView = [CHSharedInstance(SBUIController) contentView];
+		UIView *contentView = [[$SBUIController sharedInstance] contentView];
 		UIView *targetSuperview = [contentView superview];
 		[targetSuperview insertSubview:view aboveSubview:contentView];
 	}
@@ -151,31 +146,8 @@ static PSWController *sharedController;
 
 #pragma mark Preferences
 
-- (void)applyPreferences
+- (void)applyIgnored 
 {
-	[self fixPageControl];
-	
-	/* The container view is responsible for background, page control, and [tap|auto] exit. */
-	
-	UIEdgeInsets scrollViewInsets;
-	scrollViewInsets.left = scrollViewInsets.right = 0;
-	scrollViewInsets.top = [[CHClass(SBStatusBarController) sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
-	scrollViewInsets.bottom = PSWDockHeight;
-	[containerView setPageViewEdgeInsets:scrollViewInsets];
-	
-	PSWProportionalInsets cardInsets;
-	cardInsets.left = cardInsets.right = PSWSnapshotProportionalInset;
-	cardInsets.top = 0.0f;
-	cardInsets.bottom = 0.025f;
-	[containerView setPageViewInsets:cardInsets];
-	
-	[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
-	[[containerView layer] setContents:nil];
-		
-	containerView.emptyTapClose       = YES; 
-	containerView.emptyText           = @"No Apps Running";
-	containerView.autoExit            = NO;
-	
 	NSMutableArray *ignored = [NSMutableArray array];
 	
 	// Hide SpringBoard card if disabled.
@@ -184,7 +156,7 @@ static PSWController *sharedController;
 	}
 	
 	// Hide Phone card if disabled.
-	if (!GetPreference(PSWHidePhone, BOOL)) {
+	if (GetPreference(PSWHidePhone, BOOL)) {
 		[ignored addObject:@"com.apple.mobilephone"];
 	}
 	
@@ -199,10 +171,41 @@ static PSWController *sharedController;
 	snapshotPageView.ignoredDisplayIdentifiers = ignored;
 }
 
+- (void)applyInsets 
+{
+	/* The container view is responsible for background, page control, and [tap|auto] exit. */
+	
+	UIEdgeInsets scrollViewInsets;
+	scrollViewInsets.left = scrollViewInsets.right = 0;
+	scrollViewInsets.top = [[$SBStatusBarController sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
+	scrollViewInsets.bottom = PSWDockHeight;
+	[containerView setPageViewEdgeInsets:scrollViewInsets];
+	
+	PSWProportionalInsets cardInsets;
+	cardInsets.left = cardInsets.right = PSWSnapshotProportionalInset;
+	cardInsets.top = 0.0f;
+	cardInsets.bottom = 0.025f;
+	[containerView setPageViewInsets:cardInsets];
+}
+
+- (void)applyPreferences
+{
+	[self fixPageControl];
+	[self applyIgnored];
+	[self applyInsets];
+	
+	[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
+	[[containerView layer] setContents:nil];
+		
+	containerView.emptyTapClose       = YES; 
+	containerView.emptyText           = @"No Apps Running";
+	containerView.autoExit            = NO;
+}
+
 - (void)fixPageControl
 {
 	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+		[[$SBIconController sharedInstance] setPageControlVisible:NO];
 }
 
 - (void)reloadPreferences
@@ -239,20 +242,21 @@ static PSWController *sharedController;
 
 - (void)activateWithAnimation:(BOOL)animated
 {
-	// Don't activate when in editing mode
-	SBIconController *iconController = CHSharedInstance(SBIconController);
-	if ([iconController isEditing])
-		return;
-	
-	// Always reparent view
-	[self reparentView];
-	
 	// Don't double-activate
 	if (isActive)
 		return;
 	isActive = YES;
 	
-	SBUIController *uiController = CHSharedInstance(SBUIController);
+	// Don't activate when in editing mode
+	SBIconController *iconController = [$SBIconController sharedInstance];
+	if ([iconController isEditing])
+		return;
+	
+	// Always reparent view
+	[self reparentView];
+	[self applyPreferences];
+	
+	SBUIController *uiController = [$SBUIController sharedInstance];
 		
 	// Deactivate CategoriesSB
 	if ([uiController respondsToSelector:@selector(categoriesSBCloseAll)])
@@ -328,7 +332,7 @@ static PSWController *sharedController;
 	
 	// Show SpringBoard's page control
 	if (GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:YES];
+		[[$SBIconController sharedInstance] setPageControlVisible:YES];
 		
 	[containerView setAlpha:0.0f];
 			
@@ -360,7 +364,7 @@ static PSWController *sharedController;
 
 - (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event
 {
-	if ([[CHClass(SBAwayController) sharedAwayController] isLocked] || [self isAnimating])
+	if ([[$SBAwayController sharedAwayController] isLocked] || [self isAnimating])
 		return;
 	
 	if (SBActive) {
@@ -468,48 +472,48 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	[(SpringBoard *) [UIApplication sharedApplication] relaunchSpringBoard];
 }
 
-#pragma mark SBUIController
-CHOptimizedMethod(3, self, void, SBUIController, animateApplicationActivation, SBApplication *, application, animateDefaultImage, BOOL, animateDefaultImage, scatterIcons, BOOL, scatterIcons)
+%hook SBUIController
+- (void)animateApplicationActivation:(SBApplication *)application animateDefaultImage:(BOOL)animateDefaultImage scatterIcons:(BOOL)scatterIcons
 {
-	CHSuper3(SBUIController, animateApplicationActivation, application, animateDefaultImage, animateDefaultImage, scatterIcons, scatterIcons && !disallowIconListScatter);
+	%orig(application, animateDefaultImage, scatterIcons && !disallowIconListScatter);
 }
 
 // 3.0-3.1
-CHOptimizedMethod(1, self, void, SBUIController, restoreIconList, BOOL, animated)
+- (void)restoreIconList:(BOOL)animated
 {
 	if (disallowRestoreIconList == 0)
-		CHSuper1(SBUIController, restoreIconList, animated && disallowIconListScatter == 0);
+		%orig(animated && disallowIconListScatter == 0);
 	
 	[sharedController reparentView];
 }
 
 // 3.2
-CHOptimizedMethod(1, self, void, SBUIController, restoreIconListAnimated, BOOL, animated)
+- (void)restoreIconListAnimated:(BOOL)animated
 {
 	if (disallowRestoreIconList == 0)
-		CHSuper(1, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0);
+		%orig(animated && disallowIconListScatter == 0);
 	
 	[sharedController reparentView];
 }
 // 3.2
-CHOptimizedMethod(2, self, void, SBUIController, restoreIconListAnimated, BOOL, animated, animateWallpaper, BOOL, animateWallpaper)
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper 
 {
 	if (disallowRestoreIconList == 0)
-		CHSuper(2, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0, animateWallpaper, animateWallpaper && disallowIconListScatter == 0);
+		%orig(animated && disallowIconListScatter == 0, animateWallpaper && disallowIconListScatter == 0);
 	
 	[sharedController reparentView];
 }
 
 // 4.0
-CHOptimizedMethod(3, self, void, SBUIController, restoreIconListAnimated, BOOL, animated, animateWallpaper, BOOL, animateWallpaper, keepSwitcher, BOOL, switcher)
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper keepSwitcher:(BOOL)switcher
 {
 	if (disallowRestoreIconList == 0)
-		CHSuper(3, SBUIController, restoreIconListAnimated, animated && disallowIconListScatter == 0, animateWallpaper, animateWallpaper && disallowIconListScatter == 0, keepSwitcher, switcher);
+		%orig(animated && disallowIconListScatter == 0, animateWallpaper && disallowIconListScatter == 0, switcher);
 	
 	[sharedController reparentView];
 }
 
-CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
+- (void) finishLaunching
 {
 	NSLog(@"Welcome to ProSwitcher.");
 	NSLog(@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra");
@@ -524,7 +528,7 @@ CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 	}
 	[plistDict release];
 	
-	CHSuper(0, SBUIController, finishLaunching);
+	%orig;
 
 	sharedController = [[PSWController alloc] init];
 	
@@ -532,13 +536,15 @@ CHOptimizedMethod(0, self, void, SBUIController, finishLaunching)
 		[sharedController setActive:YES animated:NO];
 }
 
+%end
 
-#pragma mark SBDisplayStack
-CHOptimizedMethod(1, self, void, SBDisplayStack, pushDisplay, SBDisplay *, display)
+%hook SBDisplayStack
+
+- (void)pushDisplay:(SBDisplay *)display
 {
 	SBApplication *application;
 	NSString *displayIdentifier;
-	if (CHIsClass(display, SBApplication)) {
+	if ([display isKindOfClass:$SBApplication]) {
 		application = (SBApplication *) display;
 		displayIdentifier = [application displayIdentifier];
 	} else {
@@ -566,7 +572,7 @@ CHOptimizedMethod(1, self, void, SBDisplayStack, pushDisplay, SBDisplay *, displ
 					
 					disallowIconListScatter++;
 					
-					CHSuper1(SBDisplayStack, pushDisplay, display);
+					%orig;
 					[sharedController setActive:YES animated:NO];
 					[[sharedController snapshotPageView] setFocusedApplication:suspendingApp animated:NO];
 					
@@ -576,54 +582,62 @@ CHOptimizedMethod(1, self, void, SBDisplayStack, pushDisplay, SBDisplay *, displ
 			}
 		}
 	} else if (self == SBWPreActivateDisplayStack) {
-		if (CHIsClass(display, SBApplication)) {
+		if ([display isKindOfClass:$SBApplication]) {
 			[sharedController performSelector:@selector(_deactivateFromAppActivate) withObject:nil afterDelay:0.5f];
 		}
 	}	
-	CHSuper(1, SBDisplayStack, pushDisplay, display);
+	
+	%orig;
 }
 
-#pragma mark SpringBoard
-CHOptimizedMethod(0, self, void, SpringBoard, _handleMenuButtonEvent)
+%end
+
+%hook SpringBoard
+- (void)_handleMenuButtonEvent
 {
 	if ([sharedController isActive]) {
 		// Deactivate and suppress SpringBoard list scrolling
 		[sharedController setActive:NO];
 		
 		disallowIconListScroll++;
-		CHSuper(0, SpringBoard, _handleMenuButtonEvent);
+		%orig;
 		disallowIconListScroll--;
 		
 		return;
 	}
 	
-	CHSuper(0, SpringBoard, _handleMenuButtonEvent);
+	%orig;
 }
 
-#pragma mark SBIconController
-CHOptimizedMethod(2, self, void, SBIconController, scrollToIconListAtIndex, NSInteger, index, animate, BOOL, animate)
+%end
+
+%hook SBIconController
+
+- (void)scrollToIconListAtIndex:(NSInteger)index animate:(BOOL)animate
 {
 	if (disallowIconListScroll == 0)
-		CHSuper(2, SBIconController, scrollToIconListAtIndex, index, animate, animate);
+		%orig;
 }
 
-CHOptimizedMethod(1, self, void, SBIconController, setIsEditing, BOOL, isEditing)
+- (void)setIsEditing:(BOOL)editing
 {
 	// Disable ProSwitcher when editing
-	if (isEditing)
+	if (editing)
 		[sharedController setActive:NO];
 	
-	CHSuper1(SBIconController, setIsEditing, isEditing);
+	%orig;
 }
 
-CHOptimizedMethod(1, self, void, SBIconController, setPageControlVisible, BOOL, visible)
+- (void)setPageControlVisible:(BOOL)visible
 {
 	if ([sharedController isActive] && GetPreference(PSWShowPageControl, BOOL))
 		visible = NO;	
-	CHSuper(1, SBIconController, setPageControlVisible, visible);
+	%orig;
 }
 
-#pragma mark SBZoomView
+%end
+
+%hook SBZoomView
 static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRect)
 {
 	return CGAffineTransformScale(
@@ -634,7 +648,7 @@ static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRec
 		targetRect.size.height / sourceRect.size.height);
 }
 
-CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, transform)
+- (void)setTransform:(CGAffineTransform)transform
 {
 	switch (modifyZoomTransformCountDown) {
 		case 1: {
@@ -643,49 +657,51 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 			PSWPageView *pageView = [sharedController snapshotPageView];
 			PSWSnapshotView *ssv = [pageView focusedSnapshotView];
 			if (ssv && ![[[ssv application] displayIdentifier] isEqualToString:@"com.apple.springboard"]) {
-				[pageView layoutIfNeeded];
 				UIView *containerView = [sharedController containerView];
 				[containerView layoutIfNeeded];
+				[pageView layoutIfNeeded];
 				UIView *screenView = [ssv screenView];
-				CGRect translatedDestRect = [[screenView superview] convertRect:[screenView frame] toView:containerView];
-				CGRect myFrame = [self frame];
-				UIInterfaceOrientation *orientationRef = CHIvarRef(CHSharedInstance(SBUIController), _orientation, UIInterfaceOrientation);
-				CGRect finalDestRect;
+				CGRect convertedRect = [[screenView superview] convertRect:[screenView frame] toView:[containerView superview]];
+				CGRect rotatedRect;
+				UIInterfaceOrientation *orientationRef = CHIvarRef([$SBUIController sharedInstance], _orientation, UIInterfaceOrientation);
 				if (orientationRef) {
 					UIInterfaceOrientation orientation = *orientationRef;
+					CGSize screenSize = [[UIScreen mainScreen] bounds].size;
 					switch (orientation) {
 						case UIInterfaceOrientationLandscapeLeft:
-							NSLog(@"ProSwitcher: Landscape Left");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = convertedRect.origin.y;
+							rotatedRect.origin.y = screenSize.height - convertedRect.origin.x - convertedRect.size.width;
+							rotatedRect.size.height = convertedRect.size.width;
+							rotatedRect.size.width = convertedRect.size.height;
 							break;
 						case UIInterfaceOrientationLandscapeRight:
-							NSLog(@"ProSwitcher: Landscape Right");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = screenSize.width - convertedRect.origin.y - convertedRect.size.height;
+							rotatedRect.origin.y = convertedRect.origin.x;
+							rotatedRect.size.height = convertedRect.size.width;
+							rotatedRect.size.width = convertedRect.size.height;
 							break;
 						case UIInterfaceOrientationPortraitUpsideDown:
-							NSLog(@"ProSwitcher: Portrait Upside Down");
-							finalDestRect = translatedDestRect;
+							rotatedRect.origin.x = screenSize.width - convertedRect.origin.x - convertedRect.size.width;
+							rotatedRect.origin.y = screenSize.height - convertedRect.origin.y - convertedRect.size.height;
+							rotatedRect.size = convertedRect.size;
 							break;
 						case UIInterfaceOrientationPortrait:
 						default:
-							NSLog(@"ProSwitcher: Portrait/Default");
-							finalDestRect = translatedDestRect;
+							rotatedRect = convertedRect;
 							break;
 					}
 				} else {
-					NSLog(@"ProSwitcher: No Orientation");
-					finalDestRect = translatedDestRect;
+					rotatedRect = convertedRect;
 				}
-				NSLog(@"ProSwitcher: TransformRectToRect(%@, %@)", NSStringFromCGRect(myFrame), NSStringFromCGRect(translatedDestRect));
-				transform = TransformRectToRect(myFrame, translatedDestRect);
+				transform = TransformRectToRect([self frame], rotatedRect);
 			}
 		}
 		case 0:
-			CHSuper(1, SBZoomView, setTransform, transform);
+			%orig;
 			break;
 		default:
 			modifyZoomTransformCountDown--;
-			CHSuper(1, SBZoomView, setTransform, transform);
+			%orig;
 			break;
 	}
 }
@@ -698,58 +714,60 @@ CHOptimizedMethod(1, super, void, SBZoomView, setTransform, CGAffineTransform, t
 		CHSuper(1, SBZoomView, setAlpha, alpha);
 }*/
 
-#pragma mark SBStatusBar
+%end
 
-CHOptimizedMethod(0, self, CGAffineTransform, SBStatusBar, distantStatusWindowTransform)
+%hook SBStatusBar
+
+- (CGAffineTransform)distantStatusWindowTransform
 {
 	if (disallowIconListScatter)
 		return CGAffineTransformMakeTranslation(0.0f, -[self frame].size.height);
 	else
-		return CHSuper(0, SBStatusBar, distantStatusWindowTransform);
+		return %orig;
 }
 
-#pragma mark SBSearchView
+%end
 
-CHOptimizedMethod(2, self, void, SBSearchView, setShowsKeyboard, BOOL, visible, animated, BOOL, animated)
+%hook SBSearchView
+
+- (void)setShowsKeyboard:(BOOL)visible animated:(BOOL)animated
 {
 	// Disable search view's keyboard when ProSwitcher is active
-	CHSuper(2, SBSearchView, setShowsKeyboard, visible && ![sharedController isActive], animated, animated);
+	%orig(visible && ![sharedController isActive], animated);
 }
 
-#pragma mark SBVoiceControlAlert
+%end
 
-CHOptimizedMethod(0, super, void, SBVoiceControlAlert, deactivate)
+%hook SBVoiceControlAlert
+
+- (void)deactivate
 {
-	CHSuper(0, SBVoiceControlAlert, deactivate);
+	%orig;
 	
 	// Fix display when coming back from VoiceControl
 	if ([sharedController isActive])
 		[sharedController setActive:NO animated:NO];
 }
 
-#pragma mark SBIconListPageControl
+%end
 
-CHOptimizedMethod(0, super, id, SBIconListPageControl, init)
+%hook SBIconListPageControl
+
+- (id)init
 {
-	self = CHSuper(0, SBIconListPageControl, init);
+	self = %orig;
 	
 	if ([sharedController isActive] && GetPreference(PSWShowPageControl, BOOL))
-		[CHSharedInstance(SBIconController) setPageControlVisible:NO];
+		[[$SBIconController sharedInstance] setPageControlVisible:NO];
 	
 	return self;
 }
 
-#ifdef SIMULATOR_DEBUG
-CHOptimizedMethod(0, self, void, SpringBoard, handleMenuDoubleTap)
-{
-	if (![sharedController isAnimating])
-		[sharedController setActive:[sharedController isActive]];
-}
-#endif
+%end
 
-CHConstructor
+__attribute__((constructor)) static void proswitcher_init()
 {
-	CHAutoreleasePoolForScope();
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	// SpringBoard only.
 	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
@@ -757,56 +775,10 @@ CHConstructor
 	
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PreferenceChangedCallback, CFSTR(PSWPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 
-	CHLoadLateClass(SBAwayController);
-	CHLoadLateClass(SBApplication);
-	CHLoadLateClass(SBStatusBarController);
-	CHLoadLateClass(SBApplicationIcon);
-	CHLoadLateClass(SBApplicationController);
-	CHLoadLateClass(SBIconModel);
-	
-	CHLoadLateClass(SBIconListPageControl);
-	CHHook0(SBIconListPageControl, init);
-	
-	CHLoadLateClass(SBUIController);
-	CHHook(1, SBUIController, restoreIconList);
-	CHHook(1, SBUIController, restoreIconListAnimated);
-	CHHook(2, SBUIController, restoreIconListAnimated, animateWallpaper);
-	CHHook(3, SBUIController, restoreIconListAnimated, animateWallpaper, keepSwitcher);
-	CHHook3(SBUIController, animateApplicationActivation, animateDefaultImage, scatterIcons);
-	CHHook0(SBUIController, finishLaunching);
-
-	CHLoadLateClass(SBDisplayStack);
-	CHHook1(SBDisplayStack, pushDisplay);
-	
-	CHLoadLateClass(SpringBoard);
-	CHLoadLateClass(SBIconController);	
-	CHHook1(SBIconController, setIsEditing);
-	CHHook1(SBIconController, setPageControlVisible);
-	
-	CHLoadLateClass(SBZoomView);
-	CHHook1(SBZoomView, setTransform);
-	//CHHook1(SBZoomView, setAlpha);
-	
-	CHLoadLateClass(SBStatusBar);
-	CHHook0(SBStatusBar, distantStatusWindowTransform);
-	
-	CHLoadLateClass(SBSearchView);
-	CHHook2(SBSearchView, setShowsKeyboard, animated);
-	
-	CHLoadLateClass(SBVoiceControlAlert);
-	CHHook0(SBVoiceControlAlert, deactivate);
-	
 	// Using late-binding until we get a simulator build for libactivator :(
 	dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
-	CHLoadLateClass(LAActivator);
-	CHLoadLateClass(LAEvent);
-	if (![CHSharedInstance(LAActivator) respondsToSelector:@selector(sendDeactivateEventToListeners:)]) {
-		CHHook0(SpringBoard, _handleMenuButtonEvent);		
-		CHHook2(SBIconController, scrollToIconListAtIndex, animate);
-	}
+	$LAActivator = objc_getClass("LAActivator");
+	$LAEvent = objc_getClass("LAEvent");
 
-#ifdef SIMULATOR_DEBUG	
-	// When we have no other way to activate it, here's an easy workaround
-	CHHook0(SpringBoard, handleMenuDoubleTap);
-#endif
+	[pool release];
 }
