@@ -1,7 +1,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
-#import <CaptainHook/CaptainHook.h>
 
 #include <dlfcn.h>
 
@@ -14,6 +13,36 @@
 #import "PSWProSwitcherIcon.h"
 #import "PSWContainerView.h"
 #import "PSWPageView.h"
+
+@interface SBIconController (OS40)
+- (UIView *)dock;
+- (void)closeFolderAnimated:(BOOL)animated;
+@end
+
+@class SBFolderIcon;
+@interface SBFolder : NSObject {
+	NSString *_displayName;
+	NSString *_defaultDisplayName;
+	NSMutableArray *_lists;
+	BOOL _open;
+	SBFolderIcon *_icon;
+	BOOL _cancelable;
+	NSMutableSet *_addedIcons;
+	NSMutableSet *_removedIcons;
+	NSMutableDictionary *_coalesceChangesRequests;
+}
+@end
+
+@class SBDockIconListModel;
+@interface SBRootFolder : SBFolder {
+	SBDockIconListModel *_dock;
+}
+- (SBDockIconListModel *)dockModel;
+@end
+
+@interface SBIconModel (OS40)
+- (SBRootFolder *)rootFolder;
+@end
 
 %class SBAwayController;
 %class SBStatusBarController;
@@ -56,6 +85,9 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 @interface PSWController () <PSWPageViewDelegate, LAListener>
 - (void)reparentView;
 - (void)fixPageControl;
+- (void)applyIgnored;
+- (void)applyInsets;
+- (void)applyPreferences;
 @end
 
 static PSWController *sharedController;	
@@ -164,9 +196,17 @@ static PSWController *sharedController;
 	
 	// Hide dock icons if disabled
 	if (!GetPreference(PSWShowDockApps, BOOL)) {
-		for (SBIcon *icon in [PSWDockModel icons]) {
-			[ignored addObject:[icon respondsToSelector:@selector(displayIdentifier)] ? [icon displayIdentifier]:
-							   [icon respondsToSelector:@selector(application)] ? [[icon application] displayIdentifier] : nil];
+		SBIconModel *iconModel = [$SBIconModel sharedInstance];
+		NSArray *icons = [iconModel respondsToSelector:@selector(buttonBar)] ? [[iconModel buttonBar] icons] : [[[iconModel rootFolder] dockModel] icons];
+		for (SBIcon *icon in icons) {
+			NSString *displayIdentifier;
+			if ([icon respondsToSelector:@selector(displayIdentifier)])
+				displayIdentifier = [icon displayIdentifier];
+			else if ([icon respondsToSelector:@selector(application)])
+				displayIdentifier = [[(SBApplicationIcon *)icon application] displayIdentifier];
+			else
+				continue;
+			[ignored addObject:displayIdentifier];
 		}
 	}
 

@@ -7,8 +7,6 @@
 #import "PSWSpringBoardApplication.h"
 #import "PSWSurface.h"
 
-CHDeclareClass(SBApplication);
-
 #ifdef USE_IOSURFACE
 #import <IOSurface/IOSurface.h>
 %class SBUIController;

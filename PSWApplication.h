@@ -38,7 +38,7 @@ typedef enum {
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier;
 - (id)initWithSBApplication:(SBApplication *)application;
 
-@property (nonatomic, readonly) NSString *displayIdentifier;
+@property (nonatomic, readonly, copy) NSString *displayIdentifier;
 @property (nonatomic, readonly) NSString *displayName;
 @property (nonatomic, readonly) SBApplicationIcon *springBoardIcon;
 @property (nonatomic, readonly) UIImage *themedIcon;

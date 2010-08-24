@@ -21,6 +21,14 @@
 static NSString *ignoredRelaunchDisplayIdentifier = nil;
 static NSUInteger defaultImagePassThrough;
 
+@interface PSWApplication ()
+@property (nonatomic, copy) NSString *displayIdentifier;
+@end
+
+@interface SBIconModel (OS40)
+- (SBIcon *)leafIconForIdentifier:(NSString *)identifier;
+@end
+
 @implementation PSWApplication
 
 @synthesize displayIdentifier = _displayIdentifier;
@@ -61,10 +69,6 @@ static NSUInteger defaultImagePassThrough;
 		[self setDisplayIdentifier:[application displayIdentifier]];
 	}
 	return self;
-}
-
-- (void)setDisplayIdentifier:(NSString *)identifier {
-	_displayIdentifier = [identifier copy];
 }
 
 - (void)dealloc
@@ -194,13 +198,13 @@ static NSUInteger defaultImagePassThrough;
 
 - (SBApplicationIcon *)springBoardIcon
 {
-	SBApplicationIcon *icon = nil;
+	SBIcon *icon;
 	SBIconModel *iconModel = [$SBIconModel sharedInstance];
 	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
 		icon = [iconModel leafIconForIdentifier:[self displayIdentifier]];
 	else
 		icon = [iconModel iconForDisplayIdentifier:[self displayIdentifier]];
-	return icon;
+	return (SBApplicationIcon *)icon;
 }
 
 - (UIImage *)themedIcon
