@@ -24,6 +24,7 @@ typedef enum {
 	PSWHardwareTypeiPhone3GS,
 	PSWHardwareTypeiPodTouch3G,
 	PSWHardwareTypeiPad1G,
+	PSWHardwareTypeiPhone4,
 } PSWHardwareType;
 // For convenience: newer models > older models
 

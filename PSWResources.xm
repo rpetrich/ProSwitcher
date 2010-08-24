@@ -186,6 +186,8 @@ PSWHardwareType PSWGetHardwareType()
 		return PSWHardwareTypeiPodTouch3G;
 	if (strcmp(machine, "iPad1,1") == 0)
 		return PSWHardwareTypeiPad1G;
+	if (strcmp(machine, "iPhone3,1") == 0)
+		return PSWHardwareTypeiPhone4;
 	return PSWHardwareTypeUnknown;
 }
 
