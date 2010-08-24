@@ -1,7 +1,6 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
-#import <CaptainHook/CaptainHook.h>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>

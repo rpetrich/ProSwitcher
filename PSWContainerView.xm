@@ -85,7 +85,7 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 
 - (void)shouldExit
 {
-	[self.pageView shouldExit];
+	[_pageView shouldExit];
 }
 
 - (void)_applyInsets
@@ -157,19 +157,19 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 
 - (void)setPageControlCount:(NSInteger)count
 {
-	[self.pageControl setNumberOfPages:count];
+	[_pageControl setNumberOfPages:count];
 	
 	[self setIsEmpty:!count];
 }
 
 - (NSInteger)pageControlPage
 {
-	return [self.pageControl currentPage];
+	return [_pageControl currentPage];
 }
 
 - (void)setPageControlPage:(NSInteger)page
 {
-	[self.pageControl setCurrentPage:page];
+	[_pageControl setCurrentPage:page];
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
@@ -182,13 +182,13 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 
 - (void)tapPreviousAndContinue
 {
-	[self.pageView movePrevious];
+	[_pageView movePrevious];
 	_shouldScrollOnUp = NO;
 }
 
 - (void)tapNextAndContinue
 {
-	[self.pageView moveNext];
+	[_pageView moveNext];
 	_shouldScrollOnUp = NO;
 }
 
@@ -196,13 +196,13 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 {	
 	UITouch *touch = [touches anyObject];
 	CGPoint point = [touch locationInView:self];
-	CGPoint offset = [self.pageView frame].origin;
+	CGPoint offset = [_pageView frame].origin;
 
 	point.x -= offset.x;
 	
 	if (point.x <= 0.0f) {
 		[self performSelector:@selector(tapPreviousAndContinue) withObject:nil afterDelay:0.1f];
-	} else if (point.x > [self.pageView bounds].size.width) {
+	} else if (point.x > [_pageView bounds].size.width) {
 		[self performSelector:@selector(tapNextAndContinue) withObject:nil afterDelay:0.1f];
 	}
 	
@@ -225,7 +225,7 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 	UITouch *touch = [touches anyObject];
 	NSInteger tapCount = [touch tapCount];
 	CGPoint point = [touch locationInView:self];
-	CGPoint offset = [self.pageView frame].origin;
+	CGPoint offset = [_pageView frame].origin;
 
 	point.x -= offset.x;
 
@@ -234,14 +234,14 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 		_doubleTapped = YES;
 		
 		if (point.x <= 0.0f) {
-			[self.pageView moveToStart];
+			[_pageView moveToStart];
 		} else {
-			[self.pageView moveToEnd];
+			[_pageView moveToEnd];
 		}
 	} else if (_shouldScrollOnUp) {
 		if (point.x <= 0.0f) {
 			[self tapPreviousAndContinue];
-		} else if (point.x > [self.pageView bounds].size.width) {
+		} else if (point.x > [_pageView bounds].size.width) {
 			[self tapNextAndContinue];
 		}
 	}
@@ -258,4 +258,3 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 }
 
 @end
-

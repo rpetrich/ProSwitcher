@@ -1,10 +1,10 @@
 Package: com.collab.proswitcher
-Depends: mobilesubstrate, preferenceloader (>= 1.1), libactivator (>= 1.1.0), backgrounder
+Depends: mobilesubstrate (>= 0.9.3087), preferenceloader (>= 2.0.2), libactivator (>= 1.4.2), backgrounder (>= svn.r461)
 Provides: proswitcher
 Conflicts: com.aaronash.Multifl0w, com.beyoip.proswitcherita
 Replaces: com.aaronash.Multifl0w, com.beyoip.proswitcherita
 Name: ProSwitcher
-Version: 1.5
+Version: 1.5~alpha
 Priority: optional
 Architecture: iphoneos-arm
 Description: Free visual multitasking switcher.

@@ -108,7 +108,7 @@ static NSUInteger defaultImagePassThrough;
 }
 
 #ifdef USE_IOSURFACE
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation
 {
 	if (surface != _surface) {
 		CGImageRelease(_snapshotImage);
@@ -128,29 +128,29 @@ static NSUInteger defaultImagePassThrough;
 		_cropInsets.right = 0;
 		
 		if (surface) {
-			CFRetain(surface);
-			_surface = surface;
+			_surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
 			_cropInsets = cropInsets;
 			_snapshotRotation = rotation;
 		}
 		if ([_delegate respondsToSelector:@selector(applicationSnapshotDidChange:)])
 			[_delegate applicationSnapshotDidChange:self];
 	}
+	return _surface;
 }
 
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets
 {
-	[self loadSnapshotFromSurface:surface cropInsets:cropInsets rotation:PSWSnapshotRotationNone];
+	return [self loadSnapshotFromSurface:surface cropInsets:cropInsets rotation:PSWSnapshotRotationNone];
 }
 
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface
 {
 	PSWCropInsets insets;
 	insets.top = 0;
 	insets.left = 0;
 	insets.bottom = 0;
 	insets.right = 0;
-	[self loadSnapshotFromSurface:surface cropInsets:insets rotation:PSWSnapshotRotationNone];
+	return [self loadSnapshotFromSurface:surface cropInsets:insets rotation:PSWSnapshotRotationNone];
 }
 #endif
 

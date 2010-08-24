@@ -116,9 +116,8 @@ static PSWController *sharedController;
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
-	
 		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-				
+		
 		LAActivator *la = [$LAActivator sharedInstance];
 		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
@@ -276,7 +275,8 @@ static PSWController *sharedController;
 - (void)didFinishActivate
 {
 	isAnimating = NO;
-	[snapshotPageView layoutSubviews];
+	[containerView layoutSubviews];
+	[containerView setTransform:CGAffineTransformIdentity];
 }
 
 - (void)activateWithAnimation:(BOOL)animated
@@ -318,10 +318,10 @@ static PSWController *sharedController;
 	
 	if (animated) {
 		[containerView setAlpha:0.0f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
+		[containerView setTransform:CGAffineTransformIdentity];
 	}
 	
 	if (GetPreference(PSWShowPageControl, BOOL))
@@ -346,7 +346,7 @@ static PSWController *sharedController;
 {
 	[containerView removeFromSuperview];
 	[containerView setHidden:YES];
-	[snapshotPageView.layer setTransform:CATransform3DIdentity];
+	[containerView setTransform:CGAffineTransformIdentity];
 	isAnimating = NO;
 }
 
@@ -362,10 +362,10 @@ static PSWController *sharedController;
 	focusedApplication = [[snapshotPageView focusedApplication] retain];
 		
 	if (animated) {
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
+		[containerView setTransform:CGAffineTransformIdentity];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 	}
 	
 	// Show SpringBoard's page control
@@ -504,6 +504,27 @@ static PSWController *sharedController;
 
 @end
 
+@interface PSWController (Beta) <UIAlertViewDelegate>
+- (void)showBetaAlert;
+@end
+
+@implementation PSWController (Beta)
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (buttonIndex != [alertView cancelButtonIndex])
+		[SBSharedInstance applicationOpenURL:[NSURL URLWithString:@"http://github.com/rpetrich/ProSwitcher/issues"]];
+}
+
+- (void)showBetaAlert
+{
+	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"ProSwitcher Alpha" message:@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra\n\nPlease help us get the bugs out :)" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:@"Report Bug", nil];
+	[av show];
+	[av release];
+}
+
+@end
+
 #pragma mark Preference Changed Notification
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
@@ -565,10 +586,11 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 		PSWWriteBinaryPropertyList(plistDict, PSWPreferencesFilePath);
 	}
 	[plistDict release];
-	
+
 	%orig;
 
 	sharedController = [[PSWController alloc] init];
+	[sharedController showBetaAlert];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
 		[sharedController setActive:YES animated:NO];

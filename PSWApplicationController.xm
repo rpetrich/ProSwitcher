@@ -1,6 +1,5 @@
 #import "PSWApplicationController.h"
 
-#import <CaptainHook/CaptainHook.h>
 #import <SpringBoard/SpringBoard.h>
 
 #import "PSWApplication.h"
@@ -121,6 +120,7 @@ static SBApplication *currentZoomApp;
 static UIWindow *currentZoomStatusWindow;
 
 %hook SBUIController
+
 - (void)showZoomLayerWithIOSurfaceSnapshotOfApp:(SBApplication *)application includeStatusWindow:(UIWindow *)statusWindow
 {
 	currentZoomApp = application;
@@ -129,6 +129,7 @@ static UIWindow *currentZoomStatusWindow;
 	currentZoomStatusWindow = nil;
 	currentZoomApp = nil;
 }
+
 %end
 
 %hook SBZoomView
@@ -136,71 +137,57 @@ static UIWindow *currentZoomStatusWindow;
 // 3.0-3.1
 - (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface
 {
-	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = %orig)) {
-		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		PSWCropInsets insets;
-		insets.top = 0;
-		insets.left = 0;
-		insets.bottom = 0;
-		insets.right = 0;
-		if (currentZoomStatusWindow) {
-			CGRect frame = [currentZoomStatusWindow frame];
-			CGSize screenSize = [[UIScreen mainScreen] bounds].size;
-			if (frame.origin.y + frame.size.height < screenSize.height / 2.0f)
-				insets.top = frame.size.height;
-			else if (frame.origin.x + frame.size.width < screenSize.width / 2.0f)
-				insets.left = frame.size.width;
-			else if (frame.size.width > frame.size.height)
-				insets.bottom = frame.size.height;
-			else
-				insets.right = frame.size.width;
-		}
-		[application loadSnapshotFromSurface:surface cropInsets:insets];
+	PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+	PSWCropInsets insets;
+	insets.top = 0;
+	insets.left = 0;
+	insets.bottom = 0;
+	insets.right = 0;
+	if (currentZoomStatusWindow) {
+		CGRect frame = [currentZoomStatusWindow frame];
+		CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+		if (frame.origin.y + frame.size.height < screenSize.height / 2.0f)
+			insets.top = frame.size.height;
+		else if (frame.origin.x + frame.size.width < screenSize.width / 2.0f)
+			insets.left = frame.size.width;
+		else if (frame.size.width > frame.size.height)
+			insets.bottom = frame.size.height;
+		else
+			insets.right = frame.size.width;
 	}
-	if (surface)
-		CFRelease(surface);
-	return self;
+	surface = [application loadSnapshotFromSurface:surface cropInsets:insets];
+	return %orig;
 }
 
 // 3.2
 - (id)initWithSnapshotFrame:(CGRect)snapshotFrame ioSurface:(IOSurfaceRef)surface transform:(CGAffineTransform)transform
 {
-	surface = PSWSurfaceCopyToMainMemory(surface, 'L565', 2);
-	if ((self = %orig)) {
-		PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
-		PSWCropInsets insets;
-		insets.top = 0;
-		insets.left = 0;
-		insets.bottom = 0;
-		insets.right = 0;
-		PSWSnapshotRotation rotation;
-		switch (MSHookIvar<UIInterfaceOrientation>([$SBUIController sharedInstance], "_orientation")) {
-			case UIInterfaceOrientationPortrait:
-				rotation = PSWSnapshotRotation90Left;
-				break;
-			case UIInterfaceOrientationPortraitUpsideDown:
-				rotation = PSWSnapshotRotation90Right;
-				break;
-			case UIInterfaceOrientationLandscapeLeft:
-				rotation = PSWSnapshotRotation180;
-				break;
-			case UIInterfaceOrientationLandscapeRight:
-			default:
-				rotation = PSWSnapshotRotationNone;
-				break;
-		}
-		[application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	PSWApplication *application = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:[currentZoomApp displayIdentifier]];
+	PSWCropInsets insets;
+	insets.top = 0;
+	insets.left = 0;
+	insets.bottom = 0;
+	insets.right = 0;
+	PSWSnapshotRotation rotation;
+	switch (MSHookIvar<UIInterfaceOrientation>([$SBUIController sharedInstance], "_orientation")) {
+		case UIInterfaceOrientationPortrait:
+			rotation = PSWSnapshotRotation90Left;
+			break;
+		case UIInterfaceOrientationPortraitUpsideDown:
+			rotation = PSWSnapshotRotation90Right;
+			break;
+		case UIInterfaceOrientationLandscapeLeft:
+			rotation = PSWSnapshotRotation180;
+			break;
+		case UIInterfaceOrientationLandscapeRight:
+		default:
+			rotation = PSWSnapshotRotationNone;
+			break;
 	}
-	if (surface)
-		CFRelease(surface);
-	return self;
+	surface = [application loadSnapshotFromSurface:surface cropInsets:insets rotation:rotation];
+	return %orig;
 }
 
 %end
 
 #endif
-
-
-
-
