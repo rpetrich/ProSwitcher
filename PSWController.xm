@@ -55,8 +55,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 
 @interface PSWController () <PSWPageViewDelegate, LAListener>
 - (void)reparentView;
-- (void)reloadPreferences;
-- (void)applyPreferences;
 - (void)fixPageControl;
 @end
 
@@ -94,6 +92,10 @@ static PSWController *sharedController;
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
 				[la assignEvent:[$LAEvent eventWithName:@"libactivator.menu.hold.short"] toListenerWithName:@"com.collab.proswitcher"];
 		[la registerListener:self forName:@"com.collab.proswitcher"];
+		
+		[self applyIgnored];
+		[self applyInsets];
+		[self applyPreferences];
 	}
 	
 	return self;
@@ -189,13 +191,16 @@ static PSWController *sharedController;
 }
 
 - (void)applyPreferences
-{
-	[self fixPageControl];
-	[self applyIgnored];
-	[self applyInsets];
-	
-	[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
-	[[containerView layer] setContents:nil];
+{	
+	if (GetPreference(PSWDimBackground, BOOL))
+		[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
+	else
+		[containerView setBackgroundColor:[UIColor clearColor]];
+
+	if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
+		[[containerView layer] setContents:(id) [PSWImage(@"Background") CGImage]];
+	else
+		[[containerView layer] setContents:nil];
 		
 	containerView.emptyTapClose       = YES; 
 	containerView.emptyText           = @"No Apps Running";
@@ -206,12 +211,6 @@ static PSWController *sharedController;
 {
 	if ([self isActive] && GetPreference(PSWShowPageControl, BOOL))
 		[[$SBIconController sharedInstance] setPageControlVisible:NO];
-}
-
-- (void)reloadPreferences
-{
-	PSWPreparePreferences();
-	[self applyPreferences];
 }
 
 - (void)didReceiveMemoryWarning
@@ -254,7 +253,6 @@ static PSWController *sharedController;
 	
 	// Always reparent view
 	[self reparentView];
-	[self applyPreferences];
 	
 	SBUIController *uiController = [$SBUIController sharedInstance];
 		

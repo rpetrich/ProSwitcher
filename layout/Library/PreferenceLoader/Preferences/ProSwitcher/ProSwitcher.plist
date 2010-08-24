@@ -364,7 +364,7 @@
 			<string>SHOW_DOCK</string>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>
+		</dict>-->
 		<dict>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
@@ -404,7 +404,7 @@
 			</array>
 			<key>PostNotification</key>
 			<string>com.collab.proswitcher.preferencechanged</string>
-		</dict>-->
+		</dict>
 		
 		<!-- Thanks to DHowett for the hack to show the text on 3.0 and 3.2! -->
 		<dict>
