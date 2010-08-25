@@ -73,6 +73,7 @@ static inline void PSWWriteBinaryPropertyList(NSDictionary *dict, NSString *file
     CFWriteStreamClose(stream);
 }
 
+__attribute__((visibility("hidden")))
 extern NSDictionary *preferences;
 
 __attribute__((always_inline))

@@ -4,6 +4,7 @@
 
 #import "PSWApplication.h"
 
+__attribute__((visibility("hidden")))
 @interface PSWSpringBoardApplication : PSWApplication {
 @private
 	NSString *_displayName;

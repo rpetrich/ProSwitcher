@@ -76,6 +76,7 @@ static NSUInteger ignoreZoomSetAlphaCountDown;
 
 static NSString *displayIdentifierToSuppressBackgroundingOn;
 
+__attribute__((visibility("hidden")))
 void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 {
 	[displayIdentifierToSuppressBackgroundingOn release];

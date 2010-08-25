@@ -4,6 +4,7 @@
 
 static NSMutableArray *displayStacks;
 
+__attribute__((visibility("hidden")))
 SBDisplayStack *PSWGetDisplayStack(NSInteger index)
 {
 	return [displayStacks objectAtIndex:index];

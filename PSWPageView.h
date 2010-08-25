@@ -7,6 +7,7 @@
 
 @protocol PSWPageViewDelegate;
 
+__attribute__((visibility("hidden")))
 @interface PSWPageView : UIScrollView <UIScrollViewDelegate, PSWSnapshotViewDelegate, PSWApplicationControllerDelegate> {
 @private
 	PSWApplicationController *_applicationController;

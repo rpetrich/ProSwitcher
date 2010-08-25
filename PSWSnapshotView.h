@@ -5,6 +5,7 @@
 @class CALayer;
 @protocol PSWSnapshotViewDelegate;
 
+__attribute__((visibility("hidden")))
 @interface PSWSnapshotView : UIView<PSWApplicationDelegate> {
 @private
 	PSWApplication *_application;

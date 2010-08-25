@@ -5,6 +5,7 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier);
 
 @class PSWPageView, PSWContainerView, PSWApplication;
 
+__attribute__((visibility("hidden")))
 @interface PSWController : NSObject {
 @private
 	PSWPageView *snapshotPageView;

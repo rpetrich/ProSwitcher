@@ -6,6 +6,7 @@
 %class SBIconModel;
 %class SBIconController;
 
+__attribute__((visibility("hidden")))
 CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 {
 	UIEdgeInsets realInsets;

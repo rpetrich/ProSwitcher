@@ -3,6 +3,7 @@
 @class PSWApplication;
 @protocol PSWApplicationControllerDelegate;
 
+__attribute__((visibility("hidden")))
 @interface PSWApplicationController : NSObject {
 @private
 	NSMutableDictionary *_activeApplications;

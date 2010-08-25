@@ -5,11 +5,13 @@
 
 static IOSurfaceAcceleratorRef accelerator;
 
+__attribute__((visibility("hidden")))
 BOOL PSWSurfaceAcceleratorIsAvailable()
 {
 	return PSWGetHardwareType() >= PSWHardwareTypeiPhone3GS;	
 }
 
+__attribute__((visibility("hidden")))
 IOSurfaceRef PSWSurfaceCopyToMainMemory(IOSurfaceRef surface, OSType pixelFormat, NSUInteger bytesPerElement)
 {
 	if (!surface)

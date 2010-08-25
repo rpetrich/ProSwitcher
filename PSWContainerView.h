@@ -10,6 +10,7 @@ typedef struct {
 
 CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets);
 
+__attribute__((visibility("hidden")))
 @interface PSWContainerView : UIView {
 @private
 	PSWPageView *_pageView;

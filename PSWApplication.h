@@ -18,6 +18,7 @@ typedef enum {
 
 @protocol PSWApplicationDelegate;
 
+__attribute__((visibility("hidden")))
 @interface PSWApplication : NSObject {
 @protected
 	NSString *_displayIdentifier;

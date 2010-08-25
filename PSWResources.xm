@@ -25,6 +25,7 @@ static inline void PSWSetCachedImageForKey(UIImage *image, NSString *key)
 		imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:image, key, nil];
 }
 
+__attribute__((visibility("hidden")))
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
 	NSString *key = [NSString stringWithFormat:@"%@#%@", [bundle bundlePath], name];
@@ -48,6 +49,7 @@ UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 	return result;
 }
 
+__attribute__((visibility("hidden")))
 UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSize size)
 {
 	// Search for cached image
@@ -93,11 +95,13 @@ UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSiz
 	return image;
 }
 
+__attribute__((visibility("hidden")))
 UIImage *PSWImage(NSString *name)
 {
 	return PSWGetCachedImageResource(name, sharedBundle);
 }
 
+__attribute__((visibility("hidden")))
 UIImage *PSWScaledImage(NSString *name, CGSize size)
 {
 	return PSWGetScaledCachedImageResource(name, sharedBundle, size);
@@ -118,6 +122,7 @@ static void ClipContextRounded(CGContextRef c, CGSize size, CGFloat cornerRadius
 	CGContextClip(c);
 }
 
+__attribute__((visibility("hidden")))
 UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 {
 	if (size.width < 1.0f || size.height < 1.0f)
@@ -156,17 +161,20 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	return result;
 }
 
+__attribute__((visibility("hidden")))
 void PSWClearResourceCache()
 {
 	[imageCache release];
 	imageCache = nil;
 }
 
+__attribute__((visibility("hidden")))
 NSString *PSWLocalize(NSString *text)
 {
 	return [localizationBundle localizedStringForKey:text value:nil table:nil];
 }
 
+__attribute__((visibility("hidden")))
 PSWHardwareType PSWGetHardwareType()
 {
 	size_t size;
