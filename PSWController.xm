@@ -219,18 +219,6 @@ static PSWController *sharedController;
 	PSWClearResourceCache();
 }
 
-#pragma mark Status Bar
-
-- (void)saveStatusBarStyle
-{
-	formerStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
-}
-
-- (void)restoreStatusBarStyle
-{
-	[[UIApplication sharedApplication] setStatusBarStyle:formerStatusBarStyle animated:NO];
-}
-
 #pragma mark Activate
 
 - (void)didFinishActivate
@@ -267,10 +255,6 @@ static PSWController *sharedController;
 	// Deactivate Keyboard
 	[[uiController window] endEditing:YES];
 	
-	// Setup status bar
-	[self saveStatusBarStyle];
-	// [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-		
 	// Restore focused application
 	[snapshotPageView setFocusedApplication:focusedApplication];
 	
@@ -281,7 +265,6 @@ static PSWController *sharedController;
 		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	}
 	
 	if (GetPreference(PSWShowPageControl, BOOL))
@@ -289,6 +272,7 @@ static PSWController *sharedController;
 	
 	// Show ProSwitcher
 	[containerView setAlpha:1.0f];
+	[snapshotPageView.layer setTransform:CATransform3DIdentity];
 			
 	if (animated) {
 		isAnimating = YES;
@@ -321,8 +305,8 @@ static PSWController *sharedController;
 	[focusedApplication release];
 	focusedApplication = [[snapshotPageView focusedApplication] retain];
 		
+	[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	if (animated) {
-		[snapshotPageView.layer setTransform:CATransform3DIdentity];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
 		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
@@ -511,10 +495,11 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	[sharedController reparentView];
 }
 
-- (void) finishLaunching
+- (void)finishLaunching
 {
 	NSLog(@"Welcome to ProSwitcher.");
 	NSLog(@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra");
+	NSLog(@"Help us get the bugs out: send us an email if something isn't working right.");
 	
 	NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:PSWPreferencesFilePath] ?: [[NSMutableDictionary alloc] init];
 	if (![[plistDict objectForKey:@"PSWAlert"] boolValue]) {
@@ -704,12 +689,12 @@ static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRec
 	}
 }
 
-/*CHOptimizedMethod(1, super, void, SBZoomView, setAlpha, CGFloat, alpha)
+/*- (void)setAlpha:(CGFloat)alpha
 {
 	if (ignoreZoomSetAlphaCountDown)
 		ignoreZoomSetAlphaCountDown--;
 	else
-		CHSuper(1, SBZoomView, setAlpha, alpha);
+		%orig;
 }*/
 
 %end
