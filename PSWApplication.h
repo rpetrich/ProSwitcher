@@ -38,7 +38,7 @@ typedef enum {
 - (id)initWithDisplayIdentifier:(NSString *)displayIdentifier;
 - (id)initWithSBApplication:(SBApplication *)application;
 
-@property (nonatomic, readonly) NSString *displayIdentifier;
+@property (nonatomic, readonly, copy) NSString *displayIdentifier;
 @property (nonatomic, readonly) NSString *displayName;
 @property (nonatomic, readonly) SBApplicationIcon *springBoardIcon;
 @property (nonatomic, readonly) UIImage *themedIcon;
@@ -54,9 +54,9 @@ typedef enum {
 @property (nonatomic, readonly) PSWCropInsets snapshotCropInsets;
 @property (nonatomic, readonly) PSWSnapshotRotation snapshotRotation;
 
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface;
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
-- (void)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets;
+- (IOSurfaceRef)loadSnapshotFromSurface:(IOSurfaceRef)surface cropInsets:(PSWCropInsets)cropInsets rotation:(PSWSnapshotRotation)rotation;
 #endif
 - (BOOL)writeSnapshotToDisk;
 - (void)exit;

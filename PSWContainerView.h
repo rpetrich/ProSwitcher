@@ -37,7 +37,6 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 @property (nonatomic, retain) PSWPageView *pageView;
 
 @property (nonatomic, retain) UIPageControl *pageControl;
-@property (nonatomic, assign) BOOL showsPageControl;
 @property (nonatomic, assign) NSInteger pageControlPage;
 
 @property (nonatomic, assign) BOOL isEmpty;

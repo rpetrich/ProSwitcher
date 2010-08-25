@@ -1,7 +1,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SpringBoard/SpringBoard.h>
 #import <SpringBoard/SBAwayController.h>
-#import <CaptainHook/CaptainHook.h>
 
 #include <dlfcn.h>
 
@@ -14,6 +13,36 @@
 #import "PSWProSwitcherIcon.h"
 #import "PSWContainerView.h"
 #import "PSWPageView.h"
+
+@interface SBIconController (OS40)
+- (UIView *)dock;
+- (void)closeFolderAnimated:(BOOL)animated;
+@end
+
+@class SBFolderIcon;
+@interface SBFolder : NSObject {
+	NSString *_displayName;
+	NSString *_defaultDisplayName;
+	NSMutableArray *_lists;
+	BOOL _open;
+	SBFolderIcon *_icon;
+	BOOL _cancelable;
+	NSMutableSet *_addedIcons;
+	NSMutableSet *_removedIcons;
+	NSMutableDictionary *_coalesceChangesRequests;
+}
+@end
+
+@class SBDockIconListModel;
+@interface SBRootFolder : SBFolder {
+	SBDockIconListModel *_dock;
+}
+- (SBDockIconListModel *)dockModel;
+@end
+
+@interface SBIconModel (OS40)
+- (SBRootFolder *)rootFolder;
+@end
 
 %class SBAwayController;
 %class SBStatusBarController;
@@ -56,6 +85,9 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 @interface PSWController () <PSWPageViewDelegate, LAListener>
 - (void)reparentView;
 - (void)fixPageControl;
+- (void)applyIgnored;
+- (void)applyInsets;
+- (void)applyPreferences;
 @end
 
 static PSWController *sharedController;	
@@ -84,9 +116,8 @@ static PSWController *sharedController;
 		
 		[containerView setPageView:snapshotPageView];
 		[snapshotPageView setPageViewDelegate:self];
-	
 		[containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-				
+		
 		LAActivator *la = [$LAActivator sharedInstance];
 		if ([la respondsToSelector:@selector(hasSeenListenerWithName:)] && [la respondsToSelector:@selector(assignEvent:toListenerWithName:)])
 			if (![la hasSeenListenerWithName:@"com.collab.proswitcher"])
@@ -164,9 +195,17 @@ static PSWController *sharedController;
 	
 	// Hide dock icons if disabled
 	if (!GetPreference(PSWShowDockApps, BOOL)) {
-		for (SBIcon *icon in [PSWDockModel icons]) {
-			[ignored addObject:[icon respondsToSelector:@selector(displayIdentifier)] ? [icon displayIdentifier]:
-							   [icon respondsToSelector:@selector(application)] ? [[icon application] displayIdentifier] : nil];
+		SBIconModel *iconModel = [$SBIconModel sharedInstance];
+		NSArray *icons = [iconModel respondsToSelector:@selector(buttonBar)] ? [[iconModel buttonBar] icons] : [[[iconModel rootFolder] dockModel] icons];
+		for (SBIcon *icon in icons) {
+			NSString *displayIdentifier;
+			if ([icon respondsToSelector:@selector(displayIdentifier)])
+				displayIdentifier = [icon displayIdentifier];
+			else if ([icon respondsToSelector:@selector(application)])
+				displayIdentifier = [[(SBApplicationIcon *)icon application] displayIdentifier];
+			else
+				continue;
+			[ignored addObject:displayIdentifier];
 		}
 	}
 
@@ -224,7 +263,8 @@ static PSWController *sharedController;
 - (void)didFinishActivate
 {
 	isAnimating = NO;
-	[snapshotPageView layoutSubviews];
+	[containerView layoutSubviews];
+	[containerView setTransform:CGAffineTransformIdentity];
 }
 
 - (void)activateWithAnimation:(BOOL)animated
@@ -262,9 +302,10 @@ static PSWController *sharedController;
 	
 	if (animated) {
 		[containerView setAlpha:0.0f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
+		[containerView setTransform:CGAffineTransformIdentity];
 	}
 	
 	if (GetPreference(PSWShowPageControl, BOOL))
@@ -290,7 +331,7 @@ static PSWController *sharedController;
 {
 	[containerView removeFromSuperview];
 	[containerView setHidden:YES];
-	[snapshotPageView.layer setTransform:CATransform3DIdentity];
+	[containerView setTransform:CGAffineTransformIdentity];
 	isAnimating = NO;
 }
 
@@ -307,9 +348,10 @@ static PSWController *sharedController;
 		
 	[snapshotPageView.layer setTransform:CATransform3DIdentity];
 	if (animated) {
+		[containerView setTransform:CGAffineTransformIdentity];
 		[UIView beginAnimations:nil context:nil];
 		[UIView setAnimationDuration:0.5f];
-		[snapshotPageView.layer setTransform:CATransform3DMakeScale(2.0f, 2.0f, 1.0f)];
+		[containerView setTransform:CGAffineTransformMakeScale(2.0f, 2.0f)];
 	}
 	
 	// Show SpringBoard's page control
@@ -448,6 +490,27 @@ static PSWController *sharedController;
 
 @end
 
+@interface PSWController (Beta) <UIAlertViewDelegate>
+- (void)showBetaAlert;
+@end
+
+@implementation PSWController (Beta)
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (buttonIndex != [alertView cancelButtonIndex])
+		[SBSharedInstance applicationOpenURL:[NSURL URLWithString:@"http://github.com/rpetrich/ProSwitcher/issues"]];
+}
+
+- (void)showBetaAlert
+{
+	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"ProSwitcher Alpha" message:@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra\n\nPlease help us get the bugs out :)" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:@"Report Bug", nil];
+	[av show];
+	[av release];
+}
+
+@end
+
 #pragma mark Preference Changed Notification
 static void PreferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
@@ -510,10 +573,11 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 		PSWWriteBinaryPropertyList(plistDict, PSWPreferencesFilePath);
 	}
 	[plistDict release];
-	
+
 	%orig;
 
 	sharedController = [[PSWController alloc] init];
+	[sharedController showBetaAlert];
 	
 	if (GetPreference(PSWBecomeHomeScreen, NSInteger) != PSWBecomeHomeScreenDisabled)
 		[sharedController setActive:YES animated:NO];

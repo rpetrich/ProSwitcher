@@ -39,7 +39,7 @@ IOSurfaceRef PSWSurfaceCopyToMainMemory(IOSurfaceRef surface, OSType pixelFormat
 	// Transfer
 	IOSurfaceAcceleratorTransferSurface(accelerator, surface, newSurface, NULL, NULL);
 	// Flush processor caches
-	// IOSurfaceFlushProcessorCaches(newSurface);
+	IOSurfaceFlushProcessorCaches(newSurface);
 	return newSurface;
 }
 #endif

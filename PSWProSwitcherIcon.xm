@@ -6,11 +6,9 @@
 #import "SpringBoard+OS32.h"
 
 #import <SpringBoard/SpringBoard.h>
-#import <CaptainHook/CaptainHook.h>
 
 %class SBIconModel;
 %class SBApplicationIcon;
-CHDeclareClass(PSWProSwitcherIcon);
 
 %hook SBApplicationIcon
 

@@ -35,7 +35,7 @@
 		[self setPagingEnabled:YES];
 
 		_snapshotViews = [[NSMutableArray alloc] init];
-		for (int i = 0; i < [self.applications count]; i++) {
+		for (NSUInteger i = 0; i < [self.applications count]; i++) {
 			PSWSnapshotView *snapshot = [[PSWSnapshotView alloc] initWithFrame:CGRectZero application:[_applications objectAtIndex:i]];
 			snapshot.delegate = self;
 			[self addSubview:snapshot];
@@ -279,8 +279,8 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
 	CGFloat pageWidth = [scrollView bounds].size.width;
-	NSInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
-	NSInteger oldPage = [self currentPage];
+	NSUInteger curPage = floor(([scrollView contentOffset].x - pageWidth / 2) / pageWidth) + 1.0f;
+	NSUInteger oldPage = [self currentPage];
 	
 	NSUInteger appCount = [_applications count];
 	if (oldPage != curPage && curPage < appCount && curPage >= 0) {

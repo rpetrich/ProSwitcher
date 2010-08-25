@@ -1,7 +1,6 @@
 #import "PSWResources.h"
 
 #import <CoreGraphics/CoreGraphics.h>
-#import <CaptainHook/CaptainHook.h>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -10,21 +9,42 @@ static NSMutableDictionary *imageCache;
 static NSBundle *sharedBundle;
 static NSBundle *localizationBundle;
 
+@interface UIScreen (OS40)
+- (CGFloat)scale;
+@end
+
+@interface UIImage (OS40)
++ (UIImage *)imageWithCGImage:(CGImageRef)imageRef scale:(CGFloat)scale orientation:(UIImageOrientation)orientation;
+@end
+
+static inline void PSWSetCachedImageForKey(UIImage *image, NSString *key)
+{
+	if (imageCache)
+		[imageCache setObject:image forKey:key];
+	else
+		imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:image, key, nil];
+}
+
 UIImage *PSWGetCachedImageResource(NSString *name, NSBundle *bundle)
 {
 	NSString *key = [NSString stringWithFormat:@"%@#%@", [bundle bundlePath], name];
 	UIImage *result = [imageCache objectForKey:key];
-	if (!result) {
-		if (!imageCache)
-			imageCache = [[NSMutableDictionary alloc] init];
-		result = [UIImage imageWithContentsOfFile:[bundle pathForResource:name ofType:@"png"]];
-		if (result) {
-			if (imageCache)
-				[imageCache setObject:result forKey:key];
-			else
-				imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+	if (result)
+		return result;
+	if ([UIScreen instancesRespondToSelector:@selector(scale)]) {
+		CGFloat scale = [[UIScreen mainScreen] scale];
+		if (scale != 1.0f) {
+			NSString *scaledName = [NSString stringWithFormat:@"%@@%.0fx", name, scale];
+			result = [UIImage imageWithContentsOfFile:[bundle pathForResource:scaledName ofType:@"png"]];
+			if (result) {
+				PSWSetCachedImageForKey(result, key);
+				return result;
+			}
 		}
 	}
+	result = [UIImage imageWithContentsOfFile:[bundle pathForResource:name ofType:@"png"]];
+	if (result)
+		PSWSetCachedImageForKey(result, key);
 	return result;
 }
 
@@ -42,15 +62,18 @@ UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSiz
 	CGSize unscaledSize = [image size];
 	if (unscaledSize.width == size.width && unscaledSize.height == size.height)
 		return image;
+	CGFloat scale = [UIScreen instancesRespondToSelector:@selector(scale)] ? [[UIScreen mainScreen] scale] : 1.0f;
+	size_t scaledWidth = scale * size.width;
+	size_t scaledHeight = scale * size.height;
 	// Create a bitmap context that mimics the format of the source context
 	CGImageRef cgImage = [image CGImage];
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef context = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, 4 * (size_t)size.width, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+	CGContextRef context = CGBitmapContextCreate(NULL, scaledWidth, scaledHeight, 8, 4 * scaledWidth, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 	CGColorSpaceRelease(colorSpace);
 	// Setup transformation
 	CGContextSetInterpolationQuality(context, kCGInterpolationNone);
-	CGContextTranslateCTM(context, 0.0f, size.height); 
-	CGContextScaleCTM(context, 1.0f, -1.0f);
+	CGContextTranslateCTM(context, 0.0f, size.height * scale); 
+	CGContextScaleCTM(context, scale, -scale);
 	// Draw stretchable image
 	UIGraphicsPushContext(context);
 	[[image stretchableImageWithLeftCapWidth:((NSInteger)unscaledSize.width)/2 topCapHeight:((NSInteger)unscaledSize.height)/2] drawInRect:CGRectMake(0.0f, 0.0f, size.width, size.height)];
@@ -60,10 +83,13 @@ UIImage *PSWGetScaledCachedImageResource(NSString *name, NSBundle *bundle, CGSiz
 	cgImage = CGBitmapContextCreateImage(context);
 	CGContextRelease(context);
 	// Create UIImage
-	image = [UIImage imageWithCGImage:cgImage];
+	if ([UIImage respondsToSelector:@selector(imageWithCGImage:scale:orientation:)])
+		image = [UIImage imageWithCGImage:cgImage scale:scale orientation:UIImageOrientationUp];
+	else
+		image = [UIImage imageWithCGImage:cgImage];
 	CGImageRelease(cgImage);
 	// Update cache
-	[imageCache setObject:image forKey:key];
+	PSWSetCachedImageForKey(image, key);
 	return image;
 }
 
@@ -100,30 +126,32 @@ UIImage *PSWGetCachedCornerMaskOfSize(CGSize size, CGFloat cornerRadius)
 	UIImage *result = [imageCache objectForKey:key];
 	if (!result) {
 		CGContextRef c;
+		CGFloat scale = [UIScreen instancesRespondToSelector:@selector(scale)] ? [[UIScreen mainScreen] scale] : 1.0f;
 		// Only iPad supports using mask images as layer masks (older models require full images, then use only the alpha channel)
 		if (PSWGetHardwareType() >= PSWHardwareTypeiPad1G)
-			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width, NULL, kCGImageAlphaOnly);
+			c = CGBitmapContextCreate(NULL, (size_t)size.width * scale, (size_t)size.height * scale, 8, (size_t)size.width * scale, NULL, kCGImageAlphaOnly);
 		else {
 			CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-			c = CGBitmapContextCreate(NULL, (size_t)size.width, (size_t)size.height, 8, (size_t)size.width * 4, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
+			c = CGBitmapContextCreate(NULL, (size_t)size.width * scale, (size_t)size.height * scale, 8, (size_t)size.width * scale * 4, colorSpace, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
 			CGColorSpaceRelease(colorSpace);
 		}
 		CGRect rect;
 		rect.origin.x = 0.0f;
 		rect.origin.y = 0.0f;
-		rect.size = size;
+		rect.size.width = size.width * scale;
+		rect.size.height = size.height * scale;
 		if (cornerRadius > 0.0f)
-			ClipContextRounded(c, size, cornerRadius);
+			ClipContextRounded(c, rect.size, cornerRadius * scale);
 		CGContextSetRGBFillColor(c, 1.0f, 1.0f, 1.0f, 1.0f);
 		CGContextFillRect(c, rect);
 		CGImageRef image = CGBitmapContextCreateImage(c);
 		CGContextRelease(c);
-		result = [UIImage imageWithCGImage:image];
-		CGImageRelease(image);
-		if (imageCache)
-			[imageCache setObject:result forKey:key];
+		if ([UIImage respondsToSelector:@selector(imageWithCGImage:scale:orientation:)])
+			result = [UIImage imageWithCGImage:image scale:scale orientation:UIImageOrientationUp];
 		else
-			imageCache = [[NSMutableDictionary alloc] initWithObjectsAndKeys:result, key, nil];
+			result = [UIImage imageWithCGImage:image];
+		CGImageRelease(image);
+		PSWSetCachedImageForKey(result, key);
 	}
 	return result;
 }
@@ -158,6 +186,8 @@ PSWHardwareType PSWGetHardwareType()
 		return PSWHardwareTypeiPodTouch3G;
 	if (strcmp(machine, "iPad1,1") == 0)
 		return PSWHardwareTypeiPad1G;
+	if (strcmp(machine, "iPhone3,1") == 0)
+		return PSWHardwareTypeiPhone4;
 	return PSWHardwareTypeUnknown;
 }
 
