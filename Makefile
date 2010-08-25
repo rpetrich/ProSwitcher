@@ -6,7 +6,7 @@ else
 
 # ProSwitcher.dylib (/Library/MobileSubstrate/DynamicLibraries)
 TWEAK_NAME = ProSwitcher
-ProSwitcher_OBJC_FILES = PSWApplication.mm PSWDisplayStacks.mm PSWProSwitcherIcon.mm PSWPageView.mm PSWSpringBoardApplication.mm PSWApplicationController.mm PSWResources.mm PSWSnapshotView.mm PSWController.mm PSWContainerView.mm PSWSurface.mm
+ProSwitcher_OBJC_FILES = PSWApplication.xm PSWDisplayStacks.xm PSWProSwitcherIcon.xm PSWPageView.xm PSWSpringBoardApplication.xm PSWApplicationController.xm PSWResources.xm PSWSnapshotView.xm PSWController.xm PSWContainerView.xm PSWSurface.xm
 ProSwitcher_FRAMEWORKS = AudioToolbox CoreGraphics Foundation QuartzCore UIKit
 ProSwitcher_PRIVATE_FRAMEWORKS = IOSurface
 
