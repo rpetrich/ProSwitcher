@@ -461,13 +461,37 @@ static PSWController *sharedController;
 	[containerView setPageControlCount:pageCount];
 }
 
+- (void)zoomAppAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(id)context {
+	disallowIconListScatter++;
+	// modifyZoomTransformCountDown = 1;
+	// ignoreZoomSetAlphaCountDown = 1;
+	[[context objectAtIndex:0] activateWithAnimation:NO];
+	disallowIconListScatter--;
+	
+	[[context objectAtIndex:1] performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.2f];
+	[context release];
+}
+
 - (void)snapshotPageView:(PSWPageView *)sspv didSelectApplication:(PSWApplication *)app
 {
-	disallowIconListScatter++;
-	modifyZoomTransformCountDown = 1;
-	ignoreZoomSetAlphaCountDown = 1;
-	[app activateWithAnimation:YES];
-	disallowIconListScatter--;
+	UIView *view = [[sspv focusedSnapshotView] screenView];
+	
+	UIView *destination = [[$SBUIController sharedInstance] contentView];
+	UIImageView *imageView = [[UIImageView alloc] initWithFrame:[[view superview] convertRect:[view frame] toView:destination]];
+	[destination addSubview:imageView];
+	[imageView setImage:[[app application] defaultImage:NULL]];
+	[imageView release];
+	
+	[UIView beginAnimations:nil context:[[NSArray arrayWithObjects:app, imageView, nil] retain]];
+	[UIView setAnimationDuration:0.35f];
+	[UIView setAnimationBeginsFromCurrentState:YES];
+	[UIView setAnimationDelegate:self];
+	[UIView setAnimationDidStopSelector:@selector(zoomAppAnimationDidStop:finished:context:)];
+	CGRect frame = [destination bounds];
+	CGFloat delta = [[$SBStatusBarController sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
+	frame.size.height -= delta; frame.origin.y += delta;
+	[imageView setFrame:frame];
+	[UIView commitAnimations];
 }
 
 - (void)snapshotPageView:(PSWPageView *)sspv didCloseApplication:(PSWApplication *)app
