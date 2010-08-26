@@ -468,7 +468,7 @@ static PSWController *sharedController;
 	[[context objectAtIndex:0] activateWithAnimation:NO];
 	disallowIconListScatter--;
 	
-	[[context objectAtIndex:1] performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.2f];
+	[[context objectAtIndex:1] performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.5f];
 	[context release];
 }
 
@@ -477,20 +477,25 @@ static PSWController *sharedController;
 	UIView *view = [[sspv focusedSnapshotView] screenView];
 	
 	UIView *destination = [[$SBUIController sharedInstance] contentView];
-	UIImageView *imageView = [[UIImageView alloc] initWithFrame:[[view superview] convertRect:[view frame] toView:destination]];
-	[destination addSubview:imageView];
-	[imageView setImage:[[app application] defaultImage:NULL]];
-	[imageView release];
+	UIView *zoomView = [[UIView alloc] initWithFrame:[[view superview] convertRect:[view frame] toView:destination]];
+	[destination addSubview:zoomView];
 	
-	[UIView beginAnimations:nil context:[[NSArray arrayWithObjects:app, imageView, nil] retain]];
+	//[[zoomView layer] setContents:(id)[[[app application] defaultImage:NULL] CGImage]];
+	[[zoomView layer] setContents:(id)[app snapshot]];
+	
+	[zoomView release];
+	
+	[UIView beginAnimations:nil context:[[NSArray arrayWithObjects:app, zoomView, nil] retain]];
 	[UIView setAnimationDuration:0.35f];
 	[UIView setAnimationBeginsFromCurrentState:YES];
 	[UIView setAnimationDelegate:self];
 	[UIView setAnimationDidStopSelector:@selector(zoomAppAnimationDidStop:finished:context:)];
+	
 	CGRect frame = [destination bounds];
 	CGFloat delta = [[$SBStatusBarController sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 	frame.size.height -= delta; frame.origin.y += delta;
-	[imageView setFrame:frame];
+	[zoomView setFrame:frame];
+	
 	[UIView commitAnimations];
 }
 
