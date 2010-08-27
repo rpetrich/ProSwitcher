@@ -405,8 +405,8 @@ static PSWController *sharedController;
 		if ([displayIdentifier length]) {
 			PSWApplication *activeApp = [[PSWApplicationController sharedInstance] applicationWithDisplayIdentifier:displayIdentifier];
 			
-			modifyZoomTransformCountDown = 2;
-			ignoreZoomSetAlphaCountDown = 2;
+			//modifyZoomTransformCountDown = 2;
+			//ignoreZoomSetAlphaCountDown = 2;
 			disallowIconListScatter++;
 			
 			// Background
@@ -417,7 +417,7 @@ static PSWController *sharedController;
 			
 			// Deactivate application (animated)
 			[[activeApp application] setDeactivationSetting:0x2 flag:YES];
-			//[activeApp setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
+			[[activeApp application] setDeactivationSetting:0x8 value:[NSNumber numberWithDouble:1]]; // disable animations
 			[SBWActiveDisplayStack popDisplay:application];
 			[SBWSuspendingDisplayStack pushDisplay:application];
 			
@@ -425,6 +425,31 @@ static PSWController *sharedController;
 			[self setActive:YES animated:NO];
 			[snapshotPageView setFocusedApplication:activeApp animated:NO];
 			[event setHandled:YES];
+			
+			UIView *view = [[snapshotPageView focusedSnapshotView] screenView];
+
+			UIView *destination = [[$SBUIController sharedInstance] contentView];
+			
+			CGRect frame = [destination bounds];
+			CGFloat delta = [[$SBStatusBarController sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
+			frame.size.height -= delta; frame.origin.y += delta;
+			UIView *zoomView = [[UIView alloc] initWithFrame:frame];
+			
+			[destination addSubview:zoomView];
+			[zoomView release];
+
+			//[[zoomView layer] setContents:(id)[[[app application] defaultImage:NULL] CGImage]];
+			[[zoomView layer] setContents:(id)[activeApp snapshot]];
+
+			[UIView beginAnimations:nil context:nil];
+			[UIView setAnimationDuration:0.35f];
+			[UIView setAnimationBeginsFromCurrentState:YES];
+			[UIView setAnimationDelegate:zoomView];
+			[UIView setAnimationDidStopSelector:@selector(removeFromSuperview)];
+
+			[zoomView setFrame:[[view superview] convertRect:[view frame] toView:destination]];
+
+			[UIView commitAnimations];
 			
 			disallowIconListScatter--;
 		}
@@ -482,7 +507,7 @@ static PSWController *sharedController;
 	
 	//[[zoomView layer] setContents:(id)[[[app application] defaultImage:NULL] CGImage]];
 	[[zoomView layer] setContents:(id)[app snapshot]];
-	
+	 
 	[zoomView release];
 	
 	[UIView beginAnimations:nil context:[[NSArray arrayWithObjects:app, zoomView, nil] retain]];
@@ -534,9 +559,11 @@ static PSWController *sharedController;
 
 - (void)showBetaAlert
 {
+#ifndef DEBUG
 	UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"ProSwitcher Alpha" message:@"\"If debugging is the process of removing software bugs, then programming must be the process of putting them in.\" -- Edsger Dijkstra\n\nPlease help us get the bugs out :)" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:@"Report Bug", nil];
 	[av show];
 	[av release];
+#endif
 }
 
 @end
@@ -644,9 +671,9 @@ static void PreferenceChangedCallback(CFNotificationCenterRef center, void *obse
 								[SBSharedInstance setBackgroundingEnabled:YES forDisplayIdentifier:displayIdentifier];
 						}
 					}
+					
 					modifyZoomTransformCountDown = 2;
 					ignoreZoomSetAlphaCountDown = 2;
-					
 					disallowIconListScatter++;
 					
 					%orig;
