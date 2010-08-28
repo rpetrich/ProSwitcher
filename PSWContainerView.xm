@@ -2,6 +2,7 @@
 #import "PSWContainerView.h"
 #import "PSWPageView.h"
 #import "PSWPreferences.h"
+#import "PSWResources.h"
 
 %class SBIconModel;
 %class SBIconController;
@@ -14,14 +15,14 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 	realInsets.bottom = rect.size.height * insets.bottom;
 	realInsets.left = rect.size.width * insets.left;
 	realInsets.right = rect.size.height * insets.right;
-	return UIEdgeInsetsInsetRect(rect, realInsets); 
+	CGRect ret = UIEdgeInsetsInsetRect(rect, realInsets); 
+	NSLog(@"insetRect:%@ withProportionalInsets:{%f, %f, %f, %f} returningResult:%@", NSStringFromCGRect(rect), insets.top, insets.bottom, insets.left, insets.right, NSStringFromCGRect(ret));
+	return ret;
 }
 
 @implementation PSWContainerView
 
 @synthesize pageControl = _pageControl;
-@synthesize emptyTapClose = _emptyTapClose;
-@synthesize autoExit = _autoExit;
 @synthesize pageView = _pageView;
 @synthesize doubleTapped = _doubleTapped;
 
@@ -42,8 +43,21 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 		[_emptyLabel setTextAlignment:UITextAlignmentCenter];
 		[_emptyLabel setFont:[UIFont boldSystemFontOfSize:16.0f]];
 		[_emptyLabel setTextColor:[UIColor whiteColor]];
+		[_emptyLabel setText:@"No Apps Running"];
 		[self addSubview:_emptyLabel];
 		[_emptyLabel setHidden:YES];
+		
+		[self setBackgroundColor:[UIColor clearColor]];
+		if (GetPreference(PSWDimBackground, BOOL))
+			[self setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
+			
+		if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
+			[[self layer] setContents:(id) [PSWImage(@"Background") CGImage]];
+		else
+			[[self layer] setContents:nil];
+
+		_emptyTapClose = YES; 
+		_autoExit = NO;
 		
 		[self setIsEmpty:YES];
 		[self setNeedsLayout];
@@ -62,10 +76,22 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 	[super dealloc];
 }
 
+- (void)_applyInsets
+{
+	CGRect edge = UIEdgeInsetsInsetRect([self bounds], _pageViewEdgeInsets);
+	CGRect proportional = PSWProportionalInsetsInsetRect(edge, _pageViewInsets);
+	[_pageView setFrame:proportional];
+}
+
+- (void)setFrame:(CGRect)frame {
+	[super setFrame:frame];
+	[self _applyInsets];
+}
+
 - (void)layoutSubviews
 {
 	CGRect frame;
-	frame.size = [_emptyText sizeWithFont:_emptyLabel.font];
+	frame.size = [[_emptyLabel text] sizeWithFont:_emptyLabel.font];
 	CGSize size = [self bounds].size;
 	frame.origin.x = (NSInteger) (size.width - frame.size.width) / 2;
 	frame.origin.y = (NSInteger) (size.height - frame.size.height) / 2;
@@ -87,13 +113,6 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 - (void)shouldExit
 {
 	[_pageView shouldExit];
-}
-
-- (void)_applyInsets
-{
-	CGRect edge = UIEdgeInsetsInsetRect([self bounds], _pageViewEdgeInsets);
-	CGRect proportional = PSWProportionalInsetsInsetRect(edge, _pageViewInsets);
-	[_pageView setFrame:proportional];
 }
 
 - (UIEdgeInsets)pageViewEdgeInsets
@@ -135,25 +154,10 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 {
 	_isEmpty = isEmpty;
 	
-	if ([self autoExit] && [self isEmpty])
+	if (_autoExit && _isEmpty)
 		[self shouldExit];
 		
 	[_emptyLabel setHidden:!_isEmpty];
-}
-
-- (NSString *)emptyText
-{
-	return _emptyText;
-}
-- (void)setEmptyText:(NSString *)emptyText
-{
-	if (emptyText != _emptyText) {
-		[_emptyText autorelease];
-		_emptyText = [emptyText copy];
-		[_emptyLabel setText:_emptyText];
-		
-		[self setNeedsLayout];
-	}
 }
 
 - (void)setPageControlCount:(NSInteger)count
@@ -220,7 +224,7 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	if ([self isEmpty] && [self emptyTapClose])
+	if (_isEmpty && _emptyTapClose)
 		[self shouldExit];
 	
 	UITouch *touch = [touches anyObject];

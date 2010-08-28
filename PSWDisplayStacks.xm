@@ -1,7 +1,5 @@
 #import "PSWDisplayStacks.h"
 
-#import <CaptainHook/CaptainHook.h>
-
 static NSMutableArray *displayStacks;
 
 __attribute__((visibility("hidden")))

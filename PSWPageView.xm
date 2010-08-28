@@ -1,10 +1,8 @@
 #import <QuartzCore/QuartzCore.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "PSWPageView.h"
 #import "PSWApplicationController.h"
 #import "PSWSnapshotView.h"
-
 
 @interface PSWPageView ()
 - (void)layoutPages;

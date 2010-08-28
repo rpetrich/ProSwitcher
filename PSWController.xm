@@ -88,7 +88,6 @@ void PSWSuppressBackgroundingOnDisplayIdentifer(NSString *displayIdentifier)
 - (void)fixPageControl;
 - (void)applyIgnored;
 - (void)applyInsets;
-- (void)applyPreferences;
 @end
 
 static PSWController *sharedController;	
@@ -127,7 +126,6 @@ static PSWController *sharedController;
 		
 		[self applyIgnored];
 		[self applyInsets];
-		[self applyPreferences];
 	}
 	
 	return self;
@@ -194,7 +192,7 @@ static PSWController *sharedController;
 		[ignored addObject:@"com.apple.mobilephone"];
 	}
 	
-	// Hide dock icons if disabled
+	// Hide dock icons if disabled.
 	if (!GetPreference(PSWShowDockApps, BOOL)) {
 		SBIconModel *iconModel = [$SBIconModel sharedInstance];
 		NSArray *icons = [iconModel respondsToSelector:@selector(buttonBar)] ? [[iconModel buttonBar] icons] : [[[iconModel rootFolder] dockModel] icons];
@@ -224,27 +222,10 @@ static PSWController *sharedController;
 	[containerView setPageViewEdgeInsets:scrollViewInsets];
 	
 	PSWProportionalInsets cardInsets;
-	cardInsets.left = cardInsets.right = PSWSnapshotProportionalInset;
+	cardInsets.left = cardInsets.right = GetPreference(PSWSnapshotProportionalInset, float);
 	cardInsets.top = 0.0f;
 	cardInsets.bottom = 0.025f;
 	[containerView setPageViewInsets:cardInsets];
-}
-
-- (void)applyPreferences
-{	
-	if (GetPreference(PSWDimBackground, BOOL))
-		[containerView setBackgroundColor:[UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.8]];
-	else
-		[containerView setBackgroundColor:[UIColor clearColor]];
-
-	if (GetPreference(PSWBackgroundStyle, NSInteger) == PSWBackgroundStyleImage)
-		[[containerView layer] setContents:(id) [PSWImage(@"Background") CGImage]];
-	else
-		[[containerView layer] setContents:nil];
-		
-	containerView.emptyTapClose       = YES; 
-	containerView.emptyText           = @"No Apps Running";
-	containerView.autoExit            = NO;
 }
 
 - (void)fixPageControl
@@ -767,7 +748,7 @@ static CGAffineTransform TransformRectToRect(CGRect sourceRect, CGRect targetRec
 				UIView *screenView = [ssv screenView];
 				CGRect convertedRect = [[screenView superview] convertRect:[screenView frame] toView:[containerView superview]];
 				CGRect rotatedRect;
-				UIInterfaceOrientation *orientationRef = CHIvarRef([$SBUIController sharedInstance], _orientation, UIInterfaceOrientation);
+				UIInterfaceOrientation *orientationRef = &MSHookIvar<UIInterfaceOrientation>([$SBUIController sharedInstance], "_orientation");
 				if (orientationRef) {
 					UIInterfaceOrientation orientation = *orientationRef;
 					CGSize screenSize = [[UIScreen mainScreen] bounds].size;

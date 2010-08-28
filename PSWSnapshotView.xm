@@ -2,7 +2,6 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <SpringBoard/SpringBoard.h>
-#import <CaptainHook/CaptainHook.h>
 
 #import "PSWSnapshotView.h"
 #import "PSWApplication.h"
