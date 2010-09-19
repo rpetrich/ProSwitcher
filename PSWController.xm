@@ -414,12 +414,11 @@ static PSWController *sharedController;
 			CGRect frame = [destination bounds];
 			CGFloat delta = [[$SBStatusBarController sharedStatusBarController] useDoubleHeightSize] ? 40.0f : 20.0f;
 			frame.size.height -= delta; frame.origin.y += delta;
-			UIView *zoomView = [[UIView alloc] initWithFrame:frame];
+			zoomView = [[UIView alloc] initWithFrame:frame];
 			
 			[destination addSubview:zoomView];
 			[zoomView release];
 
-			//[[zoomView layer] setContents:(id)[[[app application] defaultImage:NULL] CGImage]];
 			[[zoomView layer] setContents:(id)[activeApp snapshot]];
 
 			[UIView beginAnimations:nil context:nil];
@@ -431,6 +430,7 @@ static PSWController *sharedController;
 			[zoomView setFrame:[[view superview] convertRect:[view frame] toView:destination]];
 
 			[UIView commitAnimations];
+			zoomView = nil;
 			
 			disallowIconListScatter--;
 		}
@@ -469,12 +469,10 @@ static PSWController *sharedController;
 
 - (void)zoomAppAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(id)context {
 	disallowIconListScatter++;
-	// modifyZoomTransformCountDown = 1;
-	// ignoreZoomSetAlphaCountDown = 1;
-	[[context objectAtIndex:0] activateWithAnimation:NO];
+
+	[context activateWithAnimation:NO];
 	disallowIconListScatter--;
 	
-	[[context objectAtIndex:1] performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.5f];
 	[context release];
 }
 
@@ -483,15 +481,14 @@ static PSWController *sharedController;
 	UIView *view = [[sspv focusedSnapshotView] screenView];
 	
 	UIView *destination = [[$SBUIController sharedInstance] contentView];
-	UIView *zoomView = [[UIView alloc] initWithFrame:[[view superview] convertRect:[view frame] toView:destination]];
+	zoomView = [[UIView alloc] initWithFrame:[[view superview] convertRect:[view frame] toView:destination]];
 	[destination addSubview:zoomView];
 	
-	//[[zoomView layer] setContents:(id)[[[app application] defaultImage:NULL] CGImage]];
 	[[zoomView layer] setContents:(id)[app snapshot]];
 	 
 	[zoomView release];
 	
-	[UIView beginAnimations:nil context:[[NSArray arrayWithObjects:app, zoomView, nil] retain]];
+	[UIView beginAnimations:nil context:app];
 	[UIView setAnimationDuration:0.35f];
 	[UIView setAnimationBeginsFromCurrentState:YES];
 	[UIView setAnimationDelegate:self];
@@ -522,6 +519,8 @@ static PSWController *sharedController;
 - (void)_deactivateFromAppActivate
 {
 	[self setActive:NO animated:NO];
+	[zoomView removeFromSuperview];
+	zoomView = nil;
 }
 
 @end

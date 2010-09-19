@@ -15,8 +15,8 @@ CGRect PSWProportionalInsetsInsetRect(CGRect rect, PSWProportionalInsets insets)
 	realInsets.bottom = rect.size.height * insets.bottom;
 	realInsets.left = rect.size.width * insets.left;
 	realInsets.right = rect.size.height * insets.right;
+	
 	CGRect ret = UIEdgeInsetsInsetRect(rect, realInsets); 
-	NSLog(@"insetRect:%@ withProportionalInsets:{%f, %f, %f, %f} returningResult:%@", NSStringFromCGRect(rect), insets.top, insets.bottom, insets.left, insets.right, NSStringFromCGRect(ret));
 	return ret;
 }
 
